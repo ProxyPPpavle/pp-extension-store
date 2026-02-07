@@ -1113,6 +1113,16 @@ footer {
     color: white;
 }
 
+/* Ad Positioning Tweaks (Targeting common Propeller containers) */
+div[class*="pro-push"],
+div[class*="pp-banner"],
+iframe[id*="pro-"] {
+    bottom: 20px !important;
+    right: 20px !important;
+    top: auto !important;
+    left: auto !important;
+}
+
 /* Modal Styles */
 .modal {
     display: none;
