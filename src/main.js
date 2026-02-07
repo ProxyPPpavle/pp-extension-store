@@ -38,9 +38,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Ad Injection Logic ---
     const adStorage = {
-        vignetteInjected: false,
+        vignetteActive: false,
         pushInjected: false,
         bannerPushInjected: false
+    };
+
+    const injectVignette = () => {
+        // Vignette (Full page overlay)
+        const vignette = document.createElement('script');
+        vignette.dataset.zone = '10582470';
+        vignette.src = 'https://gizokraijaw.net/vignette.min.js';
+        document.body.appendChild(vignette);
+        adStorage.vignetteActive = true;
     };
 
     const injectImmediateAds = () => {
@@ -64,21 +73,25 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    const injectDelayedAds = () => {
-        // 3. Vignette (Delayed 5s - for better UX)
-        if (!adStorage.vignetteInjected) {
-            const vignette = document.createElement('script');
-            vignette.dataset.zone = '10582470';
-            vignette.src = 'https://gizokraijaw.net/vignette.min.js';
-            document.body.appendChild(vignette);
-            adStorage.vignetteInjected = true;
-        }
-    };
-
     // Trigger immediate ads
     injectImmediateAds();
-    // Trigger delayed ads (5 seconds)
-    setTimeout(injectDelayedAds, 5000);
+
+    // 1. Vignette on scroll (first time)
+    const onScrollVignette = () => {
+        if (window.scrollY > 100 && !adStorage.vignetteActive) {
+            injectVignette();
+            window.removeEventListener('scroll', onScrollVignette);
+        }
+    };
+    window.addEventListener('scroll', onScrollVignette, { passive: true });
+
+    // 2. Vignette every 4 minutes (keep it coming back)
+    setInterval(injectVignette, 4 * 60 * 1000);
+
+    // 3. Vignette on 5s landing (just in case they don't scroll)
+    setTimeout(() => {
+        if (!adStorage.vignetteActive) injectVignette();
+    }, 5000);
 
     // Registration & Download Logic
     const downloadTriggers = document.querySelectorAll('.download-trigger');
