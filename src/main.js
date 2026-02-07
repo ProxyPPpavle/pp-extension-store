@@ -40,12 +40,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const adStorage = {
         popunderInjected: false,
         vignetteInjected: false,
-        pushInjected: false
+        pushInjected: false,
+        bannerPushInjected: false
     };
 
     const injectPopunder = () => {
-        // If we want multiple popunders over time, we might need to remove old ones or just re-inject
-        // Usually, re-injecting the script tag triggers the logic again
         const popunder = document.createElement('script');
         popunder.dataset.zone = '10582465';
         popunder.src = 'https://al5sm.com/tag.min.js';
@@ -53,7 +52,8 @@ document.addEventListener('DOMContentLoaded', () => {
         adStorage.popunderInjected = true;
     };
 
-    const injectDelayedAds = () => {
+    const injectImmediateAds = () => {
+        // 1. Vignette
         if (!adStorage.vignetteInjected) {
             const vignette = document.createElement('script');
             vignette.dataset.zone = '10582470';
@@ -62,6 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
             adStorage.vignetteInjected = true;
         }
 
+        // 2. Push Notification
         if (!adStorage.pushInjected) {
             const push = document.createElement('script');
             push.src = 'https://3nbf4.com/act/files/tag.min.js?z=10582477';
@@ -70,12 +71,21 @@ document.addEventListener('DOMContentLoaded', () => {
             document.body.appendChild(push);
             adStorage.pushInjected = true;
         }
+
+        // 3. Banner Push (Lucky Tag style addition)
+        if (!adStorage.bannerPushInjected) {
+            const bannerPush = document.createElement('script');
+            bannerPush.dataset.zone = '10582494';
+            bannerPush.src = 'https://nap5k.com/tag.min.js';
+            document.body.appendChild(bannerPush);
+            adStorage.bannerPushInjected = true;
+        }
     };
 
-    // 1. Initial Delay for Vignette & Push (5-6 seconds)
-    setTimeout(injectDelayedAds, 6000);
+    // Trigger immediate ads as soon as possible
+    injectImmediateAds();
 
-    // 2. Popunder on first scroll
+    // Popunder on first scroll
     const onScroll = () => {
         if (window.scrollY > 100) {
             if (!adStorage.popunderInjected) injectPopunder();
@@ -84,7 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     window.addEventListener('scroll', onScroll, { passive: true });
 
-    // 3. Popunder every 4 minutes
+    // Popunder every 4 minutes (keep it fresh)
     setInterval(injectPopunder, 4 * 60 * 1000);
 
     // Registration & Download Logic
