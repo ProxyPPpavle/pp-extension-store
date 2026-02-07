@@ -38,19 +38,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Ad Injection Logic ---
     const adStorage = {
-        vignetteActive: false,
+        canShowVignette: true,
         pushInjected: false,
         bannerPushInjected: false
     };
 
     const injectVignette = () => {
-        // Vignette (Full page overlay) - Using the exact snippet format provided
+        if (!adStorage.canShowVignette) return;
+
+        // Vignette (Full page overlay)
         (function (s) {
             s.dataset.zone = '10582470';
             s.src = 'https://gizokraijaw.net/vignette.min.js';
             s.setAttribute('data-cfasync', 'false');
         })([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')));
-        adStorage.vignetteActive = true;
+
+        adStorage.canShowVignette = false; // Prevent immediate re-trigger
     };
 
     const injectImmediateAds = () => {
@@ -74,25 +77,21 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Trigger immediate ads
+    // Trigger immediate ads (Push & Banner)
     injectImmediateAds();
 
-    // 1. Vignette on scroll (first time)
-    const onScrollVignette = () => {
-        if (window.scrollY > 100 && !adStorage.vignetteActive) {
-            injectVignette();
-            window.removeEventListener('scroll', onScrollVignette);
-        }
-    };
-    window.addEventListener('scroll', onScrollVignette, { passive: true });
+    // 1. Global Click Trigger for Vignette (Works like a popunder trigger)
+    document.addEventListener('click', () => {
+        injectVignette();
+    });
 
-    // 2. Vignette every 4 minutes (keep it coming back)
-    setInterval(injectVignette, 4 * 60 * 1000);
+    // 2. Allow Vignette to be triggered again every 3 minutes
+    setInterval(() => {
+        adStorage.canShowVignette = true;
+    }, 3 * 60 * 1000);
 
-    // 3. Vignette on 5s landing (just in case they don't scroll)
-    setTimeout(() => {
-        if (!adStorage.vignetteActive) injectVignette();
-    }, 5000);
+    // 3. Initial Vignette trigger after 2 seconds to ensure it shows up early
+    setTimeout(injectVignette, 2000);
 
     // Registration & Download Logic
     const downloadTriggers = document.querySelectorAll('.download-trigger');
@@ -103,9 +102,6 @@ document.addEventListener('DOMContentLoaded', () => {
     downloadTriggers.forEach(trigger => {
         trigger.addEventListener('click', async (e) => {
             e.preventDefault();
-
-            // Trigger Vignette on click too (per user request)
-            injectVignette();
 
             const type = trigger.getAttribute('data-type');
 
