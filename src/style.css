@@ -1,17 +1,17 @@
 :root {
-    --bg-black: #050505;
+    --bg-black: #020617;
     --bg-slate: #0f172a;
     --primary-blue: #3b82f6;
-    --primary-purple: #8b5cf6;
-    --accent-green: #10b981;
-    --accent-emerald: #059669;
+    --primary-purple: #a855f7;
+    --accent-green: #22c55e;
+    --accent-emerald: #10b981;
     --text-white: #f8fafc;
     --text-gray: #94a3b8;
     --glass-bg: rgba(255, 255, 255, 0.03);
     --glass-border: rgba(255, 255, 255, 0.12);
-    --gradient: linear-gradient(135deg, var(--primary-blue), var(--accent-green));
-    --gradient-premium: linear-gradient(135deg, var(--primary-purple), var(--primary-blue));
-    --gradient-glow: linear-gradient(135deg, rgba(59, 130, 246, 0.6), rgba(16, 185, 129, 0.6));
+    --gradient: linear-gradient(135deg, var(--primary-blue), var(--accent-emerald));
+    --gradient-premium: linear-gradient(135deg, #f59e0b, #ef4444);
+    --gradient-glow: linear-gradient(135deg, rgba(59, 130, 246, 0.6), rgba(34, 197, 94, 0.6));
 }
 
 * {
@@ -45,11 +45,24 @@ body {
     width: 100%;
     height: 100%;
     background:
-        radial-gradient(circle at 15% 25%, rgba(59, 130, 246, 0.15) 0%, transparent 45%),
-        radial-gradient(circle at 85% 75%, rgba(16, 185, 129, 0.15) 0%, transparent 45%),
-        radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.12) 0%, transparent 60%);
+        radial-gradient(circle at 15% 25%, rgba(59, 130, 246, 0.2) 0%, transparent 45%),
+        radial-gradient(circle at 85% 75%, rgba(34, 197, 94, 0.2) 0%, transparent 45%),
+        radial-gradient(circle at 50% 50%, rgba(168, 85, 247, 0.15) 0%, transparent 60%);
     z-index: -1;
     pointer-events: none;
+    animation: bgRotate 20s linear infinite;
+}
+
+@keyframes bgRotate {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.1) rotate(2deg);
+    }
 }
 
 /* Background Lines/Stonks Decor */
@@ -104,9 +117,14 @@ nav {
 }
 
 .logo {
-    font-size: 1.5rem;
+    font-size: 1.8rem;
     font-weight: 800;
     letter-spacing: -1px;
+    transition: transform 0.3s ease;
+}
+
+.logo:hover {
+    transform: scale(1.05);
 }
 
 .logo-p {
@@ -114,6 +132,7 @@ nav {
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.4));
 }
 
 .nav-links {
@@ -146,6 +165,35 @@ nav {
     display: inline-block;
     border: none;
     cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-primary::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -60%;
+    width: 20%;
+    height: 200%;
+    background: rgba(255, 255, 255, 0.2);
+    transform: rotate(30deg);
+    transition: none;
+    animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        left: -60%;
+    }
+
+    20% {
+        left: 140%;
+    }
+
+    100% {
+        left: 140%;
+    }
 }
 
 .btn-primary:hover {
@@ -253,10 +301,11 @@ nav {
 }
 
 .hero-text h1 {
-    font-size: 4.5rem;
-    line-height: 1.1;
+    font-size: 5rem;
+    line-height: 1;
     margin-bottom: 1.5rem;
     font-weight: 800;
+    letter-spacing: -2px;
 }
 
 .badge-growth {
@@ -398,6 +447,7 @@ nav {
     position: relative;
     overflow: hidden;
     transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    animation: float 8s ease-in-out infinite;
 }
 
 .extension-card:hover {
@@ -503,6 +553,8 @@ nav {
     text-align: center;
     font-weight: 600;
     transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
 }
 
 .btn-free:hover {
@@ -534,7 +586,22 @@ nav {
     text-align: center;
     font-weight: 700;
     transition: all 0.15s ease;
-    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.2);
+    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-free::after,
+.btn-premium::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -60%;
+    width: 20%;
+    height: 200%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(30deg);
+    animation: shimmer 4s infinite;
 }
 
 .btn-premium:hover {
