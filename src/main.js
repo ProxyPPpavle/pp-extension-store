@@ -90,8 +90,8 @@ document.addEventListener('DOMContentLoaded', () => {
         adStorage.canShowVignette = true;
     }, 3 * 60 * 1000);
 
-    // 3. Initial Vignette trigger after 2 seconds to ensure it shows up early
-    setTimeout(injectVignette, 2000);
+    // Initial state: false because index.html already injected it once
+    adStorage.canShowVignette = false;
 
     // Registration & Download Logic
     const downloadTriggers = document.querySelectorAll('.download-trigger');
