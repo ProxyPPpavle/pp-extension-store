@@ -605,6 +605,7 @@ nav {
     background: rgba(255, 255, 255, 0.3);
     transform: rotate(30deg);
     animation: shimmer 4s infinite;
+    pointer-events: none;
 }
 
 .btn-premium:hover {

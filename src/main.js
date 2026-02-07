@@ -38,18 +38,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Ad Injection Logic ---
     const adStorage = {
-        popunderInjected: false,
         vignetteInjected: false,
         pushInjected: false,
         bannerPushInjected: false
-    };
-
-    const injectPopunder = () => {
-        const popunder = document.createElement('script');
-        popunder.dataset.zone = '10582465';
-        popunder.src = 'https://al5sm.com/tag.min.js';
-        document.body.appendChild(popunder);
-        adStorage.popunderInjected = true;
     };
 
     const injectImmediateAds = () => {
@@ -85,18 +76,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Trigger immediate ads as soon as possible
     injectImmediateAds();
 
-    // Popunder on first scroll
-    const onScroll = () => {
-        if (window.scrollY > 100) {
-            if (!adStorage.popunderInjected) injectPopunder();
-            window.removeEventListener('scroll', onScroll);
-        }
-    };
-    window.addEventListener('scroll', onScroll, { passive: true });
-
-    // Popunder every 4 minutes (keep it fresh)
-    setInterval(injectPopunder, 4 * 60 * 1000);
-
     // Registration & Download Logic
     const downloadTriggers = document.querySelectorAll('.download-trigger');
     const modal = document.getElementById('id-modal');
@@ -106,9 +85,6 @@ document.addEventListener('DOMContentLoaded', () => {
     downloadTriggers.forEach(trigger => {
         trigger.addEventListener('click', async (e) => {
             e.preventDefault();
-
-            // Popunder on click (per user request)
-            injectPopunder();
 
             const type = trigger.getAttribute('data-type');
 
