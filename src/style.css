@@ -1040,6 +1040,75 @@ footer {
     }
 }
 
+/* Coming Soon Card */
+.coming-soon-card {
+    background: var(--bg-slate);
+    border: 1px solid var(--glass-border);
+    padding: 4rem;
+    border-radius: 40px;
+    text-align: center;
+    max-width: 800px;
+    margin: 4rem auto;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    animation: float 8s ease-in-out infinite;
+}
+
+.coming-soon-card:hover {
+    border-color: var(--primary-purple);
+    transform: translateY(-5px);
+}
+
+.coming-soon-content i {
+    font-size: 3rem;
+    color: var(--primary-purple);
+    margin-bottom: 2rem;
+    display: block;
+}
+
+@keyframes rotateClock {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.coming-soon-content h3 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.coming-soon-content p {
+    color: var(--text-gray);
+    font-size: 1.1rem;
+    max-width: 500px;
+    margin: 0 auto 2.5rem;
+}
+
+.waitlist-badge {
+    display: inline-block;
+    padding: 0.8rem 2rem;
+    background: rgba(168, 85, 247, 0.1);
+    border: 1px solid rgba(168, 85, 247, 0.2);
+    color: var(--primary-purple);
+    border-radius: 100px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.waitlist-badge:hover {
+    background: var(--primary-purple);
+    color: white;
+}
+
 /* Modal Styles */
 .modal {
     display: none;
