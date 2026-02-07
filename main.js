@@ -47,8 +47,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const type = trigger.getAttribute('data-type');
 
             try {
+                // Determine API URL (use env var for production)
+                const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
                 // 1. Pozovi server da registruje klijenta
-                const response = await fetch('http://localhost:3000/register-client', {
+                const response = await fetch(`${apiUrl}/register-client`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ accountType: type })
