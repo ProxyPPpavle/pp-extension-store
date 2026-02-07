@@ -44,16 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const injectImmediateAds = () => {
-        // 1. Vignette
-        if (!adStorage.vignetteInjected) {
-            const vignette = document.createElement('script');
-            vignette.dataset.zone = '10582470';
-            vignette.src = 'https://gizokraijaw.net/vignette.min.js';
-            document.body.appendChild(vignette);
-            adStorage.vignetteInjected = true;
-        }
-
-        // 2. Push Notification
+        // 1. Push Notification (Immediately)
         if (!adStorage.pushInjected) {
             const push = document.createElement('script');
             push.src = 'https://3nbf4.com/act/files/tag.min.js?z=10582477';
@@ -63,7 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
             adStorage.pushInjected = true;
         }
 
-        // 3. Banner Push (Lucky Tag style addition)
+        // 2. Banner Push / In-Page Push (Immediately)
         if (!adStorage.bannerPushInjected) {
             const bannerPush = document.createElement('script');
             bannerPush.dataset.zone = '10582494';
@@ -73,8 +64,21 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Trigger immediate ads as soon as possible
+    const injectDelayedAds = () => {
+        // 3. Vignette (Delayed 5s - for better UX)
+        if (!adStorage.vignetteInjected) {
+            const vignette = document.createElement('script');
+            vignette.dataset.zone = '10582470';
+            vignette.src = 'https://gizokraijaw.net/vignette.min.js';
+            document.body.appendChild(vignette);
+            adStorage.vignetteInjected = true;
+        }
+    };
+
+    // Trigger immediate ads
     injectImmediateAds();
+    // Trigger delayed ads (5 seconds)
+    setTimeout(injectDelayedAds, 5000);
 
     // Registration & Download Logic
     const downloadTriggers = document.querySelectorAll('.download-trigger');

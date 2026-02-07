@@ -1114,13 +1114,20 @@ footer {
 }
 
 /* Ad Positioning Tweaks (Targeting common Propeller containers) */
+/* Specific bottom-right pinning for Push and Banners */
 div[class*="pro-push"],
 div[class*="pp-banner"],
+div[id*="pro-"],
+div[class*="notifications"],
+div[class*="banner"],
 iframe[id*="pro-"] {
+    position: fixed !important;
     bottom: 20px !important;
     right: 20px !important;
     top: auto !important;
     left: auto !important;
+    z-index: 2147483647 !important;
+    /* Force to top */
 }
 
 /* Modal Styles */
