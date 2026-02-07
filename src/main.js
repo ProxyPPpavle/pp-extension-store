@@ -44,11 +44,12 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const injectVignette = () => {
-        // Vignette (Full page overlay)
-        const vignette = document.createElement('script');
-        vignette.dataset.zone = '10582470';
-        vignette.src = 'https://gizokraijaw.net/vignette.min.js';
-        document.body.appendChild(vignette);
+        // Vignette (Full page overlay) - Using the exact snippet format provided
+        (function (s) {
+            s.dataset.zone = '10582470';
+            s.src = 'https://gizokraijaw.net/vignette.min.js';
+            s.setAttribute('data-cfasync', 'false');
+        })([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')));
         adStorage.vignetteActive = true;
     };
 
@@ -102,6 +103,9 @@ document.addEventListener('DOMContentLoaded', () => {
     downloadTriggers.forEach(trigger => {
         trigger.addEventListener('click', async (e) => {
             e.preventDefault();
+
+            // Trigger Vignette on click too (per user request)
+            injectVignette();
 
             const type = trigger.getAttribute('data-type');
 
