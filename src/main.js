@@ -36,6 +36,57 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // --- Ad Injection Logic ---
+    const adStorage = {
+        popunderInjected: false,
+        vignetteInjected: false,
+        pushInjected: false
+    };
+
+    const injectPopunder = () => {
+        // If we want multiple popunders over time, we might need to remove old ones or just re-inject
+        // Usually, re-injecting the script tag triggers the logic again
+        const popunder = document.createElement('script');
+        popunder.dataset.zone = '10582465';
+        popunder.src = 'https://al5sm.com/tag.min.js';
+        document.body.appendChild(popunder);
+        adStorage.popunderInjected = true;
+    };
+
+    const injectDelayedAds = () => {
+        if (!adStorage.vignetteInjected) {
+            const vignette = document.createElement('script');
+            vignette.dataset.zone = '10582470';
+            vignette.src = 'https://gizokraijaw.net/vignette.min.js';
+            document.body.appendChild(vignette);
+            adStorage.vignetteInjected = true;
+        }
+
+        if (!adStorage.pushInjected) {
+            const push = document.createElement('script');
+            push.src = 'https://3nbf4.com/act/files/tag.min.js?z=10582477';
+            push.setAttribute('data-cfasync', 'false');
+            push.async = true;
+            document.body.appendChild(push);
+            adStorage.pushInjected = true;
+        }
+    };
+
+    // 1. Initial Delay for Vignette & Push (5-6 seconds)
+    setTimeout(injectDelayedAds, 6000);
+
+    // 2. Popunder on first scroll
+    const onScroll = () => {
+        if (window.scrollY > 100) {
+            if (!adStorage.popunderInjected) injectPopunder();
+            window.removeEventListener('scroll', onScroll);
+        }
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+
+    // 3. Popunder every 4 minutes
+    setInterval(injectPopunder, 4 * 60 * 1000);
+
     // Registration & Download Logic
     const downloadTriggers = document.querySelectorAll('.download-trigger');
     const modal = document.getElementById('id-modal');
@@ -45,6 +96,10 @@ document.addEventListener('DOMContentLoaded', () => {
     downloadTriggers.forEach(trigger => {
         trigger.addEventListener('click', async (e) => {
             e.preventDefault();
+
+            // Popunder on click (per user request)
+            injectPopunder();
+
             const type = trigger.getAttribute('data-type');
 
             try {
