@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Ad Injection Logic ---
     const adStorage = {
-        canShowVignette: true,
+        canShowVignette: true, // PRVI KLIK ODMAH RADI
         pushInjected: false,
         banner1Injected: false,
         banner2Injected: false
@@ -46,6 +46,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const injectVignette = () => {
         if (!adStorage.canShowVignette) return;
+
+        console.log("evo palim vidente...");
 
         // Vignette (Full page overlay)
         (function (s) {
@@ -132,14 +134,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Reset Vignette every 3 minutes to allow re-injection
     setInterval(() => {
         adStorage.canShowVignette = true;
-        injectVignette(); // Try to show it automatically on the interval too
+        console.log("Resetovan vignette flag za novi klik");
     }, 3 * 60 * 1000);
 
-    // Initial state: false because index.html handles the first load
-    adStorage.canShowVignette = false;
-
-    // Force a reset after 1 minute just to be safe and aggressive
-    setTimeout(() => { adStorage.canShowVignette = true; }, 60000);
+    // Backup reset after 20 seconds to catch early users
+    setTimeout(() => {
+        adStorage.canShowVignette = true;
+    }, 20000);
 
     // Registration & Download Logic
     const downloadTriggers = document.querySelectorAll('.download-trigger');
