@@ -40,59 +40,88 @@ document.addEventListener('DOMContentLoaded', () => {
     const adStorage = {
         canShowVignette: true,
         pushInjected: false,
-        bannerPushInjected: false
+        banner1Injected: false,
+        banner2Injected: false
     };
 
     const injectVignette = () => {
         if (!adStorage.canShowVignette) return;
-
-        // Vignette (Full page overlay)
         (function (s) {
             s.dataset.zone = '10582470';
             s.src = 'https://gizokraijaw.net/vignette.min.js';
             s.setAttribute('data-cfasync', 'false');
         })([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')));
+        adStorage.canShowVignette = false;
+    };
 
-        adStorage.canShowVignette = false; // Prevent immediate re-trigger
+    const injectPushScript = () => {
+        if (adStorage.pushInjected) return;
+        const push = document.createElement('script');
+        push.src = 'https://3nbf4.com/act/files/tag.min.js?z=10582477';
+        push.setAttribute('data-cfasync', 'false');
+        push.async = true;
+        document.body.appendChild(push);
+        adStorage.pushInjected = true;
     };
 
     const injectImmediateAds = () => {
-        // 1. Push Notification (Immediately)
-        if (!adStorage.pushInjected) {
-            const push = document.createElement('script');
-            push.src = 'https://3nbf4.com/act/files/tag.min.js?z=10582477';
-            push.setAttribute('data-cfasync', 'false');
-            push.async = true;
-            document.body.appendChild(push);
-            adStorage.pushInjected = true;
+        // Banner Push 1
+        if (!adStorage.banner1Injected) {
+            (function (s) {
+                s.dataset.zone = '10582494';
+                s.src = 'https://nap5k.com/tag.min.js';
+            })([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')));
+            adStorage.banner1Injected = true;
         }
 
-        // 2. Banner Push / In-Page Push (DISABLED for testing)
-        /*
-        if (!adStorage.bannerPushInjected) {
-            const bannerPush = document.createElement('script');
-            bannerPush.dataset.zone = '10582494';
-            bannerPush.src = 'https://nap5k.com/tag.min.js';
-            document.body.appendChild(bannerPush);
-            adStorage.bannerPushInjected = true;
+        // Banner Push 2 (New zone)
+        if (!adStorage.banner2Injected) {
+            (function (s) {
+                s.dataset.zone = '10584340';
+                s.src = 'https://nap5k.com/tag.min.js';
+            })([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')));
+            adStorage.banner2Injected = true;
         }
-        */
     };
 
-    // Trigger immediate ads (Push & Banner)
+    // Trigger immediate banner ads
     injectImmediateAds();
 
-    // 1. Global Click Trigger for Vignette (Works like a popunder trigger)
+    // --- Push Consent System (Soft Ask) ---
+    const pushModal = document.getElementById('push-consent');
+    const allowBtn = document.getElementById('push-allow');
+    const denyBtn = document.getElementById('push-deny');
+
+    const showPushModal = () => {
+        // Only show if they haven't allowed yet (check localStorage if needed, for now just constant)
+        if (!localStorage.getItem('push_consent_given')) {
+            setTimeout(() => {
+                pushModal.classList.add('active');
+            }, 3000); // Wait 3s after load
+        }
+    };
+
+    allowBtn.addEventListener('click', () => {
+        injectPushScript();
+        localStorage.setItem('push_consent_given', 'true');
+        pushModal.classList.remove('active');
+    });
+
+    denyBtn.addEventListener('click', () => {
+        pushModal.classList.remove('active');
+    });
+
+    showPushModal();
+
+    // --- Interaction Triggers ---
     document.addEventListener('click', () => {
         injectVignette();
     });
 
-    // 2. Allow Vignette to be triggered again every 3 minutes
     setInterval(() => {
         adStorage.canShowVignette = true;
     }, 3 * 60 * 1000);
 
-    // Initial state: false because index.html already injected it once
     adStorage.canShowVignette = false;
 
     // Registration & Download Logic
