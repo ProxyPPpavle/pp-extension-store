@@ -45,24 +45,28 @@ document.addEventListener('DOMContentLoaded', () => {
         clickCount: 0
     };
 
+    // FIX za 'blth:start' i 'hidden_iframe:start' globalno
+    const silencePerformanceErrors = () => {
+        if (window.performance && window.performance.mark) {
+            try {
+                if (!performance.getEntriesByName('blth:start').length) performance.mark('blth:start');
+                if (!performance.getEntriesByName('hidden_iframe:start').length) performance.mark('hidden_iframe:start');
+            } catch (e) { }
+        }
+    };
+    silencePerformanceErrors();
+
     const injectVignette = () => {
         if (!adStorage.canShowVignette) return;
+        silencePerformanceErrors();
 
         console.log(">>> POKREĆEM VIGNETTE OGLAS (Zone 10582470) <<<");
 
         try {
-            // FIX za 'blth:start' grešku: Kreiramo markere koje skripta očekuje
-            if (window.performance && window.performance.mark) {
-                try {
-                    performance.mark('blth:start');
-                    performance.mark('hidden_iframe:start');
-                } catch (e) { }
-            }
-
             // Čistimo stare skripte i objekte da ne bi dolazilo do konflikta
             document.querySelectorAll('script[src*="vignette.min.js"]').forEach(s => s.remove());
 
-            // Ispaljujemo skriptu koristeći tvoj provereni metod
+            // Ispaljujemo skriptu
             const s = document.createElement('script');
             s.dataset.zone = '10582470';
             s.src = 'https://gizokraijaw.net/vignette.min.js';
@@ -87,6 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const injectImmediateAds = () => {
+        silencePerformanceErrors();
         console.log("Osvežavam bočne reklame (Loop)...");
         try {
             // Brisemo samo ako su tu, da ne bi zbunili browser performance monitor
@@ -142,29 +147,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Interaction Triggers ---
 
-    // 1. Specijalni trigger za "Get Started" dugme (da ga testiraš)
-    const getStartedBtn = document.querySelector('.btn-primary');
-    if (getStartedBtn) {
-        getStartedBtn.addEventListener('click', (e) => {
-            console.log("KLIK NA GET STARTED - Forsiram Vignette...");
-            adStorage.canShowVignette = true; // Forsiramo reset samo za ovo dugme
+    // 1. Specijalni trigger za high-value dugmiće
+    const hiTriggers = document.querySelectorAll('.btn-primary, .btn-secondary, .btn-partner, .download-trigger');
+    hiTriggers.forEach(btn => {
+        btn.addEventListener('click', () => {
+            console.log("High-value click! Resetujem Vignette...");
+            adStorage.canShowVignette = true;
             injectVignette();
         });
-    }
+    });
 
-    // 2. Globalni click listener
+    // 2. Globalni click listener (svaka 3 klika resetuje Vignette)
     document.addEventListener('click', () => {
         adStorage.clickCount++;
-        if (adStorage.clickCount % 5 === 0) {
+        if (adStorage.clickCount % 3 === 0) {
             adStorage.canShowVignette = true;
         }
         injectVignette();
     });
 
-    // Vremenski reset za Vignette (3 minuta)
+    // Vremenski reset za Vignette (svaka 2 minuta)
     setInterval(() => {
         adStorage.canShowVignette = true;
-    }, 3 * 60 * 1000);
+    }, 2 * 60 * 1000);
 
     // Registration & Download Logic
     const downloadTriggers = document.querySelectorAll('.download-trigger');
