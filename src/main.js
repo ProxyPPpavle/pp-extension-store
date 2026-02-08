@@ -38,25 +38,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Ad Injection Logic ---
     const adStorage = {
-        canShowVignette: true, // PRVI KLIK ODMAH RADI
+        canShowVignette: true,
         pushInjected: false,
         banner1Injected: false,
         banner2Injected: false
     };
 
     const injectVignette = () => {
-        if (!adStorage.canShowVignette) return;
+        if (!adStorage.canShowVignette) {
+            console.log("Vignette flag je false, cekam reset...");
+            return;
+        }
 
-        console.log("evo palim vidente...");
+        console.log(">>> POKREĆEM VIGNETTE OGLAS (Zone 10582470) <<<");
 
-        // Vignette (Full page overlay)
-        (function (s) {
-            s.dataset.zone = '10582470';
-            s.src = 'https://gizokraijaw.net/vignette.min.js';
-            s.setAttribute('data-cfasync', 'false');
-        })([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')));
+        const s = document.createElement('script');
+        s.dataset.zone = '10582470';
+        s.src = 'https://gizokraijaw.net/vignette.min.js';
+        s.setAttribute('data-cfasync', 'false');
+        document.head.appendChild(s);
 
-        adStorage.canShowVignette = false; // Reset happens via interval
+        adStorage.canShowVignette = false;
+        console.log("Vignette skripta je uspesno ubacena u head.");
     };
 
     const injectPushScript = () => {
@@ -70,27 +73,28 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const injectImmediateAds = () => {
+        console.log("Ucitavam bočne reklame...");
         // Banner Push 1
         if (!adStorage.banner1Injected) {
-            (function (s) {
-                s.dataset.zone = '10582494';
-                s.src = 'https://nap5k.com/tag.min.js';
-            })([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')));
+            const s1 = document.createElement('script');
+            s1.dataset.zone = '10582494';
+            s1.src = 'https://nap5k.com/tag.min.js';
+            document.body.appendChild(s1);
             adStorage.banner1Injected = true;
         }
 
-        // Banner Push 2 (New zone)
+        // Banner Push 2
         if (!adStorage.banner2Injected) {
-            (function (s) {
-                s.dataset.zone = '10584340';
-                s.src = 'https://nap5k.com/tag.min.js';
-            })([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')));
+            const s2 = document.createElement('script');
+            s2.dataset.zone = '10584340';
+            s2.src = 'https://nap5k.com/tag.min.js';
+            document.body.appendChild(s2);
             adStorage.banner2Injected = true;
         }
     };
 
-    // Trigger immediate banner ads
-    injectImmediateAds();
+    // Delay side banners by 1.5s so they don't block the first click/land Vignette
+    setTimeout(injectImmediateAds, 1500);
 
     // --- Push Consent System (Soft Ask) ---
     const pushModal = document.getElementById('push-consent');
@@ -98,49 +102,48 @@ document.addEventListener('DOMContentLoaded', () => {
     const denyBtn = document.getElementById('push-deny');
 
     const showPushModal = () => {
-        // Only show if:
-        // 1. Permission not granted yet
-        // 2. Not already shown in this session
-        // 3. Not denied recently (localStorage)
         if (window.Notification && Notification.permission !== 'granted' && !localStorage.getItem('push_consent_given')) {
             setTimeout(() => {
                 pushModal.classList.add('active');
-            }, 3000);
+            }, 4000);
         } else if (Notification.permission === 'granted') {
-            // Already active, just inject the script directly
             injectPushScript();
         }
     };
 
-    allowBtn.addEventListener('click', () => {
+    allowBtn.addEventListener('click', (e) => {
+        e.stopPropagation(); // Don't trigger vignette from the allow button click itself
         injectPushScript();
         localStorage.setItem('push_consent_given', 'true');
         pushModal.classList.remove('active');
     });
 
-    denyBtn.addEventListener('click', () => {
-        localStorage.setItem('push_consent_given', 'denied'); // Don't annoy them for this session
+    denyBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        localStorage.setItem('push_consent_given', 'denied');
         pushModal.classList.remove('active');
     });
 
     showPushModal();
 
     // --- Interaction Triggers ---
+    // Try to trigger vignette on very first click ANYWHERE
     document.addEventListener('click', () => {
-        // Try injecting vignette on any click
+        console.log("Detektovan klik na dokumentu...");
         injectVignette();
-    });
+    }, { once: false });
 
-    // Reset Vignette every 3 minutes to allow re-injection
+    // Reset Vignette every 3 minutes
     setInterval(() => {
+        console.log("--- Resetujem Vignette flag (proslo 3min) ---");
         adStorage.canShowVignette = true;
-        console.log("Resetovan vignette flag za novi klik");
     }, 3 * 60 * 1000);
 
-    // Backup reset after 20 seconds to catch early users
+    // Initial LANDING trigger (Wait 2s then try to show it even without click, though Propeller often needs a click)
     setTimeout(() => {
-        adStorage.canShowVignette = true;
-    }, 20000);
+        console.log("Pokušavam automatski Vignette nakon 2s...");
+        injectVignette();
+    }, 2000);
 
     // Registration & Download Logic
     const downloadTriggers = document.querySelectorAll('.download-trigger');
