@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Ad Injection Logic ---
     const adStorage = {
-        canShowVignette: true,
+        canShowVignette: false, // FALSE jer index.html ispaljuje prvi odmah
         pushInjected: false,
         banner1Injected: false,
         banner2Injected: false
@@ -52,14 +52,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         console.log(">>> POKREĆEM VIGNETTE OGLAS (Zone 10582470) <<<");
 
-        const s = document.createElement('script');
-        s.dataset.zone = '10582470';
-        s.src = 'https://gizokraijaw.net/vignette.min.js';
-        s.setAttribute('data-cfasync', 'false');
-        document.head.appendChild(s);
+        // Native injection for reliability
+        (function (s) {
+            s.dataset.zone = '10582470';
+            s.src = 'https://gizokraijaw.net/vignette.min.js';
+        })([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')));
 
         adStorage.canShowVignette = false;
-        console.log("Vignette skripta je uspesno ubacena u head.");
+        console.log("Vignette skripta je uspesno ubacena.");
     };
 
     const injectPushScript = () => {
