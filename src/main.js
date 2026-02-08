@@ -46,12 +46,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const injectVignette = () => {
         if (!adStorage.canShowVignette) return;
+
+        // Vignette (Full page overlay)
         (function (s) {
             s.dataset.zone = '10582470';
             s.src = 'https://gizokraijaw.net/vignette.min.js';
             s.setAttribute('data-cfasync', 'false');
         })([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')));
-        adStorage.canShowVignette = false;
+
+        adStorage.canShowVignette = false; // Reset happens via interval
     };
 
     const injectPushScript = () => {
@@ -93,11 +96,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const denyBtn = document.getElementById('push-deny');
 
     const showPushModal = () => {
-        // Only show if they haven't allowed yet (check localStorage if needed, for now just constant)
-        if (!localStorage.getItem('push_consent_given')) {
+        // Only show if:
+        // 1. Permission not granted yet
+        // 2. Not already shown in this session
+        // 3. Not denied recently (localStorage)
+        if (window.Notification && Notification.permission !== 'granted' && !localStorage.getItem('push_consent_given')) {
             setTimeout(() => {
                 pushModal.classList.add('active');
-            }, 3000); // Wait 3s after load
+            }, 3000);
+        } else if (Notification.permission === 'granted') {
+            // Already active, just inject the script directly
+            injectPushScript();
         }
     };
 
@@ -108,6 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     denyBtn.addEventListener('click', () => {
+        localStorage.setItem('push_consent_given', 'denied'); // Don't annoy them for this session
         pushModal.classList.remove('active');
     });
 
@@ -115,14 +125,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Interaction Triggers ---
     document.addEventListener('click', () => {
+        // Try injecting vignette on any click
         injectVignette();
     });
 
+    // Reset Vignette every 3 minutes to allow re-injection
     setInterval(() => {
         adStorage.canShowVignette = true;
+        injectVignette(); // Try to show it automatically on the interval too
     }, 3 * 60 * 1000);
 
+    // Initial state: false because index.html handles the first load
     adStorage.canShowVignette = false;
+
+    // Force a reset after 1 minute just to be safe and aggressive
+    setTimeout(() => { adStorage.canShowVignette = true; }, 60000);
 
     // Registration & Download Logic
     const downloadTriggers = document.querySelectorAll('.download-trigger');
