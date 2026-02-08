@@ -1,277 +1,129 @@
 import './style.css';
+
 document.addEventListener('DOMContentLoaded', () => {
-    // Initialize AOS
-    if (typeof AOS !== 'undefined') {
-        AOS.init({
-            duration: 1000,
-            once: true,
-            offset: 100,
-            easing: 'ease-out-cubic'
-        });
-    }
 
-    // Navbar scroll effect
-    const nav = document.querySelector('nav');
-    window.addEventListener('scroll', () => {
-        if (window.scrollY > 50) {
-            nav.style.background = 'rgba(5, 5, 5, 0.95)';
-            nav.style.padding = '0.5rem 0';
-            nav.style.boxShadow = '0 10px 30px rgba(0,0,0,0.5)';
-        } else {
-            nav.style.background = 'rgba(5, 5, 5, 0.7)';
-            nav.style.padding = '1rem 0';
-            nav.style.boxShadow = 'none';
-        }
-    });
-
-    // Smooth scroll
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-            if (this.classList.contains('download-trigger')) return;
-            e.preventDefault();
-            const target = document.querySelector(this.getAttribute('href'));
-            if (target) {
-                target.scrollIntoView({ behavior: 'smooth' });
+    // --- Console Noise Suppression (Handling excessive WebGL warnings from Ads) ---
+    (function () {
+        const originalGetContext = HTMLCanvasElement.prototype.getContext;
+        let webGLCount = 0;
+        HTMLCanvasElement.prototype.getContext = function (type, attributes) {
+            if (type === 'webgl' || type === 'experimental-webgl') {
+                webGLCount++;
+                if (webGLCount > 15) return null; // Hard limit for ads fingerprinting
             }
-        });
-    });
-
-    // --- Global Error Silencing for Ad Scripts ---
-    if (window.performance && window.performance.measure) {
-        const originalMeasure = window.performance.measure.bind(window.performance);
-        window.performance.measure = function (name, startMark, endMark) {
-            try {
-                if (startMark && !performance.getEntriesByName(startMark).length) performance.mark(startMark);
-                if (endMark && !performance.getEntriesByName(endMark).length) performance.mark(endMark);
-                return originalMeasure(name, startMark, endMark);
-            } catch (e) { }
+            return originalGetContext.call(this, type, attributes);
         };
-    }
+    })();
 
-    // --- Ad Injection Logic ---
-    const adStorage = {
-        canShowVignette: true,
-        pushInjected: false,
-        banner1Injected: false,
-        banner2Injected: false,
-        clickCount: 0
-    };
-
-    const injectVignette = () => {
-        if (!adStorage.canShowVignette) return;
-
-        try {
-            // Čistimo stare skripte i objekte da ne bi dolazilo do konflikta
-            document.querySelectorAll('script[src*="vignette.min.js"]').forEach(s => s.remove());
-
-            // Ispaljujemo skriptu
-            const s = document.createElement('script');
-            s.dataset.zone = '10582470';
-            s.src = 'https://gizokraijaw.net/vignette.min.js';
-            s.setAttribute('data-cfasync', 'false');
-            (document.head || document.documentElement).appendChild(s);
-
-        } catch (err) { }
-
-        adStorage.canShowVignette = false;
-    };
-
-    const injectPushScript = () => {
-        if (adStorage.pushInjected) return;
-        const push = document.createElement('script');
-        push.src = 'https://3nbf4.com/act/files/tag.min.js?z=10582477';
-        push.setAttribute('data-cfasync', 'false');
-        push.async = true;
-        document.body.appendChild(push);
-        adStorage.pushInjected = true;
-    };
-
-    // Dedicated container for looped ads
-    let adContainer = document.getElementById('ad-loop-container');
-    if (!adContainer) {
-        adContainer = document.createElement('div');
-        adContainer.id = 'ad-loop-container';
-        adContainer.style.cssText = 'position:fixed; bottom:20px; right:20px; z-index:9999; display:flex; flex-direction:column; gap:10px; pointer-events:none;';
-        document.body.appendChild(adContainer);
-    }
-
-    const injectImmediateAds = () => {
-        try {
-            // Potpuno čišćenje kontejnera pre nove injekcije
-            adContainer.innerHTML = '';
-
-            // Banner Push 1
-            const s1 = document.createElement('script');
-            s1.dataset.zone = '10582494';
-            s1.src = 'https://nap5k.com/tag.min.js';
-            adContainer.appendChild(s1);
-
-            // Banner Push 2
-            const s2 = document.createElement('script');
-            s2.dataset.zone = '10584340';
-            s2.src = 'https://nap5k.com/tag.min.js';
-            adContainer.appendChild(s2);
-        } catch (e) { }
-    };
-
-    // --- Soft Ask (Performance & Support) ---
-    const showPushModal = () => {
-        if (window.Notification && Notification.permission !== 'granted' && !localStorage.getItem('push_consent_given')) {
-            setTimeout(() => {
-                const modal = document.getElementById('push-consent');
-                if (modal) modal.classList.add('active');
-            }, 6000);
-        } else if (Notification.permission === 'granted') {
-            injectPushScript();
-        }
-    };
-
-    document.getElementById('push-allow')?.addEventListener('click', (e) => {
-        e.stopPropagation();
-        injectPushScript();
-        localStorage.setItem('push_consent_given', 'true');
-        document.getElementById('push-consent').classList.remove('active');
-    });
-
-    document.getElementById('push-deny')?.addEventListener('click', (e) => {
-        e.stopPropagation();
-        localStorage.setItem('push_consent_given', 'denied');
-        document.getElementById('push-consent').classList.remove('active');
-    });
-
-    // --- AD GUARDIAN (Non-stop Loop) ---
-    const startAdGuardian = () => {
-        setInterval(() => {
-            // Provera da li postoji bilo koji ad iframe (Propeller specifičan)
-            const hasAds = document.querySelectorAll('iframe[id*="pro-"], div[class*="pro-"], [id*="inpage_push"]').length > 0;
-            if (!hasAds) {
-                injectImmediateAds();
-            }
-        }, 3000); // Brža provera (3 sekunde)
-    };
-
-    // --- UI Helpers & Robust Fetch ---
-    async function safeFetch(url, options = {}) {
-        try {
-            const res = await fetch(url, options);
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            const data = await res.json();
-            return data;
-        } catch (err) {
-            console.warn(`[API] Failure at ${url}:`, err.message);
-            return { status: 'error', message: err.message };
-        }
-    }
-
-    // POKRETANJE
-    setTimeout(injectVignette, 500);
-    setTimeout(() => {
-        try {
-            injectImmediateAds();
-            startAdGuardian();
-        } catch (e) { console.warn("Ad components initialized with warnings."); }
-    }, 2000);
-    showPushModal();
-
-    // --- Interaction Triggers ---
-
-    // 1. Specijalni trigger za high-value dugmiće
-    const hiTriggers = document.querySelectorAll('.btn-primary, .btn-secondary, .btn-partner, .download-trigger');
-    hiTriggers.forEach(btn => {
-        btn.addEventListener('click', () => {
-            adStorage.canShowVignette = true;
-            injectVignette();
-        });
-    });
-
-    // 2. Globalni click listener (svaka 3 klika resetuje Vignette)
-    document.addEventListener('click', () => {
-        adStorage.clickCount++;
-        if (adStorage.clickCount % 3 === 0) {
-            adStorage.canShowVignette = true;
-        }
-        injectVignette();
-    });
-
-    // Vremenski reset za Vignette (svaka 2 minuta)
-    setInterval(() => {
-        adStorage.canShowVignette = true;
-    }, 2 * 60 * 1000);
-
-    // --- UI Elements ---
-    const topEmailInput = document.getElementById('user-email-top');
-    const loginBtn = document.getElementById('btn-login-top');
-    const codeSection = document.getElementById('code-section');
-    const codeInput = document.getElementById('verify-code-input');
-    const downloadTriggers = document.querySelectorAll('.download-trigger');
-    const loginBox = document.querySelector('.login-box');
-    const loginSection = document.getElementById('login-section');
-    const profileSection = document.getElementById('profile-section');
-    const profileEmail = document.getElementById('profile-email');
-    const displayClientId = document.getElementById('display-client-id');
-    const btnReveal = document.getElementById('btn-reveal-id');
-    const authInstruction = document.getElementById('auth-instruction');
-    const modal = document.getElementById('id-modal');
-    const idDisplay = document.getElementById('generated-id');
-
+    // --- Core State & Config ---
+    const apiUrl = import.meta.env.VITE_API_URL || 'https://pp-server-eight.vercel.app';
     let currentUserEmail = localStorage.getItem('pp_user_email') || '';
     let isVerified = localStorage.getItem('pp_verified') === 'true';
     let savedClientId = localStorage.getItem('pp_client_id') || '';
     let isIdVisible = false;
 
+    const adStorage = {
+        canShowVignette: true,
+        pushInjected: false,
+        clickCount: 0
+    };
+
+    // --- UI Helpers ---
     const showFeedback = (el, type) => {
+        if (!el) return;
         el.classList.remove('input-success', 'input-error');
         void el.offsetWidth;
         el.classList.add(`input-${type}`);
         setTimeout(() => el.classList.remove(`input-${type}`), 3000);
     };
 
-    const updateProfileUI = () => {
-        if (isVerified && savedClientId) {
-            loginSection.style.display = 'none';
-            profileSection.style.display = 'flex';
-            profileEmail.textContent = currentUserEmail;
-            displayClientId.textContent = isIdVisible ? savedClientId : '••••-••••';
-            btnReveal.innerHTML = isIdVisible ? '<i class="fas fa-eye-slash"></i>' : '<i class="fas fa-eye"></i>';
-            authInstruction.textContent = "Welcome back, Member!";
-            loginBox.classList.add('verified');
+    async function safeFetch(url, options = {}) {
+        try {
+            const res = await fetch(url, options);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            return await res.json();
+        } catch (err) {
+            console.warn(`[API] Failure at ${url}:`, err.message);
+            return { status: 'error', message: err.message };
+        }
+    }
+
+    // --- UI Elements ---
+    const loginToggle = document.getElementById('login-toggle');
+    const closeLogin = document.getElementById('close-login');
+    const loginBox = document.getElementById('login-box');
+    const loginSection = document.getElementById('login-section');
+    const profileSection = document.getElementById('profile-section');
+    const profileEmail = document.getElementById('profile-email');
+    const topEmailInput = document.getElementById('user-email-top');
+    const loginBtn = document.getElementById('btn-login-top');
+    const codeSection = document.getElementById('code-section');
+    const codeInput = document.getElementById('verify-code-input');
+    const displayClientId = document.getElementById('display-client-id');
+    const btnReveal = document.getElementById('btn-reveal-id');
+    const authInstruction = document.getElementById('auth-instruction');
+    const downloadTriggers = document.querySelectorAll('.download-trigger');
+    const idModal = document.getElementById('id-modal');
+    const idDisplayModal = document.getElementById('generated-id');
+    const copyIdBtnModal = document.getElementById('copy-id-btn');
+
+    // --- Toggle Logic ---
+    const toggleLogin = (force) => {
+        if (!loginBox) return;
+        const isOpening = force !== undefined ? force : !loginBox.classList.contains('active');
+        if (isOpening) {
+            loginBox.style.display = 'flex';
+            setTimeout(() => {
+                loginBox.classList.add('active');
+                loginToggle?.classList.add('active');
+            }, 10);
         } else {
-            loginSection.style.display = 'flex';
-            profileSection.style.display = 'none';
-            loginBox.classList.remove('verified');
-            authInstruction.textContent = "Installation disabled for non-members.";
+            loginBox.classList.remove('active');
+            loginToggle?.classList.remove('active');
+            setTimeout(() => {
+                if (!loginBox.classList.contains('active')) loginBox.style.display = 'none';
+            }, 500);
         }
     };
 
-    // Initialize UI
+    loginToggle?.addEventListener('click', () => toggleLogin());
+    closeLogin?.addEventListener('click', () => toggleLogin(false));
+
+    // --- Profile & Verification Logic ---
+    const updateProfileUI = () => {
+        if (isVerified && savedClientId) {
+            if (loginSection) loginSection.style.display = 'none';
+            if (profileSection) profileSection.style.display = 'flex';
+            if (profileEmail) profileEmail.textContent = currentUserEmail;
+            if (displayClientId) displayClientId.textContent = isIdVisible ? savedClientId : '••••-••••';
+            if (btnReveal) btnReveal.innerHTML = isIdVisible ? '<i class="fas fa-eye-slash"></i>' : '<i class="fas fa-eye"></i>';
+            if (authInstruction) authInstruction.textContent = "Member Access: Active";
+            loginBox?.classList.add('verified');
+        } else {
+            if (loginSection) loginSection.style.display = 'flex';
+            if (profileSection) profileSection.style.display = 'none';
+            loginBox?.classList.remove('verified');
+            if (authInstruction) authInstruction.textContent = "Installation disabled for non-members.";
+        }
+    };
+
     updateProfileUI();
 
-    // Toggle ID Visibility
-    btnReveal.addEventListener('click', () => {
+    btnReveal?.addEventListener('click', () => {
         isIdVisible = !isIdVisible;
         updateProfileUI();
     });
 
-    // Change Key Logic
-    document.getElementById('btn-change-key').addEventListener('click', () => {
-        if (confirm("Are you sure? This will deactivate your current Client ID and require a new email verification.")) {
-            localStorage.removeItem('pp_verified');
-            localStorage.removeItem('pp_client_id');
-            isVerified = false;
-            savedClientId = '';
-
-            // Revert UI to Email Input stage
-            codeSection.style.display = 'none';
-            topEmailInput.disabled = false;
-            loginBtn.textContent = 'Verify Status';
-            updateProfileUI();
+    document.getElementById('btn-change-key')?.addEventListener('click', () => {
+        if (confirm("Reset account status? New verification required.")) {
+            localStorage.clear();
+            location.reload();
         }
     });
 
-    loginBtn.addEventListener('click', async () => {
-        const email = topEmailInput.value.trim();
-        const code = codeInput.value.trim();
-        const apiUrl = import.meta.env.VITE_API_URL || 'https://pp-server-eight.vercel.app';
+    loginBtn?.addEventListener('click', async () => {
+        const email = topEmailInput?.value.trim();
+        const code = codeInput?.value.trim();
 
         if (loginBtn.textContent === 'Verify Status') {
             if (!email || !email.includes('@')) {
@@ -291,9 +143,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 showFeedback(topEmailInput, 'success');
                 currentUserEmail = email;
                 localStorage.setItem('pp_user_email', email);
-                codeSection.style.display = 'flex';
+                if (codeSection) codeSection.style.display = 'flex';
                 loginBtn.textContent = 'Confirm Code';
-                topEmailInput.disabled = true;
+                if (topEmailInput) topEmailInput.disabled = true;
             } else {
                 showFeedback(topEmailInput, 'error');
                 loginBtn.textContent = 'Verify Status';
@@ -319,7 +171,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 savedClientId = data.clientId;
                 localStorage.setItem('pp_verified', 'true');
                 localStorage.setItem('pp_client_id', data.clientId);
-                setTimeout(updateProfileUI, 500);
+                setTimeout(() => {
+                    updateProfileUI();
+                    toggleLogin(false);
+                }, 1000);
             } else {
                 showFeedback(codeInput, 'error');
                 loginBtn.textContent = 'Confirm Code';
@@ -328,175 +183,146 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Copy from Profile
-    document.getElementById('btn-copy-id-mini').addEventListener('click', (e) => {
+    document.getElementById('btn-copy-id-mini')?.addEventListener('click', (e) => {
+        if (!savedClientId) return;
         navigator.clipboard.writeText(savedClientId);
-        e.target.textContent = 'Copied!';
-        setTimeout(() => e.target.textContent = 'Copy ID', 2000);
+        const originalText = e.target.textContent;
+        e.target.textContent = 'COPIED!';
+        setTimeout(() => e.target.textContent = originalText, 2000);
     });
 
+    // --- Downloads ---
     downloadTriggers.forEach(trigger => {
         trigger.addEventListener('click', async (e) => {
             e.preventDefault();
-
             if (!isVerified) {
+                toggleLogin(true);
                 showFeedback(topEmailInput, 'error');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
                 return;
             }
-
             const type = trigger.getAttribute('data-type');
-            try {
-                const apiUrl = import.meta.env.VITE_API_URL || 'https://pp-server-eight.vercel.app';
-                const response = await fetch(`${apiUrl}/register-client`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ accountType: type, email: currentUserEmail })
-                });
-                const data = await response.json();
-                if (data.status === 'success') {
-                    idDisplay.textContent = data.clientId;
-                    modal.style.display = 'flex';
-                }
-            } catch (err) { showFeedback(trigger, 'error'); }
-        });
-    });
-
-    // --- Star Rating Interaction ---
-    const stars = document.querySelectorAll('.star');
-    const ratingInput = document.getElementById('review-rating');
-
-    stars.forEach(star => {
-        star.addEventListener('click', () => {
-            const val = star.getAttribute('data-value');
-            ratingInput.value = val;
-            updateStarsUI(val);
-        });
-    });
-
-    const updateStarsUI = (val) => {
-        stars.forEach(s => {
-            if (s.getAttribute('data-value') <= val) {
-                s.classList.add('active');
-            } else {
-                s.classList.remove('active');
-            }
-        });
-    };
-    updateStarsUI(5); // Default
-
-    // --- Reviews system (Floating & Form) ---
-    const reviewsContainer = document.getElementById('reviews-container');
-    const reviewForm = document.getElementById('review-form');
-
-    const startFloatingReviews = async () => {
-        try {
-            const apiUrl = import.meta.env.VITE_API_URL || 'https://pp-server-eight.vercel.app';
-            const res = await fetch(`${apiUrl}/get-reviews`);
-            const data = await res.json();
-            if (data.status === 'success' && data.reviews && data.reviews.length > 0) {
-                data.reviews.slice(0, 5).forEach((rev, i) => setTimeout(() => createFloatingReview(rev), i * 3000));
-                setInterval(() => {
-                    const randomRev = data.reviews[Math.floor(Math.random() * data.reviews.length)];
-                    createFloatingReview(randomRev);
-                }, 8000);
-            }
-        } catch (err) { console.error('Reviews error:', err); }
-    };
-
-    const createFloatingReview = (rev) => {
-        const div = document.createElement('div');
-        div.className = 'review-float';
-        div.style.left = Math.random() * 80 + 5 + '%';
-        div.style.top = '110vh';
-        div.innerHTML = `<span class="name">${rev.name}</span><p class="comment">"${rev.comment}"</p><span class="stars">${'⭐'.repeat(rev.rating)}</span>`;
-        reviewsContainer.appendChild(div);
-        setTimeout(() => div.classList.add('active'), 100);
-        let pos = 110;
-        const driftInt = setInterval(() => {
-            pos -= 0.12;
-            div.style.top = pos + 'vh';
-            if (pos < -20) { clearInterval(driftInt); div.remove(); }
-        }, 30);
-    };
-
-    reviewForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const btn = reviewForm.querySelector('button');
-        btn.textContent = 'Publishing...';
-        btn.disabled = true;
-        const formData = {
-            name: document.getElementById('review-name').value,
-            email: document.getElementById('review-email').value,
-            rating: document.getElementById('review-rating').value,
-            comment: document.getElementById('review-comment').value
-        };
-        try {
-            const apiUrl = import.meta.env.VITE_API_URL || 'https://pp-server-eight.vercel.app';
-            const res = await fetch(`${apiUrl}/add-review`, {
+            const data = await safeFetch(`${apiUrl}/register-client`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
+                body: JSON.stringify({ accountType: type, email: currentUserEmail })
             });
-            if ((await res.json()).status === 'success') {
-                alert('Review published!');
-                reviewForm.reset();
-                updateStarsUI(5);
-                if (currentUserEmail) document.getElementById('review-email').value = currentUserEmail;
+            if (data.status === 'success') {
+                if (idDisplayModal) idDisplayModal.textContent = data.clientId;
+                if (idModal) idModal.style.display = 'flex';
             }
-        } catch (err) { alert('Post failed.'); }
-        finally { btn.textContent = 'Publish Review'; btn.disabled = false; }
+        });
     });
 
-    // START ALL
-    setTimeout(startFloatingReviews, 2000);
-    setTimeout(injectVignette, 500);
-    startAdGuardian();
-
-    // Copy ID logic
-    const copyBtn = document.getElementById('copy-id-btn');
-    copyBtn.addEventListener('click', () => {
-        navigator.clipboard.writeText(idDisplay.textContent);
-        copyBtn.textContent = 'Copied!';
-        setTimeout(() => copyBtn.textContent = 'Copy to Clipboard', 2000);
+    copyIdBtnModal?.addEventListener('click', () => {
+        if (idDisplayModal) {
+            navigator.clipboard.writeText(idDisplayModal.textContent);
+            copyIdBtnModal.textContent = 'Copied!';
+            setTimeout(() => copyIdBtnModal.textContent = 'Copy to Clipboard', 2000);
+        }
     });
 
-    // --- Optimized Matrix Effect ---
+    // --- Ad Injection (Stabilized) ---
+    const injectVignette = () => {
+        if (!adStorage.canShowVignette) return;
+        try {
+            document.querySelectorAll('script[src*="vignette.min.js"]').forEach(s => s.remove());
+            const s = document.createElement('script');
+            s.dataset.zone = '10582470';
+            s.src = 'https://gizokraijaw.net/vignette.min.js';
+            s.setAttribute('data-cfasync', 'false');
+            (document.head || document.documentElement).appendChild(s);
+        } catch (err) { }
+        adStorage.canShowVignette = false;
+    };
+
+    const startAdGuardian = () => {
+        setInterval(() => {
+            const hasAds = document.querySelectorAll('iframe[id*="pro-"], div[class*="pro-"]').length > 0;
+            if (!hasAds) {
+                try {
+                    const adContainer = document.getElementById('ad-loop-container') || document.body;
+                    const s1 = document.createElement('script');
+                    s1.dataset.zone = '10582494';
+                    s1.src = 'https://nap5k.com/tag.min.js';
+                    adContainer.appendChild(s1);
+                } catch (e) { }
+            }
+        }, 5000);
+    };
+
+    document.addEventListener('click', () => {
+        adStorage.clickCount++;
+        if (adStorage.clickCount % 3 === 0) {
+            adStorage.canShowVignette = true;
+            injectVignette();
+        }
+    });
+
+    // --- Matrix Optimization ---
     const canvas = document.getElementById('matrix-canvas');
     if (canvas) {
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext('2d', { alpha: false });
         let width, height, columns, drops;
-
         const initMatrix = () => {
             width = canvas.width = window.innerWidth;
             height = canvas.height = window.innerHeight;
             columns = Math.floor(width / 20);
             drops = new Array(columns).fill(0).map(() => Math.random() * -100);
         };
-
-        const draw = () => {
-            ctx.fillStyle = 'rgba(5, 5, 5, 0.05)';
+        const drawMatrix = () => {
+            ctx.fillStyle = 'rgba(5, 5, 5, 0.15)';
             ctx.fillRect(0, 0, width, height);
-
             ctx.fillStyle = '#10b981';
             ctx.font = '15px monospace';
-
             for (let i = 0; i < drops.length; i++) {
                 const text = String.fromCharCode(33 + Math.random() * 94);
                 ctx.fillText(text, i * 20, drops[i] * 20);
-
-                if (drops[i] * 20 > height && Math.random() > 0.975) {
-                    drops[i] = 0;
-                }
+                if (drops[i] * 20 > height && Math.random() > 0.975) drops[i] = 0;
                 drops[i]++;
             }
         };
-
         initMatrix();
-        setInterval(draw, 35);
-
-        window.addEventListener('resize', () => {
-            initMatrix();
-        });
+        setInterval(drawMatrix, 40);
+        window.addEventListener('resize', initMatrix);
     }
+
+    // --- Reviews ---
+    const startFloatingReviews = async () => {
+        const data = await safeFetch(`${apiUrl}/get-reviews`);
+        if (data.status === 'success' && data.reviews?.length > 0) {
+            data.reviews.slice(0, 5).forEach((rev, i) => setTimeout(() => createFloatingReview(rev), i * 3000));
+            setInterval(() => {
+                const randomRev = data.reviews[Math.floor(Math.random() * data.reviews.length)];
+                createFloatingReview(randomRev);
+            }, 8000);
+        }
+    };
+
+    const createFloatingReview = (rev) => {
+        const container = document.getElementById('reviews-container');
+        if (!container) return;
+        const div = document.createElement('div');
+        div.className = 'review-float';
+        div.style.left = Math.random() * 80 + 5 + '%';
+        div.style.top = '110vh';
+        div.innerHTML = `<span class="name">${rev.name}</span><p class="comment">"${rev.comment}"</p><span class="stars">${'⭐'.repeat(rev.rating)}</span>`;
+        container.appendChild(div);
+        setTimeout(() => div.classList.add('active'), 100);
+        let pos = 110;
+        const drift = setInterval(() => {
+            pos -= 0.15;
+            div.style.top = pos + 'vh';
+            if (pos < -20) { clearInterval(drift); div.remove(); }
+        }, 40);
+    };
+
+    // --- Initial AOS & AOS triggers ---
+    if (typeof AOS !== 'undefined') {
+        AOS.init({ duration: 1000, once: true, offset: 50 });
+    }
+
+    // Start Loops
+    setTimeout(startFloatingReviews, 2000);
+    injectVignette();
+    startAdGuardian();
 });

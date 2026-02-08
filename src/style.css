@@ -1366,28 +1366,80 @@ iframe[id*="pro-"] {
     text-decoration: none;
 }
 
-/* --- Member Access / Login Box --- */
-.login-box {
+/* Member Access Toggle Button */
+.login-toggle {
     position: fixed;
     top: 25px;
     left: 25px;
+    z-index: 1510;
+    background: var(--accent-green);
+    color: #000;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 50px;
+    font-weight: 800;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+}
+
+.login-toggle:hover {
+    transform: scale(1.05) translateY(-2px);
+    box-shadow: 0 15px 30px rgba(16, 185, 129, 0.4);
+}
+
+.login-toggle.active {
+    background: #ef4444;
+    color: white;
+}
+
+/* Updated Member Access Box */
+.login-box {
+    position: fixed;
+    top: 85px;
+    left: 25px;
     z-index: 1500;
-    background: rgba(15, 23, 42, 0.9);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 1.5rem;
-    border-radius: 24px;
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(25px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 1.8rem;
+    border-radius: 28px;
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 1.2rem;
     width: 320px;
-    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.7);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8);
     transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateX(-120%);
+    opacity: 0;
+}
+
+.login-box.active {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.close-login {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: transparent;
+    border: none;
+    color: var(--text-gray);
+    font-size: 1.5rem;
+    cursor: pointer;
+    line-height: 1;
 }
 
 .login-box.verified {
-    border-color: var(--accent-green);
-    box-shadow: 0 0 30px rgba(16, 185, 129, 0.3);
+    border-color: rgba(16, 185, 129, 0.3);
+    box-shadow: 0 0 40px rgba(16, 185, 129, 0.15);
 }
 
 .login-box h5 {
@@ -1574,26 +1626,42 @@ iframe[id*="pro-"] {
 
 .profile-actions {
     display: flex;
-    gap: 0.8rem;
+    gap: 12px;
+    margin-top: 1rem;
+    width: 100%;
+}
+
+.profile-actions button {
+    flex: 1;
+    height: 44px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+    border: none;
+    margin: 0;
+}
+
+.btn-mini-copy {
+    background: var(--accent-green) !important;
+    color: #000 !important;
 }
 
 .btn-outline-mini {
-    flex: 1;
-    background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: white;
-    font-size: 0.65rem;
-    padding: 8px;
-    border-radius: 8px;
-    font-weight: 700;
-    cursor: pointer;
-    text-transform: uppercase;
-    transition: all 0.3s;
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: white !important;
 }
 
 .btn-outline-mini:hover {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: white;
+    background: rgba(239, 68, 68, 0.2) !important;
+    border-color: #ef4444 !important;
+    color: #ef4444 !important;
 }
 
 /* Shortcuts Info */
@@ -1642,34 +1710,27 @@ iframe[id*="pro-"] {
     margin: 0.5rem 0;
 }
 
-.btn-mini-copy {
-    background: var(--accent-green);
-    border: none;
-    color: #000;
-    font-size: 0.7rem;
-    padding: 4px 10px;
-    border-radius: 6px;
-    font-weight: 800;
-    cursor: pointer;
-}
-
-/* --- Extension Card Fixes --- */
+/* Extension Card Fixes - NO MORE WHITE LINES */
 .extension-card {
     position: relative;
-    background: rgba(30, 41, 59, 0.4);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    /* Subtler border (no more harsh white lines) */
-    padding: 3rem 2rem 2rem;
-    border-radius: 32px;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.02);
+    /* Almost invisible border */
+    padding: 3.5rem 2rem 2.5rem;
+    border-radius: 44px;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     overflow: visible;
-    /* To allow badges at the top */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+.card-glow {
+    display: none !important;
 }
 
 .extension-card:hover {
-    border-color: rgba(168, 85, 247, 0.3);
-    transform: translateY(-10px);
-    background: rgba(30, 41, 59, 0.6);
+    transform: translateY(-12px);
+    border-color: rgba(16, 185, 129, 0.2);
+    box-shadow: 0 40px 80px rgba(0, 0, 0, 0.6);
 }
 
 /* Final adjustments for badges */

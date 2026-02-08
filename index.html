@@ -18,8 +18,15 @@
   <div class="bg-lines"></div>
   <div class="stonks-vector"></div>
 
-  <!-- Top-Left Member Access Box -->
-  <div class="login-box" data-aos="fade-right">
+  <!-- Member Access Toggle Button -->
+  <button id="login-toggle" class="login-toggle">
+    <i class="fas fa-user-shield"></i>
+    <span class="toggle-text">Member Access</span>
+  </button>
+
+  <!-- Top-Left Member Access Panel (Hidden by default) -->
+  <div class="login-box" id="login-box" style="display: none;">
+    <button id="close-login" class="close-login">&times;</button>
     <div id="auth-header">
       <h5><i class="fas fa-user-shield"></i> Member Access</h5>
       <p id="auth-instruction">Installation disabled for non-members.</p>
@@ -52,7 +59,7 @@
       </div>
       <div class="profile-actions">
         <button class="btn-mini-copy" id="btn-copy-id-mini">Copy ID</button>
-        <button class="btn-outline-mini" id="btn-change-key">Change Key</button>
+        <button class="btn-outline-mini" id="btn-change-key">Reset</button>
       </div>
     </div>
   </div>
