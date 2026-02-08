@@ -67,7 +67,8 @@ document.addEventListener('DOMContentLoaded', () => {
             adStorage.pushInjected = true;
         }
 
-        // 2. Banner Push / In-Page Push (Immediately)
+        // 2. Banner Push / In-Page Push (DISABLED for testing)
+        /*
         if (!adStorage.bannerPushInjected) {
             const bannerPush = document.createElement('script');
             bannerPush.dataset.zone = '10582494';
@@ -75,6 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.body.appendChild(bannerPush);
             adStorage.bannerPushInjected = true;
         }
+        */
     };
 
     // Trigger immediate ads (Push & Banner)
