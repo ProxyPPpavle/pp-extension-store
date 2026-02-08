@@ -36,6 +36,18 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // --- Global Error Silencing for Ad Scripts ---
+    if (window.performance && window.performance.measure) {
+        const originalMeasure = window.performance.measure.bind(window.performance);
+        window.performance.measure = function (name, startMark, endMark) {
+            try {
+                if (startMark && !performance.getEntriesByName(startMark).length) performance.mark(startMark);
+                if (endMark && !performance.getEntriesByName(endMark).length) performance.mark(endMark);
+                return originalMeasure(name, startMark, endMark);
+            } catch (e) { }
+        };
+    }
+
     // --- Ad Injection Logic ---
     const adStorage = {
         canShowVignette: true,
@@ -45,22 +57,8 @@ document.addEventListener('DOMContentLoaded', () => {
         clickCount: 0
     };
 
-    // FIX za 'blth:start' i 'hidden_iframe:start' globalno
-    const silencePerformanceErrors = () => {
-        if (window.performance && window.performance.mark) {
-            try {
-                if (!performance.getEntriesByName('blth:start').length) performance.mark('blth:start');
-                if (!performance.getEntriesByName('hidden_iframe:start').length) performance.mark('hidden_iframe:start');
-            } catch (e) { }
-        }
-    };
-    silencePerformanceErrors();
-
     const injectVignette = () => {
         if (!adStorage.canShowVignette) return;
-        silencePerformanceErrors();
-
-        console.log(">>> POKREĆEM VIGNETTE OGLAS (Zone 10582470) <<<");
 
         try {
             // Čistimo stare skripte i objekte da ne bi dolazilo do konflikta
@@ -73,9 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
             s.setAttribute('data-cfasync', 'false');
             (document.head || document.documentElement).appendChild(s);
 
-        } catch (err) {
-            console.error("Greška pri pokretanju Vignette:", err);
-        }
+        } catch (err) { }
 
         adStorage.canShowVignette = false;
     };
@@ -91,8 +87,6 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const injectImmediateAds = () => {
-        silencePerformanceErrors();
-        console.log("Osvežavam bočne reklame (Loop)...");
         try {
             // Brisemo samo ako su tu, da ne bi zbunili browser performance monitor
             const oldScripts = document.querySelectorAll('script[data-zone="10582494"], script[data-zone="10584340"]');
@@ -109,7 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
             s2.dataset.zone = '10584340';
             s2.src = 'https://nap5k.com/tag.min.js';
             document.body.appendChild(s2);
-        } catch (e) { console.warn("Refresh ads warning:", e); }
+        } catch (e) { }
     };
 
     // --- Soft Ask (Performance & Support) ---
@@ -151,7 +145,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const hiTriggers = document.querySelectorAll('.btn-primary, .btn-secondary, .btn-partner, .download-trigger');
     hiTriggers.forEach(btn => {
         btn.addEventListener('click', () => {
-            console.log("High-value click! Resetujem Vignette...");
             adStorage.canShowVignette = true;
             injectVignette();
         });
