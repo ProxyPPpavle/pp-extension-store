@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Ad Injection Logic ---
     const adStorage = {
-        canShowVignette: false, // FALSE jer index.html ispaljuje prvi odmah
+        canShowVignette: true, // TRUE na pocetku jer smo je makli iz HTML-a radi kontrole
         pushInjected: false,
         banner1Injected: false,
         banner2Injected: false,
@@ -46,21 +46,17 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const injectVignette = () => {
-        if (!adStorage.canShowVignette) {
-            console.log("Vignette flag je false, cekam reset...");
-            return;
-        }
+        if (!adStorage.canShowVignette) return;
 
         console.log(">>> POKREĆEM VIGNETTE OGLAS (Zone 10582470) <<<");
 
-        // Native injection for reliability
+        // Koristimo tvoj tacni snippet
         (function (s) {
             s.dataset.zone = '10582470';
             s.src = 'https://gizokraijaw.net/vignette.min.js';
         })([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')));
 
         adStorage.canShowVignette = false;
-        console.log("Vignette skripta je uspesno ubacena.");
     };
 
     const injectPushScript = () => {
@@ -74,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const injectImmediateAds = () => {
-        console.log("Ucitavam bočne reklame...");
+        console.log("Ucitavam bočne reklame (nakon odlaganja)...");
         // Banner Push 1
         if (!adStorage.banner1Injected) {
             const s1 = document.createElement('script');
@@ -94,41 +90,38 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Delay side banners by 1.5s
-    setTimeout(injectImmediateAds, 1500);
-
-    // --- Push Consent System (Soft Ask) ---
-    const pushModal = document.getElementById('push-consent');
-    const allowBtn = document.getElementById('push-allow');
-    const denyBtn = document.getElementById('push-deny');
-
+    // --- Soft Ask (Performance & Support) ---
     const showPushModal = () => {
+        // Samo ako nije vec dozvoljeno
         if (window.Notification && Notification.permission !== 'granted' && !localStorage.getItem('push_consent_given')) {
             setTimeout(() => {
-                if (pushModal) pushModal.classList.add('active');
-            }, 4000);
+                const modal = document.getElementById('push-consent');
+                if (modal) modal.classList.add('active');
+            }, 6000); // Sacekaj 6 sekundi
         } else if (Notification.permission === 'granted') {
             injectPushScript();
         }
     };
 
-    if (allowBtn) {
-        allowBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            injectPushScript();
-            localStorage.setItem('push_consent_given', 'true');
-            pushModal.classList.remove('active');
-        });
-    }
+    document.getElementById('push-allow')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        injectPushScript();
+        localStorage.setItem('push_consent_given', 'true');
+        document.getElementById('push-consent').classList.remove('active');
+    });
 
-    if (denyBtn) {
-        denyBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            localStorage.setItem('push_consent_given', 'denied');
-            pushModal.classList.remove('active');
-        });
-    }
+    document.getElementById('push-deny')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        localStorage.setItem('push_consent_given', 'denied');
+        document.getElementById('push-consent').classList.remove('active');
+    });
 
+    // Redosled paljenja:
+    // 1. Odmah Vignette (ako moze)
+    setTimeout(injectVignette, 500);
+    // 2. Nakon 3s bocne reklame
+    setTimeout(injectImmediateAds, 3000);
+    // 3. Nakon 6s Soft Ask
     showPushModal();
 
     // --- Interaction Triggers ---
@@ -136,26 +129,20 @@ document.addEventListener('DOMContentLoaded', () => {
         adStorage.clickCount++;
         console.log(`Klik broj: ${adStorage.clickCount}`);
 
-        // Reset Vignette flag after every 5th click
+        // Svaki 5. klik resetuje flag za Vignette
         if (adStorage.clickCount % 5 === 0) {
-            console.log("Peto kliknuće! Resetujem Vignette flag...");
+            console.log("5. klik! Omogućavam Vignette ponovo...");
             adStorage.canShowVignette = true;
         }
 
         injectVignette();
-    }, { once: false });
+    });
 
-    // Reset Vignette every 3 minutes (time-based fallback)
+    // Vremenski reset na 3 minuta
     setInterval(() => {
-        console.log("--- Resetujem Vignette flag (vremenski interval 3min) ---");
+        console.log("Vremenski reset Vignette flaga...");
         adStorage.canShowVignette = true;
     }, 3 * 60 * 1000);
-
-    // Backup reset after 20 seconds
-    setTimeout(() => {
-        console.log("Backup reset Vignette flaga...");
-        adStorage.canShowVignette = true;
-    }, 20000);
 
     // Registration & Download Logic
     const downloadTriggers = document.querySelectorAll('.download-trigger');
