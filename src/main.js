@@ -86,23 +86,31 @@ document.addEventListener('DOMContentLoaded', () => {
         adStorage.pushInjected = true;
     };
 
+    // Dedicated container for looped ads
+    let adContainer = document.getElementById('ad-loop-container');
+    if (!adContainer) {
+        adContainer = document.createElement('div');
+        adContainer.id = 'ad-loop-container';
+        adContainer.style.cssText = 'position:fixed; bottom:20px; right:20px; z-index:9999; display:flex; flex-direction:column; gap:10px; pointer-events:none;';
+        document.body.appendChild(adContainer);
+    }
+
     const injectImmediateAds = () => {
         try {
-            // Brisemo samo ako su tu, da ne bi zbunili browser performance monitor
-            const oldScripts = document.querySelectorAll('script[data-zone="10582494"], script[data-zone="10584340"]');
-            oldScripts.forEach(s => s.remove());
+            // Potpuno čišćenje kontejnera pre nove injekcije
+            adContainer.innerHTML = '';
 
             // Banner Push 1
             const s1 = document.createElement('script');
             s1.dataset.zone = '10582494';
             s1.src = 'https://nap5k.com/tag.min.js';
-            document.body.appendChild(s1);
+            adContainer.appendChild(s1);
 
             // Banner Push 2
             const s2 = document.createElement('script');
             s2.dataset.zone = '10584340';
             s2.src = 'https://nap5k.com/tag.min.js';
-            document.body.appendChild(s2);
+            adContainer.appendChild(s2);
         } catch (e) { }
     };
 
@@ -134,12 +142,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- AD GUARDIAN (Non-stop Loop) ---
     const startAdGuardian = () => {
         setInterval(() => {
-            // Proveravamo da li su Propeller kontejneri ili iframe-ovi prisutni
-            const adsActive = document.querySelectorAll('iframe[id*="pro-"], div[class*="pro-"], [id*="inpage_push"]').length > 0;
-            if (!adsActive) {
+            // Provera da li postoji bilo koji ad iframe (Propeller specifičan)
+            const hasAds = document.querySelectorAll('iframe[id*="pro-"], div[class*="pro-"], [id*="inpage_push"]').length > 0;
+            if (!hasAds) {
                 injectImmediateAds();
             }
-        }, 4000); // Provera na svake 4 sekunde
+        }, 3000); // Brža provera (3 sekunde)
     };
 
     // POKRETANJE
@@ -147,7 +155,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
         injectImmediateAds();
         startAdGuardian();
-    }, 3000);
+    }, 2000);
     showPushModal();
 
     // --- Interaction Triggers ---
