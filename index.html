@@ -18,6 +18,13 @@
   <div class="bg-lines"></div>
   <div class="stonks-vector"></div>
 
+  <!-- Top-Left Login Box -->
+  <div class="login-box" data-aos="fade-right">
+    <h5><i class="fas fa-user-shield"></i> Member Access</h5>
+    <input type="email" id="user-email-top" class="login-input" placeholder="Enter email to unlock...">
+    <button id="btn-login-top" class="btn-login">Verify Status</button>
+  </div>
+
   <nav>
     <div class="container nav-content">
       <div class="logo">
@@ -25,11 +32,15 @@
       </div>
       <ul class="nav-links">
         <li><a href="#extensions">Extensions</a></li>
+        <li><a href="#reviews">Reviews</a></li>
         <li><a href="#guide">Installation Guide</a></li>
         <li><a href="https://is.gd/8GvRR9" target="_blank" class="btn-secondary">Bonus Offers</a></li>
       </ul>
     </div>
   </nav>
+
+  <!-- Floating Reviews Background -->
+  <div id="reviews-container"></div>
 
   <header class="hero">
     <canvas id="matrix-canvas"></canvas>
@@ -89,25 +100,20 @@
               <li><i class="fas fa-check"></i> 24/7 Priority Support</li>
             </ul>
 
-            <div class="email-protection-gate">
-              <input type="email" id="download-email" placeholder="Enter your email to download..." class="gate-input">
-              <div class="download-actions">
-                <a href="#" class="btn-free download-trigger" data-type="free">
-                  <span class="badge">Free</span>
-                  <span class="btn-content"><i class="fas fa-download"></i> Basic</span>
-                  <span class="btn-subtext">Ads supported</span>
-                </a>
-                <a href="#" class="btn-premium download-trigger" data-type="premium">
-                  <span class="badge">$29.99</span>
-                  <span class="btn-content"><i class="fas fa-crown"></i> Premium</span>
-                  <span class="btn-subtext">Lifetime Access</span>
-                </a>
-              </div>
-              <p class="gate-hint">Already downloaded? Use the same email to get your ID.</p>
+            <div class="download-actions">
+              <a href="#" class="btn-free download-trigger" data-type="free">
+                <span class="badge">Free</span>
+                <span class="btn-content"><i class="fas fa-download"></i> Basic</span>
+                <span class="btn-subtext">Ads supported</span>
+              </a>
+              <a href="#" class="btn-premium download-trigger" data-type="premium">
+                <span class="badge">$29.99</span>
+                <span class="btn-content"><i class="fas fa-crown"></i> Premium</span>
+                <span class="btn-subtext">Lifetime Access</span>
+              </a>
             </div>
           </div>
         </div>
-      </div>
       </div>
     </section>
 
@@ -126,6 +132,33 @@
             <div class="waitlist-badge">Join the Waitlist</div>
           </div>
         </div>
+      </div>
+    </section>
+
+    <!-- Review Submission Form Section -->
+    <section id="reviews" class="review-form-section">
+      <div class="container">
+        <div class="section-header">
+          <h2>Community <span class="gradient-text">Feedback</span></h2>
+          <p>Your opinion shapes our future. Share your experience with the PP Store.</p>
+        </div>
+
+        <form id="review-form" class="review-form" data-aos="fade-up">
+          <div class="form-grid">
+            <input type="text" id="review-name" placeholder="Your Display Name" required>
+            <input type="email" id="review-email" placeholder="Your Registration Email" required>
+            <select id="review-rating" required>
+              <option value="" disabled selected>Rate Your Experience</option>
+              <option value="5">⭐⭐⭐⭐⭐ (Excellent)</option>
+              <option value="4">⭐⭐⭐⭐ (Great)</option>
+              <option value="3">⭐⭐⭐ (Average)</option>
+              <option value="2">⭐⭐ (Poor)</option>
+              <option value="1">⭐ (Terrible)</option>
+            </select>
+            <textarea id="review-comment" placeholder="What do you think about our tools?" required></textarea>
+          </div>
+          <button type="submit" class="btn-submit-review">Publish Review</button>
+        </form>
       </div>
     </section>
 
@@ -202,95 +235,57 @@
           </div>
         </div>
       </div>
-      <section id="reviews" class="reviews-section">
-        <div class="container">
-          <div class="section-header">
-            <h2>User <span class="gradient-text">Feedback</span></h2>
-            <p>Join thousands of satisfied users who have accelerated their growth with PP Extensions.</p>
-          </div>
+      </div>
 
-          <div class="reviews-grid">
-            <div class="review-card" data-aos="fade-up">
-              <div class="review-stars">
-                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i
-                  class="fas fa-star"></i><i class="fas fa-star"></i>
-              </div>
-              <p class="review-text">"PPBot drastically improved my workflow. The premium features are worth every
-                penny. 10/10 recommendation!"</p>
-              <div class="review-author">
-                <div class="author-avatar">JD</div>
-                <div class="author-info">
-                  <h4>John Doe</h4>
-                  <span>Power User</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="review-card" data-aos="fade-up" data-aos-delay="100">
-              <div class="review-stars">
-                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i
-                  class="fas fa-star"></i><i class="fas fa-star"></i>
-              </div>
-              <p class="review-text">"The matrix background alone is cool, but the functionality of these extensions is
-                what keeps me coming back. Stonks only!"</p>
-              <div class="review-author">
-                <div class="author-avatar">MS</div>
-                <div class="author-info">
-                  <h4>Mark Smith</h4>
-                  <span>Digital Marketer</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="review-card" data-aos="fade-up" data-aos-delay="200">
-              <div class="review-stars">
-                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i
-                  class="fas fa-star"></i><i class="fas fa-star"></i>
-              </div>
-              <p class="review-text">"Cleanest UI I've seen in a browser extension. Installation was super easy
-                following the guide."</p>
-              <div class="review-author">
-                <div class="author-avatar">AK</div>
-                <div class="author-info">
-                  <h4>Alice Kane</h4>
-                  <span>Software Engineer</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="add-comment" data-aos="zoom-in">
-            <h3>Leave a <span class="gradient-text">Review</span></h3>
-            <form class="comment-form">
-              <input type="text" placeholder="Your Name" required>
-              <textarea placeholder="Share your experience with PP Store..." rows="4" required></textarea>
-              <button type="submit" class="btn-primary">Post Review</button>
-            </form>
+      <div class="review-card" data-aos="fade-up" data-aos-delay="200">
+        <div class="review-stars">
+          <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i
+            class="fas fa-star"></i>
+        </div>
+        <p class="review-text">"Cleanest UI I've seen in a browser extension. Installation was super easy
+          following the guide."</p>
+        <div class="review-author">
+          <div class="author-avatar">AK</div>
+          <div class="author-info">
+            <h4>Alice Kane</h4>
+            <span>Software Engineer</span>
           </div>
         </div>
-      </section>
+      </div>
+      </div>
 
-      <!-- Partner Section (Smart Link) -->
-      <section class="partners-section">
-        <div class="container">
-          <div class="partners-grid" data-aos="fade-up">
-            <div class="partner-card">
-              <span class="partner-badge">Premium Offer</span>
-              <h4>Explore Our Partner Network</h4>
-              <p>Discover exclusive trading tools and automation scripts from our trusted collaborators.</p>
-              <a href="https://is.gd/8GvRR9" target="_blank" class="btn-partner">View What's New <i
-                  class="fas fa-external-link-alt"></i></a>
-            </div>
-            <div class="partner-card">
-              <span class="partner-badge">Community Support</span>
-              <h4>Support Our Development</h4>
-              <p>Help us keep the PP Store free! Click below to see our special community-driven initiatives.</p>
-              <a href="https://is.gd/8GvRR9" target="_blank" class="btn-partner">Show Your Support <i
-                  class="fas fa-heart"></i></a>
-            </div>
+      <div class="add-comment" data-aos="zoom-in">
+        <h3>Leave a <span class="gradient-text">Review</span></h3>
+        <form class="comment-form">
+          <input type="text" placeholder="Your Name" required>
+          <textarea placeholder="Share your experience with PP Store..." rows="4" required></textarea>
+          <button type="submit" class="btn-primary">Post Review</button>
+        </form>
+      </div>
+      </div>
+    </section>
+
+    <!-- Partner Section (Smart Link) -->
+    <section class="partners-section">
+      <div class="container">
+        <div class="partners-grid" data-aos="fade-up">
+          <div class="partner-card">
+            <span class="partner-badge">Premium Offer</span>
+            <h4>Explore Our Partner Network</h4>
+            <p>Discover exclusive trading tools and automation scripts from our trusted collaborators.</p>
+            <a href="https://is.gd/8GvRR9" target="_blank" class="btn-partner">View What's New <i
+                class="fas fa-external-link-alt"></i></a>
+          </div>
+          <div class="partner-card">
+            <span class="partner-badge">Community Support</span>
+            <h4>Support Our Development</h4>
+            <p>Help us keep the PP Store free! Click below to see our special community-driven initiatives.</p>
+            <a href="https://is.gd/8GvRR9" target="_blank" class="btn-partner">Show Your Support <i
+                class="fas fa-heart"></i></a>
           </div>
         </div>
-      </section>
+      </div>
+    </section>
   </main>
 
   <footer>

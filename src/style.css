@@ -1366,60 +1366,71 @@ iframe[id*="pro-"] {
     text-decoration: none;
 }
 
-/* Email Protection Gate */
-.email-protection-gate {
-    margin-top: 2rem;
-    padding: 1.5rem;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    border-radius: 16px;
-    text-align: center;
-}
-
-.gate-input {
-    width: 100%;
-    padding: 1rem 1.5rem;
-    background: var(--bg-black);
+/* --- Member Access / Login Box --- */
+.login-box {
+    position: fixed;
+    top: 25px;
+    left: 25px;
+    z-index: 1500;
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(15px);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    color: white;
-    font-size: 1rem;
-    margin-bottom: 1rem;
-    outline: none;
-    transition: all 0.3s ease;
-    text-align: center;
-}
-
-.gate-input:focus {
-    border-color: var(--accent-green);
-    box-shadow: 0 0 15px rgba(16, 185, 129, 0.2);
-    background: rgba(16, 185, 129, 0.05);
-}
-
-.gate-hint {
-    margin-top: 1rem;
-    font-size: 0.8rem;
-    color: var(--text-gray);
-    font-style: italic;
-}
-
-.download-actions {
+    padding: 1.2rem;
+    border-radius: 20px;
     display: flex;
-    gap: 1rem;
-    margin-top: 0.5rem;
+    flex-direction: column;
+    gap: 0.8rem;
+    width: 280px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
 }
 
+.login-box h5 {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--accent-green);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.login-input {
+    background: #000;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 0.8rem 1rem;
+    border-radius: 10px;
+    color: white;
+    font-size: 0.9rem;
+    width: 100%;
+}
+
+.btn-login {
+    background: var(--accent-green);
+    color: #000;
+    border: none;
+    padding: 0.8rem;
+    border-radius: 10px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-login:hover {
+    filter: brightness(1.1);
+    transform: scale(1.02);
+}
+
+/* --- Buttons & Badges --- */
 .btn-free,
 .btn-premium {
     flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 1rem;
-    border-radius: 12px;
+    padding: 1.2rem;
+    border-radius: 16px;
     text-decoration: none;
     position: relative;
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1;
 }
 
 .btn-free {
@@ -1431,45 +1442,139 @@ iframe[id*="pro-"] {
 .btn-premium {
     background: var(--gradient);
     color: white;
-    box-shadow: 0 10px 20px rgba(168, 85, 247, 0.3);
+    box-shadow: 0 10px 20px rgba(168, 85, 247, 0.2);
 }
 
 .btn-free:hover,
 .btn-premium:hover {
-    transform: translateY(-3px);
-}
-
-.btn-free:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: white;
-}
-
-.btn-premium:hover {
-    box-shadow: 0 15px 30px rgba(168, 85, 247, 0.5);
-    filter: brightness(1.1);
-}
-
-.btn-content {
-    font-weight: 800;
-    font-size: 1.1rem;
-    margin: 0.5rem 0;
-}
-
-.btn-subtext {
-    font-size: 0.7rem;
-    opacity: 0.7;
-    font-weight: 500;
+    transform: translateY(-5px);
 }
 
 .badge {
     position: absolute;
-    top: -10px;
-    right: 10px;
-    background: var(--bg-black);
-    padding: 2px 8px;
-    border-radius: 6px;
-    font-size: 0.65rem;
+    top: -15px;
+    right: -5px;
+    background: #050505;
+    padding: 4px 12px;
+    border-radius: 8px;
+    font-size: 0.75rem;
     font-weight: 800;
     color: var(--accent-green);
     border: 1px solid var(--accent-green);
+    z-index: 100;
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+    pointer-events: none;
+}
+
+/* --- Reviews System --- */
+#reviews-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 5;
+    overflow: hidden;
+}
+
+.review-float {
+    position: absolute;
+    background: rgba(15, 23, 42, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 1.2rem;
+    border-radius: 16px;
+    width: 250px;
+    backdrop-filter: blur(10px);
+    opacity: 0;
+    transition: opacity 1s;
+    pointer-events: auto;
+}
+
+.review-float.active {
+    opacity: 0.7;
+}
+
+.review-float .name {
+    font-weight: 800;
+    color: var(--accent-green);
+    display: block;
+    margin-bottom: 0.2rem;
+    font-size: 0.9rem;
+}
+
+.review-float .comment {
+    color: #cbd5e1;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    font-style: italic;
+}
+
+.review-float .stars {
+    color: #fbbf24;
+    margin-top: 0.4rem;
+    display: block;
+    font-size: 0.8rem;
+}
+
+.review-form-section {
+    padding: 100px 0;
+    background: rgba(0, 0, 0, 0.2);
+    position: relative;
+    z-index: 10;
+}
+
+.review-form {
+    background: rgba(15, 23, 42, 0.4);
+    border: 1px solid var(--glass-border);
+    padding: 3rem;
+    border-radius: 30px;
+    max-width: 600px;
+    margin: 0 auto;
+    backdrop-filter: blur(20px);
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.review-form input,
+.review-form textarea,
+.review-form select {
+    background: #000;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 1rem;
+    border-radius: 12px;
+    color: white;
+}
+
+.review-form textarea {
+    grid-column: span 2;
+    height: 120px;
+    resize: none;
+}
+
+.review-form select {
+    grid-column: span 2;
+}
+
+.btn-submit-review {
+    background: var(--gradient);
+    border: none;
+    color: white;
+    padding: 1.2rem;
+    border-radius: 12px;
+    font-weight: 800;
+    cursor: pointer;
+    margin-top: 1rem;
+    width: 100%;
+    transition: 0.3s;
+}
+
+.btn-submit-review:hover {
+    box-shadow: 0 10px 30px rgba(168, 85, 247, 0.4);
+    transform: translateY(-2px);
 }

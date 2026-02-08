@@ -183,63 +183,157 @@ document.addEventListener('DOMContentLoaded', () => {
         adStorage.canShowVignette = true;
     }, 2 * 60 * 1000);
 
-    // Registration & Download Logic
+    // --- Registration & Email Logic ---
+    const topEmailInput = document.getElementById('user-email-top');
+    const loginBtn = document.getElementById('btn-login-top');
     const downloadTriggers = document.querySelectorAll('.download-trigger');
-    const emailInput = document.getElementById('download-email');
     const modal = document.getElementById('id-modal');
     const idDisplay = document.getElementById('generated-id');
     const copyBtn = document.getElementById('copy-id-btn');
+
+    let currentUserEmail = localStorage.getItem('pp_user_email') || '';
+    if (currentUserEmail) {
+        topEmailInput.value = currentUserEmail;
+        topEmailInput.style.borderColor = 'var(--accent-green)';
+    }
+
+    loginBtn.addEventListener('click', () => {
+        const email = topEmailInput.value.trim();
+        if (!email || !email.includes('@')) {
+            topEmailInput.style.borderColor = '#ef4444';
+            topEmailInput.focus();
+            return;
+        }
+        currentUserEmail = email;
+        localStorage.setItem('pp_user_email', email);
+        topEmailInput.style.borderColor = 'var(--accent-green)';
+        alert('Email verified! You can now download extensions.');
+    });
 
     downloadTriggers.forEach(trigger => {
         trigger.addEventListener('click', async (e) => {
             e.preventDefault();
 
-            const email = emailInput.value.trim();
-            const type = trigger.getAttribute('data-type');
-
-            // Email Validation
-            if (!email || !email.includes('@')) {
-                emailInput.style.borderColor = '#ef4444';
-                emailInput.focus();
+            if (!currentUserEmail) {
+                alert('Please enter your email in the Member Access box (top-left) first!');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                topEmailInput.focus();
+                topEmailInput.style.borderColor = '#ef4444';
                 return;
             }
-            emailInput.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+
+            const type = trigger.getAttribute('data-type');
 
             try {
                 const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
-                // 1. Pozovi server da registruje klijenta sa email-om
                 const response = await fetch(`${apiUrl}/register-client`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         accountType: type,
-                        email: email
+                        email: currentUserEmail
                     })
                 });
 
-                const data = await response.json();
-
                 if (data.status === 'success') {
-                    // 2. Prikaži modal sa ID-em
                     idDisplay.textContent = data.clientId;
                     modal.style.display = 'flex';
-
-                    // 3. Pokreni pravi download (zip fajla)
-                    const downloadLink = document.createElement('a');
-                    downloadLink.href = 'assets/PPBot.zip'; // Popravljen put do fajla
-                    downloadLink.download = 'PPBot.zip';
-                    document.body.appendChild(downloadLink);
-                    downloadLink.click();
-                    document.body.removeChild(downloadLink);
                 } else {
-                    alert("Greška pri registraciji: " + data.message);
+                    alert('Error: ' + data.message);
                 }
             } catch (err) {
                 console.error("Server error:", err);
-                alert("Server nije dostupan. Proverite da li je test-server pokrenut.");
+                alert('Server connection error.');
             }
         });
+    });
+
+    // --- Reviews system (Floating & Form) ---
+    const reviewsContainer = document.getElementById('reviews-container');
+    const reviewForm = document.getElementById('review-form');
+
+    const startFloatingReviews = async () => {
+        try {
+            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+            const res = await fetch(`${apiUrl}/get-reviews`);
+            const data = await res.json();
+
+            if (data.status === 'success' && data.reviews && data.reviews.length > 0) {
+                // Initial burst
+                data.reviews.slice(0, 5).forEach((rev, i) => {
+                    setTimeout(() => createFloatingReview(rev), i * 2000);
+                });
+
+                // Continuous drift
+                setInterval(() => {
+                    const randomRev = data.reviews[Math.floor(Math.random() * data.reviews.length)];
+                    createFloatingReview(randomRev);
+                }, 7000);
+            }
+        } catch (err) {
+            console.error('Reviews error:', err);
+        }
+    };
+
+    const createFloatingReview = (rev) => {
+        const div = document.createElement('div');
+        div.className = 'review-float';
+        div.style.left = Math.random() * 80 + 5 + '%';
+        div.style.top = '110vh';
+        div.innerHTML = `
+            <span class="name">${rev.name}</span>
+            <p class="comment">"${rev.comment}"</p>
+            <span class="stars">${'⭐'.repeat(rev.rating)}</span>
+        `;
+        reviewsContainer.appendChild(div);
+
+        setTimeout(() => div.classList.add('active'), 100);
+
+        // Drifting effect using JS to avoid CSS keyframe limitations on dynamic values
+        let pos = 110;
+        const driftInt = setInterval(() => {
+            pos -= 0.15;
+            div.style.top = pos + 'vh';
+            if (pos < -20) {
+                clearInterval(driftInt);
+                div.remove();
+            }
+        }, 30);
+    };
+
+    reviewForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = reviewForm.querySelector('button');
+        btn.textContent = 'Publishing...';
+        btn.disabled = true;
+
+        const formData = {
+            name: document.getElementById('review-name').value,
+            email: document.getElementById('review-email').value,
+            rating: document.getElementById('review-rating').value,
+            comment: document.getElementById('review-comment').value
+        };
+
+        try {
+            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+            const res = await fetch(`${apiUrl}/add-review`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
+            const data = await res.json();
+
+            if (data.status === 'success') {
+                alert('Review published! Thank you for your feedback.');
+                reviewForm.reset();
+            }
+        } catch (err) {
+            alert('Error submitting review.');
+        } finally {
+            btn.textContent = 'Publish Review';
+            btn.disabled = false;
+        }
     });
 
     // Copy ID Logic
