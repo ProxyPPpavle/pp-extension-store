@@ -448,7 +448,7 @@ document.addEventListener('DOMContentLoaded', () => {
             width = canvas.width = window.innerWidth;
             height = canvas.height = window.innerHeight;
             columns = Math.floor(width / 20);
-            drops = new Array(columns).fill(1);
+            drops = new Array(columns).fill(0).map(() => Math.random() * -100);
         };
 
         const draw = () => {
@@ -459,7 +459,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ctx.font = '15px monospace';
 
             for (let i = 0; i < drops.length; i++) {
-                const text = String.fromCharCode(Math.random() * 128);
+                const text = String.fromCharCode(33 + Math.random() * 94);
                 ctx.fillText(text, i * 20, drops[i] * 20);
 
                 if (drops[i] * 20 > height && Math.random() > 0.975) {
@@ -467,16 +467,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 drops[i]++;
             }
-        }
-        setInterval(draw, 20); // Faster execution
+        };
+
+        initMatrix();
+        setInterval(draw, 35);
+
         window.addEventListener('resize', () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            // Recalculate columns on resize
-            const newColumns = canvas.width / fontSize;
-            while (drops.length < newColumns) drops.push(1);
+            initMatrix();
         });
     }
-
-    initMatrix();
 });
