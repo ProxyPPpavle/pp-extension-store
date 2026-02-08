@@ -150,11 +150,26 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 3000); // Brža provera (3 sekunde)
     };
 
+    // --- UI Helpers & Robust Fetch ---
+    async function safeFetch(url, options = {}) {
+        try {
+            const res = await fetch(url, options);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const data = await res.json();
+            return data;
+        } catch (err) {
+            console.warn(`[API] Failure at ${url}:`, err.message);
+            return { status: 'error', message: err.message };
+        }
+    }
+
     // POKRETANJE
     setTimeout(injectVignette, 500);
     setTimeout(() => {
-        injectImmediateAds();
-        startAdGuardian();
+        try {
+            injectImmediateAds();
+            startAdGuardian();
+        } catch (e) { console.warn("Ad components initialized with warnings."); }
     }, 2000);
     showPushModal();
 
@@ -233,6 +248,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loginBtn.addEventListener('click', async () => {
         const email = topEmailInput.value.trim();
         const code = codeInput.value.trim();
+        const apiUrl = import.meta.env.VITE_API_URL || 'https://pp-server-eight.vercel.app';
 
         if (loginBtn.textContent === 'Verify Status') {
             if (!email || !email.includes('@')) {
@@ -243,33 +259,25 @@ document.addEventListener('DOMContentLoaded', () => {
             loginBtn.disabled = true;
             loginBtn.textContent = 'Sending...';
 
-            try {
-                const apiUrl = import.meta.env.VITE_API_URL || 'https://pp-server-eight.vercel.app';
-                const res = await fetch(`${apiUrl}/send-code`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email })
-                });
-                const data = await res.json();
+            const data = await safeFetch(`${apiUrl}/send-code`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email })
+            });
 
-                if (data.status === 'success') {
-                    showFeedback(topEmailInput, 'success');
-                    currentUserEmail = email;
-                    localStorage.setItem('pp_user_email', email);
+            if (data.status === 'success') {
+                showFeedback(topEmailInput, 'success');
+                currentUserEmail = email;
+                localStorage.setItem('pp_user_email', email);
 
-                    codeSection.style.display = 'flex';
-                    loginBtn.textContent = 'Confirm Code';
-                    topEmailInput.disabled = true;
-                } else {
-                    showFeedback(topEmailInput, 'error');
-                    loginBtn.textContent = 'Verify Status';
-                }
-            } catch (err) {
+                codeSection.style.display = 'flex';
+                loginBtn.textContent = 'Confirm Code';
+                topEmailInput.disabled = true;
+            } else {
                 showFeedback(topEmailInput, 'error');
                 loginBtn.textContent = 'Verify Status';
-            } finally {
-                loginBtn.disabled = false;
             }
+            loginBtn.disabled = false;
 
         } else {
             if (!code || code.length !== 4) {
@@ -280,26 +288,18 @@ document.addEventListener('DOMContentLoaded', () => {
             loginBtn.disabled = true;
             loginBtn.textContent = 'Verifying...';
 
-            try {
-                const apiUrl = import.meta.env.VITE_API_URL || 'https://pp-server-eight.vercel.app';
-                const res = await fetch(`${apiUrl}/verify-code`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: currentUserEmail, code })
-                });
-                const data = await res.json();
+            const data = await safeFetch(`${apiUrl}/verify-code`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: currentUserEmail, code })
+            });
 
-                if (data.status === 'success') {
-                    showFeedback(codeInput, 'success');
-                    setTimeout(() => updateUIForVerified(data.clientId), 500);
-                } else {
-                    showFeedback(codeInput, 'error');
-                    loginBtn.textContent = 'Confirm Code';
-                }
-            } catch (err) {
+            if (data.status === 'success') {
+                showFeedback(codeInput, 'success');
+                setTimeout(() => updateUIForVerified(data.clientId), 500);
+            } else {
                 showFeedback(codeInput, 'error');
                 loginBtn.textContent = 'Confirm Code';
-            } finally {
                 loginBtn.disabled = false;
             }
         }
@@ -438,46 +438,31 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => copyBtn.textContent = 'Copy to Clipboard', 2000);
     });
 
-    // Matrix Effect
-    function initMatrix() {
-        const canvas = document.getElementById('matrix-canvas');
-        if (!canvas) return;
+    // --- Optimized Matrix Effect ---
+    const canvas = document.getElementById('matrix-canvas');
+    if (canvas) {
         const ctx = canvas.getContext('2d');
+        let width, height, columns, drops;
 
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+        const initMatrix = () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            columns = Math.floor(width / 20);
+            drops = new Array(columns).fill(1);
+        };
 
-        const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$¥€£₿";
-        const fontSize = 14;
-        const columns = canvas.width / fontSize;
+        const draw = () => {
+            ctx.fillStyle = 'rgba(5, 5, 5, 0.05)';
+            ctx.fillRect(0, 0, width, height);
 
-        const drops = [];
-        for (let x = 0; x < columns; x++) {
-            drops[x] = 1;
-        }
-
-        function draw() {
-            ctx.fillStyle = "rgba(5, 5, 5, 0.1)"; // Increased contrast
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            // Glow effect
-            ctx.shadowBlur = 8;
-            ctx.shadowColor = "#10b981";
-            ctx.font = fontSize + "px monospace";
+            ctx.fillStyle = '#10b981';
+            ctx.font = '15px monospace';
 
             for (let i = 0; i < drops.length; i++) {
-                const text = letters.charAt(Math.floor(Math.random() * letters.length));
+                const text = String.fromCharCode(Math.random() * 128);
+                ctx.fillText(text, i * 20, drops[i] * 20);
 
-                // Variating colors for "blještav" effect
-                if (Math.random() > 0.9) {
-                    ctx.fillStyle = "#fff"; // Occasional bright white flash
-                } else {
-                    ctx.fillStyle = "#10b981"; // Emerald green
-                }
-
-                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-
-                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                if (drops[i] * 20 > height && Math.random() > 0.975) {
                     drops[i] = 0;
                 }
                 drops[i]++;
