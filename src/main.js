@@ -215,7 +215,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             try {
-                const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+                const apiUrl = import.meta.env.VITE_API_URL || 'https://pp-server-eight.vercel.app';
                 const res = await fetch(`${apiUrl}/send-code`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -240,7 +240,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             try {
-                const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+                const apiUrl = import.meta.env.VITE_API_URL || 'https://pp-server-eight.vercel.app';
                 const res = await fetch(`${apiUrl}/verify-code`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -278,7 +278,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const type = trigger.getAttribute('data-type');
             try {
-                const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+                const apiUrl = import.meta.env.VITE_API_URL || 'https://pp-server-eight.vercel.app';
                 const response = await fetch(`${apiUrl}/register-client`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -322,7 +322,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const startFloatingReviews = async () => {
         try {
-            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+            const apiUrl = import.meta.env.VITE_API_URL || 'https://pp-server-eight.vercel.app';
             const res = await fetch(`${apiUrl}/get-reviews`);
             const data = await res.json();
             if (data.status === 'success' && data.reviews && data.reviews.length > 0) {
@@ -363,7 +363,7 @@ document.addEventListener('DOMContentLoaded', () => {
             comment: document.getElementById('review-comment').value
         };
         try {
-            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+            const apiUrl = import.meta.env.VITE_API_URL || 'https://pp-server-eight.vercel.app';
             const res = await fetch(`${apiUrl}/add-review`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
