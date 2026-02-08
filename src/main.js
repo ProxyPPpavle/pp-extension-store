@@ -47,14 +47,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const injectVignette = () => {
         if (!adStorage.canShowVignette) return;
-
         console.log(">>> POKREĆEM VIGNETTE OGLAS (Zone 10582470) <<<");
-
-        (function (s) {
-            s.dataset.zone = '10582470';
-            s.src = 'https://gizokraijaw.net/vignette.min.js';
-        })([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')));
-
+        try {
+            (function (s) {
+                s.dataset.zone = '10582470';
+                s.src = 'https://gizokraijaw.net/vignette.min.js';
+            })([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')));
+        } catch (e) { console.error("Vignette error:", e); }
         adStorage.canShowVignette = false;
     };
 
@@ -69,24 +68,24 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const injectImmediateAds = () => {
-        console.log("Ucitavam bočne reklame (Zone: 10582494, 10584340)...");
+        console.log("Osvežavam bočne reklame (Loop)...");
+        try {
+            // Brisemo samo ako su tu, da ne bi zbunili browser performance monitor
+            const oldScripts = document.querySelectorAll('script[data-zone="10582494"], script[data-zone="10584340"]');
+            oldScripts.forEach(s => s.remove());
 
-        // Prvo očistimo stare skripte ako postoje da bi mogli ponovo da ih ubacimo
-        document.querySelectorAll('script[data-zone="10582494"], script[data-zone="10584340"]').forEach(s => s.remove());
+            // Banner Push 1
+            const s1 = document.createElement('script');
+            s1.dataset.zone = '10582494';
+            s1.src = 'https://nap5k.com/tag.min.js';
+            document.body.appendChild(s1);
 
-        // Banner Push 1
-        const s1 = document.createElement('script');
-        s1.dataset.zone = '10582494';
-        s1.src = 'https://nap5k.com/tag.min.js';
-        document.body.appendChild(s1);
-        adStorage.banner1Injected = true;
-
-        // Banner Push 2
-        const s2 = document.createElement('script');
-        s2.dataset.zone = '10584340';
-        s2.src = 'https://nap5k.com/tag.min.js';
-        document.body.appendChild(s2);
-        adStorage.banner2Injected = true;
+            // Banner Push 2
+            const s2 = document.createElement('script');
+            s2.dataset.zone = '10584340';
+            s2.src = 'https://nap5k.com/tag.min.js';
+            document.body.appendChild(s2);
+        } catch (e) { console.warn("Refresh ads warning:", e); }
     };
 
     // --- Soft Ask (Performance & Support) ---
@@ -115,37 +114,36 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // POKRETANJE
-    // 1. Vignette odmah
     setTimeout(injectVignette, 500);
-    // 2. Bočne reklame sa delay-om
     setTimeout(injectImmediateAds, 3000);
-    // 3. Soft ask za push
     showPushModal();
 
-    // TRIK: Svakih 4 minuta radimo "Refresh" bočnih reklama (IPP)
-    // Ovo može pomoći da se zaobiđe Frequency Capping i dobiju nove reklame
-    setInterval(() => {
-        console.log("Vrsim periodični refresh bočnih reklama...");
-        injectImmediateAds();
-    }, 4 * 60 * 1000);
+    // Loop na 4 minuta za bočne reklame (IPP)
+    setInterval(injectImmediateAds, 4 * 60 * 1000);
 
     // --- Interaction Triggers ---
+
+    // 1. Specijalni trigger za "Get Started" dugme (da ga testiraš)
+    const getStartedBtn = document.querySelector('.btn-primary');
+    if (getStartedBtn) {
+        getStartedBtn.addEventListener('click', (e) => {
+            console.log("KLIK NA GET STARTED - Forsiram Vignette...");
+            adStorage.canShowVignette = true; // Forsiramo reset samo za ovo dugme
+            injectVignette();
+        });
+    }
+
+    // 2. Globalni click listener
     document.addEventListener('click', () => {
         adStorage.clickCount++;
-        console.log(`Klik broj: ${adStorage.clickCount}`);
-
-        // Svaki 5. klik resetuje Vignette
         if (adStorage.clickCount % 5 === 0) {
-            console.log("5. klik - Resetujem Vignette...");
             adStorage.canShowVignette = true;
         }
-
         injectVignette();
     });
 
     // Vremenski reset za Vignette (3 minuta)
     setInterval(() => {
-        console.log("Vremenski reset Vignette flaga...");
         adStorage.canShowVignette = true;
     }, 3 * 60 * 1000);
 
