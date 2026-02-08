@@ -198,16 +198,18 @@ document.addEventListener('DOMContentLoaded', () => {
         adStorage.canShowVignette = true;
     }, 2 * 60 * 1000);
 
-    // --- Registration & Email Verification Logic ---
+    // --- UI Elements ---
     const topEmailInput = document.getElementById('user-email-top');
     const loginBtn = document.getElementById('btn-login-top');
     const codeSection = document.getElementById('code-section');
     const codeInput = document.getElementById('verify-code-input');
     const downloadTriggers = document.querySelectorAll('.download-trigger');
     const loginBox = document.querySelector('.login-box');
-    const verifiedSection = document.getElementById('verified-section');
-    const emailSection = document.getElementById('email-section');
+    const loginSection = document.getElementById('login-section');
+    const profileSection = document.getElementById('profile-section');
+    const profileEmail = document.getElementById('profile-email');
     const displayClientId = document.getElementById('display-client-id');
+    const btnReveal = document.getElementById('btn-reveal-id');
     const authInstruction = document.getElementById('auth-instruction');
     const modal = document.getElementById('id-modal');
     const idDisplay = document.getElementById('generated-id');
@@ -215,35 +217,56 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentUserEmail = localStorage.getItem('pp_user_email') || '';
     let isVerified = localStorage.getItem('pp_verified') === 'true';
     let savedClientId = localStorage.getItem('pp_client_id') || '';
+    let isIdVisible = false;
 
     const showFeedback = (el, type) => {
         el.classList.remove('input-success', 'input-error');
-        void el.offsetWidth; // Trigger reflow
+        void el.offsetWidth;
         el.classList.add(`input-${type}`);
         setTimeout(() => el.classList.remove(`input-${type}`), 3000);
     };
 
-    const updateUIForVerified = (cid) => {
-        isVerified = true;
-        savedClientId = cid;
-        localStorage.setItem('pp_verified', 'true');
-        localStorage.setItem('pp_client_id', cid);
-
-        loginBox.classList.add('verified');
-        emailSection.style.display = 'none';
-        codeSection.style.display = 'none';
-        loginBtn.style.display = 'none';
-        authInstruction.textContent = "Welcome back, Member! Your access is active.";
-
-        displayClientId.textContent = cid;
-        verifiedSection.style.display = 'block';
-
-        if (currentUserEmail) document.getElementById('review-email').value = currentUserEmail;
+    const updateProfileUI = () => {
+        if (isVerified && savedClientId) {
+            loginSection.style.display = 'none';
+            profileSection.style.display = 'flex';
+            profileEmail.textContent = currentUserEmail;
+            displayClientId.textContent = isIdVisible ? savedClientId : '••••-••••';
+            btnReveal.innerHTML = isIdVisible ? '<i class="fas fa-eye-slash"></i>' : '<i class="fas fa-eye"></i>';
+            authInstruction.textContent = "Welcome back, Member!";
+            loginBox.classList.add('verified');
+        } else {
+            loginSection.style.display = 'flex';
+            profileSection.style.display = 'none';
+            loginBox.classList.remove('verified');
+            authInstruction.textContent = "Installation disabled for non-members.";
+        }
     };
 
-    if (isVerified && savedClientId) {
-        updateUIForVerified(savedClientId);
-    }
+    // Initialize UI
+    updateProfileUI();
+
+    // Toggle ID Visibility
+    btnReveal.addEventListener('click', () => {
+        isIdVisible = !isIdVisible;
+        updateProfileUI();
+    });
+
+    // Change Key Logic
+    document.getElementById('btn-change-key').addEventListener('click', () => {
+        if (confirm("Are you sure? This will deactivate your current Client ID and require a new email verification.")) {
+            localStorage.removeItem('pp_verified');
+            localStorage.removeItem('pp_client_id');
+            isVerified = false;
+            savedClientId = '';
+
+            // Revert UI to Email Input stage
+            codeSection.style.display = 'none';
+            topEmailInput.disabled = false;
+            loginBtn.textContent = 'Verify Status';
+            updateProfileUI();
+        }
+    });
 
     loginBtn.addEventListener('click', async () => {
         const email = topEmailInput.value.trim();
@@ -255,7 +278,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 showFeedback(topEmailInput, 'error');
                 return;
             }
-
             loginBtn.disabled = true;
             loginBtn.textContent = 'Sending...';
 
@@ -269,7 +291,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 showFeedback(topEmailInput, 'success');
                 currentUserEmail = email;
                 localStorage.setItem('pp_user_email', email);
-
                 codeSection.style.display = 'flex';
                 loginBtn.textContent = 'Confirm Code';
                 topEmailInput.disabled = true;
@@ -278,13 +299,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 loginBtn.textContent = 'Verify Status';
             }
             loginBtn.disabled = false;
-
         } else {
             if (!code || code.length !== 4) {
                 showFeedback(codeInput, 'error');
                 return;
             }
-
             loginBtn.disabled = true;
             loginBtn.textContent = 'Verifying...';
 
@@ -296,7 +315,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (data.status === 'success') {
                 showFeedback(codeInput, 'success');
-                setTimeout(() => updateUIForVerified(data.clientId), 500);
+                isVerified = true;
+                savedClientId = data.clientId;
+                localStorage.setItem('pp_verified', 'true');
+                localStorage.setItem('pp_client_id', data.clientId);
+                setTimeout(updateProfileUI, 500);
             } else {
                 showFeedback(codeInput, 'error');
                 loginBtn.textContent = 'Confirm Code';
@@ -305,7 +328,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Mini-copy logic
+    // Copy from Profile
     document.getElementById('btn-copy-id-mini').addEventListener('click', (e) => {
         navigator.clipboard.writeText(savedClientId);
         e.target.textContent = 'Copied!';

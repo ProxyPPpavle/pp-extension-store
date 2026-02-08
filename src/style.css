@@ -1519,6 +1519,108 @@ iframe[id*="pro-"] {
     box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
 }
 
+/* Member Access Profile Styling */
+.profile-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 1rem;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.75rem;
+}
+
+.info-row .label {
+    color: var(--text-gray);
+}
+
+.info-row .value {
+    color: white;
+    font-weight: 700;
+}
+
+.client-id-privacy {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.client-id-privacy span {
+    font-family: monospace;
+    letter-spacing: 1px;
+}
+
+.btn-icon {
+    background: transparent;
+    border: none;
+    color: var(--accent-green);
+    cursor: pointer;
+    font-size: 0.8rem;
+    padding: 2px;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.btn-icon:hover {
+    opacity: 1;
+}
+
+.profile-actions {
+    display: flex;
+    gap: 0.8rem;
+}
+
+.btn-outline-mini {
+    flex: 1;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    font-size: 0.65rem;
+    padding: 8px;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.3s;
+}
+
+.btn-outline-mini:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: white;
+}
+
+/* Shortcuts Info */
+.shortcuts-info {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.4rem;
+    margin: 1rem 0;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 0.8rem;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.shortcut {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.7rem;
+    color: var(--text-gray);
+}
+
+.shortcut span {
+    color: var(--accent-green);
+    font-family: monospace;
+    font-weight: 700;
+}
+
 /* ID Display Styling */
 .client-id-result {
     display: none;
@@ -1570,39 +1672,10 @@ iframe[id*="pro-"] {
     background: rgba(30, 41, 59, 0.6);
 }
 
-.card-badge-container {
-    position: absolute;
-    top: -15px;
-    left: 10%;
-    right: 10%;
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    pointer-events: none;
-}
-
-.top-badge {
-    background: #0f172a;
-    padding: 6px 16px;
-    border-radius: 12px;
-    font-size: 0.75rem;
-    font-weight: 900;
-    border: 1px solid var(--accent-green);
-    color: var(--accent-green);
-    box-shadow: 0 10px 20px rgba(16, 185, 129, 0.2);
-    white-space: nowrap;
-}
-
-.top-badge.premium {
-    border-color: #a855f7;
-    color: #d8b4fe;
-    box-shadow: 0 10px 20px rgba(168, 85, 247, 0.2);
-}
-
-/* --- Buttons & Badges (Fix Clipping) --- */
+/* Final adjustments for badges */
 .download-actions {
     display: flex;
-    gap: 1rem;
+    gap: 1.5rem;
     margin-top: 1.5rem;
 }
 
@@ -1612,10 +1685,16 @@ iframe[id*="pro-"] {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 1rem;
-    border-radius: 16px;
+    padding: 1.5rem 1rem;
+    border-radius: 20px;
     text-decoration: none;
-    transition: all 0.3s;
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1;
+    overflow: visible !important;
+}
+
+.btn-free {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
     color: white;
@@ -1623,7 +1702,8 @@ iframe[id*="pro-"] {
 
 .btn-premium {
     background: var(--gradient);
-    border: none;
+    color: white;
+    box-shadow: 0 15px 30px rgba(168, 85, 247, 0.2);
 }
 
 .btn-free:hover,
@@ -1641,9 +1721,27 @@ iframe[id*="pro-"] {
     opacity: 0.6;
 }
 
-/* Remove old absolute badges */
 .badge {
-    display: none;
+    position: absolute;
+    top: -18px;
+    right: -10px;
+    background: #050505;
+    padding: 6px 14px;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    font-weight: 900;
+    color: var(--accent-green);
+    border: 1px solid var(--accent-green);
+    z-index: 100;
+    box-shadow: 0 0 25px rgba(16, 185, 129, 0.5);
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+.btn-premium .badge {
+    border-color: #a855f7;
+    color: #d8b4fe;
+    box-shadow: 0 0 25px rgba(168, 85, 247, 0.5);
 }
 
 /* --- Star Rating System --- */

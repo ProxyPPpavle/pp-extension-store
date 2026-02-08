@@ -20,27 +20,41 @@
 
   <!-- Top-Left Member Access Box -->
   <div class="login-box" data-aos="fade-right">
-    <h5><i class="fas fa-user-shield"></i> Member Access</h5>
-    <p id="auth-instruction">Please enter your email to proceed. Installation is disabled for non-members.</p>
+    <div id="auth-header">
+      <h5><i class="fas fa-user-shield"></i> Member Access</h5>
+      <p id="auth-instruction">Installation disabled for non-members.</p>
+    </div>
 
-    <div id="email-section">
+    <!-- Login/Verification Section -->
+    <div id="login-section">
       <input type="email" id="user-email-top" class="login-input" placeholder="Enter email...">
+      <div id="code-section" class="code-wrapper">
+        <p style="color: var(--accent-green); font-weight: 700; font-size: 0.65rem;">CODE SENT TO EMAIL</p>
+        <input type="text" id="verify-code-input" class="login-input" placeholder="4-digit code" maxlength="4">
+      </div>
+      <button id="btn-login-top" class="btn-login">Verify Status</button>
     </div>
 
-    <!-- Hidden until code is sent -->
-    <div id="code-section" class="code-wrapper">
-      <p style="color: var(--accent-green); font-weight: 700; font-size: 0.65rem;">CODE SENT (CHECK CONSOLE)</p>
-      <input type="text" id="verify-code-input" class="login-input" placeholder="4-digit code" maxlength="4">
+    <!-- Profile Section (Hidden by default) -->
+    <div id="profile-section" style="display: none;">
+      <div class="profile-info">
+        <div class="info-row">
+          <span class="label">Email:</span>
+          <span id="profile-email" class="value">...</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Client ID:</span>
+          <div class="client-id-privacy">
+            <span id="display-client-id">••••-••••</span>
+            <button id="btn-reveal-id" class="btn-icon"><i class="fas fa-eye"></i></button>
+          </div>
+        </div>
+      </div>
+      <div class="profile-actions">
+        <button class="btn-mini-copy" id="btn-copy-id-mini">Copy ID</button>
+        <button class="btn-outline-mini" id="btn-change-key">Change Key</button>
+      </div>
     </div>
-
-    <!-- Hidden until verified -->
-    <div id="verified-section" class="client-id-result">
-      <p>Your Member ID:</p>
-      <span id="display-client-id">PP-XXXX-XXXX</span>
-      <button class="btn-mini-copy" id="btn-copy-id-mini">Copy ID</button>
-    </div>
-
-    <button id="btn-login-top" class="btn-login">Verify Status</button>
   </div>
 
   <nav>
@@ -65,7 +79,7 @@
     <div class="container hero-container">
       <div class="hero-text" data-aos="fade-up">
         <h1>Dominate the Web with <span class="gradient-text">PP Extensions</span></h1>
-        <p>Unlock untaped potential with our high-growth browser tools. Engineered for extreme speed, trusted by power
+        <p>Unlock untapped potential with our high-growth browser tools. Engineered for extreme speed, trusted by power
           users, and optimized for your <strong>financial growth</strong>.</p>
         <div class="hero-actions">
           <a href="#extensions" class="btn-primary">Get Started Now</a>
@@ -106,23 +120,27 @@
           <!-- PPBot Card -->
           <div class="extension-card" data-aos="zoom-in">
             <div class="card-glow"></div>
-            <div class="card-badge-container">
-              <span class="top-badge">FREE</span>
-              <span class="top-badge premium">PRICE: $29.99</span>
-            </div>
             <div class="card-icon">
               <i class="fas fa-robot"></i>
             </div>
             <h3>PPBot</h3>
             <p class="ext-desc">Invisible AI Agent that you can call at any time. Seamlessly integrated into any
-              webpage, providing instant automation while remaining completely undetectable.</p>
+              webpage.</p>
+
+            <div class="shortcuts-info">
+              <div class="shortcut"><span>Ctrl+Shift+L</span> Login</div>
+              <div class="shortcut"><span>Ctrl+Shift+K</span> Chat</div>
+              <div class="shortcut"><span>Ctrl+Enter</span> Send</div>
+            </div>
 
             <div class="download-actions">
               <a href="#" class="btn-free download-trigger" data-type="free">
+                <span class="badge">FREE</span>
                 <span class="btn-content"><i class="fas fa-download"></i> Basic</span>
                 <span class="btn-subtext">Ads supported</span>
               </a>
               <a href="#" class="btn-premium download-trigger" data-type="premium">
+                <span class="badge">PRICE: $29.99</span>
                 <span class="btn-content"><i class="fas fa-crown"></i> Premium</span>
                 <span class="btn-subtext">Lifetime Access</span>
               </a>
