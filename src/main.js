@@ -190,16 +190,44 @@ document.addEventListener('DOMContentLoaded', () => {
     const codeInput = document.getElementById('verify-code-input');
     const downloadTriggers = document.querySelectorAll('.download-trigger');
     const loginBox = document.querySelector('.login-box');
+    const verifiedSection = document.getElementById('verified-section');
+    const emailSection = document.getElementById('email-section');
+    const displayClientId = document.getElementById('display-client-id');
+    const authInstruction = document.getElementById('auth-instruction');
     const modal = document.getElementById('id-modal');
     const idDisplay = document.getElementById('generated-id');
 
     let currentUserEmail = localStorage.getItem('pp_user_email') || '';
     let isVerified = localStorage.getItem('pp_verified') === 'true';
+    let savedClientId = localStorage.getItem('pp_client_id') || '';
 
-    // Ako je već verifikovan, sakrij boks
-    if (isVerified && currentUserEmail) {
-        loginBox.style.display = 'none';
-        document.getElementById('review-email').value = currentUserEmail;
+    const showFeedback = (el, type) => {
+        el.classList.remove('input-success', 'input-error');
+        void el.offsetWidth; // Trigger reflow
+        el.classList.add(`input-${type}`);
+        setTimeout(() => el.classList.remove(`input-${type}`), 3000);
+    };
+
+    const updateUIForVerified = (cid) => {
+        isVerified = true;
+        savedClientId = cid;
+        localStorage.setItem('pp_verified', 'true');
+        localStorage.setItem('pp_client_id', cid);
+
+        loginBox.classList.add('verified');
+        emailSection.style.display = 'none';
+        codeSection.style.display = 'none';
+        loginBtn.style.display = 'none';
+        authInstruction.textContent = "Welcome back, Member! Your access is active.";
+
+        displayClientId.textContent = cid;
+        verifiedSection.style.display = 'block';
+
+        if (currentUserEmail) document.getElementById('review-email').value = currentUserEmail;
+    };
+
+    if (isVerified && savedClientId) {
+        updateUIForVerified(savedClientId);
     }
 
     loginBtn.addEventListener('click', async () => {
@@ -207,12 +235,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const code = codeInput.value.trim();
 
         if (loginBtn.textContent === 'Verify Status') {
-            // Faza 1: Slanje koda
             if (!email || !email.includes('@')) {
-                topEmailInput.style.borderColor = '#ef4444';
-                topEmailInput.focus();
+                showFeedback(topEmailInput, 'error');
                 return;
             }
+
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Sending...';
 
             try {
                 const apiUrl = import.meta.env.VITE_API_URL || 'https://pp-server-eight.vercel.app';
@@ -224,45 +253,63 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await res.json();
 
                 if (data.status === 'success') {
+                    showFeedback(topEmailInput, 'success');
+                    currentUserEmail = email;
+                    localStorage.setItem('pp_user_email', email);
+
                     codeSection.style.display = 'flex';
                     loginBtn.textContent = 'Confirm Code';
                     topEmailInput.disabled = true;
-                    alert('Verification code sent! Check your email (or server console).');
+                } else {
+                    showFeedback(topEmailInput, 'error');
+                    loginBtn.textContent = 'Verify Status';
                 }
-            } catch (err) { alert('Server error.'); }
+            } catch (err) {
+                showFeedback(topEmailInput, 'error');
+                loginBtn.textContent = 'Verify Status';
+            } finally {
+                loginBtn.disabled = false;
+            }
 
         } else {
-            // Faza 2: Provera koda
             if (!code || code.length !== 4) {
-                codeInput.style.borderColor = '#ef4444';
-                codeInput.focus();
+                showFeedback(codeInput, 'error');
                 return;
             }
+
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Verifying...';
 
             try {
                 const apiUrl = import.meta.env.VITE_API_URL || 'https://pp-server-eight.vercel.app';
                 const res = await fetch(`${apiUrl}/verify-code`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: topEmailInput.value.trim(), code })
+                    body: JSON.stringify({ email: currentUserEmail, code })
                 });
                 const data = await res.json();
 
                 if (data.status === 'success') {
-                    isVerified = true;
-                    currentUserEmail = topEmailInput.value.trim();
-                    localStorage.setItem('pp_user_email', currentUserEmail);
-                    localStorage.setItem('pp_verified', 'true');
-
-                    document.getElementById('review-email').value = currentUserEmail;
-                    loginBox.style.opacity = '0';
-                    setTimeout(() => loginBox.style.display = 'none', 500);
-                    alert('Successfully verified! Downloads are now unlocked.');
+                    showFeedback(codeInput, 'success');
+                    setTimeout(() => updateUIForVerified(data.clientId), 500);
                 } else {
-                    alert('Invalid code. Please try again.');
+                    showFeedback(codeInput, 'error');
+                    loginBtn.textContent = 'Confirm Code';
                 }
-            } catch (err) { alert('Verification failed.'); }
+            } catch (err) {
+                showFeedback(codeInput, 'error');
+                loginBtn.textContent = 'Confirm Code';
+            } finally {
+                loginBtn.disabled = false;
+            }
         }
+    });
+
+    // Mini-copy logic
+    document.getElementById('btn-copy-id-mini').addEventListener('click', (e) => {
+        navigator.clipboard.writeText(savedClientId);
+        e.target.textContent = 'Copied!';
+        setTimeout(() => e.target.textContent = 'Copy ID', 2000);
     });
 
     downloadTriggers.forEach(trigger => {
@@ -270,9 +317,8 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
 
             if (!isVerified) {
-                alert('Access Denied. Please verify your membership in the top-left box first.');
+                showFeedback(topEmailInput, 'error');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
-                topEmailInput.focus();
                 return;
             }
 
@@ -289,7 +335,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     idDisplay.textContent = data.clientId;
                     modal.style.display = 'flex';
                 }
-            } catch (err) { alert('Server connection error.'); }
+            } catch (err) { showFeedback(trigger, 'error'); }
         });
     });
 

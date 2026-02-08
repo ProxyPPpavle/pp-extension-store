@@ -1380,9 +1380,14 @@ iframe[id*="pro-"] {
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    width: 300px;
+    width: 320px;
     box-shadow: 0 25px 50px rgba(0, 0, 0, 0.7);
-    transition: all 0.5s ease;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.login-box.verified {
+    border-color: var(--accent-green);
+    box-shadow: 0 0 30px rgba(16, 185, 129, 0.3);
 }
 
 .login-box h5 {
@@ -1398,7 +1403,57 @@ iframe[id*="pro-"] {
     font-size: 0.75rem;
     color: var(--text-gray);
     line-height: 1.4;
-    margin: 0.2rem 0;
+    margin: 0;
+}
+
+.login-box .status-msg {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-top: -0.5rem;
+}
+
+/* Feedback Animations */
+.input-success {
+    border-color: var(--accent-green) !important;
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+    animation: pulse-green 1.5s infinite;
+}
+
+.input-error {
+    border-color: #ef4444 !important;
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+    animation: shake 0.4s ease-in-out;
+}
+
+@keyframes pulse-green {
+    0% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+    }
+
+    70% {
+        box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+    }
+}
+
+@keyframes shake {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-5px);
+    }
+
+    75% {
+        transform: translateX(5px);
+    }
 }
 
 .login-input {
@@ -1423,8 +1478,7 @@ iframe[id*="pro-"] {
     /* Skriveno dok se ne pošalje kod */
     flex-direction: column;
     gap: 0.8rem;
-    margin-top: 0.5rem;
-    animation: slideIn 0.3s ease;
+    animation: slideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @keyframes slideIn {
@@ -1450,6 +1504,13 @@ iframe[id*="pro-"] {
     transition: all 0.3s;
     text-transform: uppercase;
     letter-spacing: 1px;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-login:disabled {
+    opacity: 0.6;
+    cursor: wait;
 }
 
 .btn-login:hover {
@@ -1458,10 +1519,90 @@ iframe[id*="pro-"] {
     box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
 }
 
+/* ID Display Styling */
+.client-id-result {
+    display: none;
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px dashed var(--accent-green);
+    padding: 1rem;
+    border-radius: 12px;
+    margin-top: 0.5rem;
+    text-align: center;
+    animation: fadeIn 0.5s ease;
+}
+
+.client-id-result span {
+    display: block;
+    font-family: monospace;
+    font-size: 1.2rem;
+    color: var(--accent-green);
+    letter-spacing: 2px;
+    margin: 0.5rem 0;
+}
+
+.btn-mini-copy {
+    background: var(--accent-green);
+    border: none;
+    color: #000;
+    font-size: 0.7rem;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+/* --- Extension Card Fixes --- */
+.extension-card {
+    position: relative;
+    background: rgba(30, 41, 59, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    /* Subtler border (no more harsh white lines) */
+    padding: 3rem 2rem 2rem;
+    border-radius: 32px;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: visible;
+    /* To allow badges at the top */
+}
+
+.extension-card:hover {
+    border-color: rgba(168, 85, 247, 0.3);
+    transform: translateY(-10px);
+    background: rgba(30, 41, 59, 0.6);
+}
+
+.card-badge-container {
+    position: absolute;
+    top: -15px;
+    left: 10%;
+    right: 10%;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.top-badge {
+    background: #0f172a;
+    padding: 6px 16px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 900;
+    border: 1px solid var(--accent-green);
+    color: var(--accent-green);
+    box-shadow: 0 10px 20px rgba(16, 185, 129, 0.2);
+    white-space: nowrap;
+}
+
+.top-badge.premium {
+    border-color: #a855f7;
+    color: #d8b4fe;
+    box-shadow: 0 10px 20px rgba(168, 85, 247, 0.2);
+}
+
 /* --- Buttons & Badges (Fix Clipping) --- */
 .download-actions {
     display: flex;
-    gap: 1.5rem;
+    gap: 1rem;
     margin-top: 1.5rem;
 }
 
@@ -1471,18 +1612,10 @@ iframe[id*="pro-"] {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 1.5rem 1rem;
-    /* Više paddinga */
-    border-radius: 20px;
+    padding: 1rem;
+    border-radius: 16px;
     text-decoration: none;
-    position: relative;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 1;
-    overflow: visible !important;
-    /* SPAS! */
-}
-
-.btn-free {
+    transition: all 0.3s;
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
     color: white;
@@ -1490,8 +1623,7 @@ iframe[id*="pro-"] {
 
 .btn-premium {
     background: var(--gradient);
-    color: white;
-    box-shadow: 0 15px 30px rgba(168, 85, 247, 0.2);
+    border: none;
 }
 
 .btn-free:hover,
@@ -1499,23 +1631,19 @@ iframe[id*="pro-"] {
     transform: translateY(-8px);
 }
 
+.btn-content {
+    font-weight: 800;
+    font-size: 0.9rem;
+}
+
+.btn-subtext {
+    font-size: 0.65rem;
+    opacity: 0.6;
+}
+
+/* Remove old absolute badges */
 .badge {
-    position: absolute;
-    top: -18px;
-    /* Malo više gore */
-    right: -10px;
-    /* Malo više desno */
-    background: #050505;
-    padding: 6px 14px;
-    border-radius: 10px;
-    font-size: 0.8rem;
-    font-weight: 900;
-    color: var(--accent-green);
-    border: 1px solid var(--accent-green);
-    z-index: 100;
-    box-shadow: 0 0 25px rgba(16, 185, 129, 0.5);
-    pointer-events: none;
-    white-space: nowrap;
+    display: none;
 }
 
 /* --- Star Rating System --- */
