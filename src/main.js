@@ -38,7 +38,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Ad Injection Logic ---
     const adStorage = {
-        canShowVignette: false // FALSE jer index.html ispaljuje prvi odmah
+        canShowVignette: false, // FALSE jer index.html ispaljuje prvi odmah
+        pushInjected: false,
+        banner1Injected: false,
+        banner2Injected: false,
+        clickCount: 0
     };
 
     const injectVignette = () => {
@@ -59,20 +63,95 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log("Vignette skripta je uspesno ubacena.");
     };
 
+    const injectPushScript = () => {
+        if (adStorage.pushInjected) return;
+        const push = document.createElement('script');
+        push.src = 'https://3nbf4.com/act/files/tag.min.js?z=10582477';
+        push.setAttribute('data-cfasync', 'false');
+        push.async = true;
+        document.body.appendChild(push);
+        adStorage.pushInjected = true;
+    };
+
+    const injectImmediateAds = () => {
+        console.log("Ucitavam bočne reklame...");
+        // Banner Push 1
+        if (!adStorage.banner1Injected) {
+            const s1 = document.createElement('script');
+            s1.dataset.zone = '10582494';
+            s1.src = 'https://nap5k.com/tag.min.js';
+            document.body.appendChild(s1);
+            adStorage.banner1Injected = true;
+        }
+
+        // Banner Push 2
+        if (!adStorage.banner2Injected) {
+            const s2 = document.createElement('script');
+            s2.dataset.zone = '10584340';
+            s2.src = 'https://nap5k.com/tag.min.js';
+            document.body.appendChild(s2);
+            adStorage.banner2Injected = true;
+        }
+    };
+
+    // Delay side banners by 1.5s
+    setTimeout(injectImmediateAds, 1500);
+
+    // --- Push Consent System (Soft Ask) ---
+    const pushModal = document.getElementById('push-consent');
+    const allowBtn = document.getElementById('push-allow');
+    const denyBtn = document.getElementById('push-deny');
+
+    const showPushModal = () => {
+        if (window.Notification && Notification.permission !== 'granted' && !localStorage.getItem('push_consent_given')) {
+            setTimeout(() => {
+                if (pushModal) pushModal.classList.add('active');
+            }, 4000);
+        } else if (Notification.permission === 'granted') {
+            injectPushScript();
+        }
+    };
+
+    if (allowBtn) {
+        allowBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            injectPushScript();
+            localStorage.setItem('push_consent_given', 'true');
+            pushModal.classList.remove('active');
+        });
+    }
+
+    if (denyBtn) {
+        denyBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            localStorage.setItem('push_consent_given', 'denied');
+            pushModal.classList.remove('active');
+        });
+    }
+
+    showPushModal();
+
     // --- Interaction Triggers ---
-    // Try to trigger vignette on very first click ANYWHERE
     document.addEventListener('click', () => {
-        console.log("Detektovan klik na dokumentu...");
+        adStorage.clickCount++;
+        console.log(`Klik broj: ${adStorage.clickCount}`);
+
+        // Reset Vignette flag after every 5th click
+        if (adStorage.clickCount % 5 === 0) {
+            console.log("Peto kliknuće! Resetujem Vignette flag...");
+            adStorage.canShowVignette = true;
+        }
+
         injectVignette();
     }, { once: false });
 
-    // Reset Vignette every 3 minutes
+    // Reset Vignette every 3 minutes (time-based fallback)
     setInterval(() => {
-        console.log("--- Resetujem Vignette flag (proslo 3min) ---");
+        console.log("--- Resetujem Vignette flag (vremenski interval 3min) ---");
         adStorage.canShowVignette = true;
     }, 3 * 60 * 1000);
 
-    // Backup reset after 20 seconds to catch early users
+    // Backup reset after 20 seconds
     setTimeout(() => {
         console.log("Backup reset Vignette flaga...");
         adStorage.canShowVignette = true;
