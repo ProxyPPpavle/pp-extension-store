@@ -185,6 +185,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Registration & Download Logic
     const downloadTriggers = document.querySelectorAll('.download-trigger');
+    const emailInput = document.getElementById('download-email');
     const modal = document.getElementById('id-modal');
     const idDisplay = document.getElementById('generated-id');
     const copyBtn = document.getElementById('copy-id-btn');
@@ -193,17 +194,28 @@ document.addEventListener('DOMContentLoaded', () => {
         trigger.addEventListener('click', async (e) => {
             e.preventDefault();
 
+            const email = emailInput.value.trim();
             const type = trigger.getAttribute('data-type');
 
+            // Email Validation
+            if (!email || !email.includes('@')) {
+                emailInput.style.borderColor = '#ef4444';
+                emailInput.focus();
+                return;
+            }
+            emailInput.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+
             try {
-                // Determine API URL (use env var for production)
                 const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
-                // 1. Pozovi server da registruje klijenta
+                // 1. Pozovi server da registruje klijenta sa email-om
                 const response = await fetch(`${apiUrl}/register-client`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ accountType: type })
+                    body: JSON.stringify({
+                        accountType: type,
+                        email: email
+                    })
                 });
 
                 const data = await response.json();
