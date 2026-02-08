@@ -1575,38 +1575,50 @@ iframe[id*="pro-"] {
 .profile-info {
     display: flex;
     flex-direction: column;
-    gap: 0.8rem;
-    background: rgba(0, 0, 0, 0.3);
-    padding: 1rem;
-    border-radius: 14px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.4);
+    padding: 1.5rem;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .info-row {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.75rem;
+    flex-direction: column;
+    /* Stack label and value for better readability */
+    gap: 0.4rem;
+    font-size: 0.8rem;
+}
+
+.info-row:first-child {
+    margin-bottom: 1.5rem;
+    /* The "space" requested between Email and ID */
 }
 
 .info-row .label {
     color: var(--text-gray);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .info-row .value {
     color: white;
-    font-weight: 700;
+    font-weight: 800;
 }
 
 .client-id-privacy {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.8rem;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 8px 12px;
+    border-radius: 10px;
 }
 
 .client-id-privacy span {
     font-family: monospace;
-    letter-spacing: 1px;
+    letter-spacing: 2px;
+    font-size: 0.9rem;
 }
 
 .btn-icon {
@@ -1614,23 +1626,21 @@ iframe[id*="pro-"] {
     border: none;
     color: var(--accent-green);
     cursor: pointer;
-    font-size: 0.8rem;
-    padding: 2px;
-    opacity: 0.7;
-    transition: opacity 0.2s;
+    font-size: 0.9rem;
+    padding: 4px;
+    transition: all 0.2s;
 }
 
 .btn-icon:hover {
-    opacity: 1;
+    transform: scale(1.2);
 }
 
-/* Member Access Profile Actions - Moved below info */
+/* Member Access Profile Actions */
 .profile-actions {
     display: flex;
     flex-direction: column;
-    /* Stacked below info */
-    gap: 10px;
-    margin-top: 1.2rem;
+    gap: 12px;
+    margin-top: 1.5rem;
     width: 100%;
 }
 
@@ -1758,9 +1768,10 @@ iframe[id*="pro-"] {
     border-radius: 20px;
     text-decoration: none;
     position: relative;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 1;
-    overflow: visible !important;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 10;
+    overflow: hidden !important;
+    /* CRITICAL: Clips the shiny effect */
 }
 
 .btn-free {
@@ -1770,9 +1781,9 @@ iframe[id*="pro-"] {
 }
 
 .btn-premium {
-    background: var(--gradient);
+    background: var(--gradient) !important;
     color: white;
-    box-shadow: 0 15px 30px rgba(168, 85, 247, 0.2);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
 }
 
 .btn-free:hover,
@@ -1780,71 +1791,21 @@ iframe[id*="pro-"] {
     transform: translateY(-8px);
 }
 
-.btn-content {
-    font-weight: 800;
-    font-size: 0.9rem;
-}
-
-.btn-subtext {
-    font-size: 0.65rem;
-    opacity: 0.6;
-}
-
-/* Badge Polishing */
-/* Badge System */
-.badge {
-    position: absolute;
-    top: -15px;
-    right: 25px;
-    padding: 6px 16px;
-    border-radius: 10px;
-    font-size: 0.75rem;
-    font-weight: 950;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    z-index: 100;
-    pointer-events: none;
-    background: #000;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.8);
-}
-
-.btn-free .badge {
-    color: var(--accent-green);
-    border-color: rgba(16, 185, 129, 0.5);
-    box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
-}
-
-/* White PRICE Badge as requested */
-.btn-premium .badge {
-    color: #ffffff;
-    /* Clean White/Silver as requested */
-    border-color: rgba(255, 255, 255, 0.5);
-    box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
-}
-
-/* Shiny Premium Buttons */
-/* Elite Shiny Sweep Animation */
-.btn-premium {
-    position: relative;
-    overflow: hidden;
-    background: var(--gradient) !important;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
+/* Elite Shiny Sweep Animation - THIN & FAST */
 .btn-premium::before {
     content: '';
     position: absolute;
-    top: -50%;
+    top: -150%;
     left: -150%;
-    width: 60%;
-    height: 300%;
+    width: 20%;
+    /* Much thinner line */
+    height: 400%;
     background: linear-gradient(to right,
             rgba(255, 255, 255, 0) 0%,
-            rgba(255, 255, 255, 0.3) 50%,
+            rgba(255, 255, 255, 0.4) 50%,
             rgba(255, 255, 255, 0) 100%);
-    transform: rotate(30deg);
-    animation: glossy-sweep 3.5s infinite ease-out;
+    transform: rotate(35deg);
+    animation: glossy-sweep 3s infinite cubic-bezier(0.43, 0.13, 0.23, 0.96);
 }
 
 @keyframes glossy-sweep {
@@ -1852,13 +1813,55 @@ iframe[id*="pro-"] {
         left: -150%;
     }
 
-    25% {
+    40% {
         left: 150%;
     }
 
     100% {
         left: 150%;
     }
+}
+
+.btn-content {
+    font-weight: 800;
+    font-size: 0.9rem;
+    position: relative;
+    z-index: 2;
+}
+
+.btn-subtext {
+    font-size: 0.65rem;
+    opacity: 0.7;
+    position: relative;
+    z-index: 2;
+}
+
+/* Badge System - Integrated */
+.badge {
+    position: absolute;
+    top: -15px;
+    right: 15px;
+    padding: 6px 14px;
+    border-radius: 10px;
+    font-size: 0.7rem;
+    font-weight: 950;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    z-index: 100;
+    pointer-events: none;
+    background: #000;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+}
+
+.btn-free .badge {
+    color: var(--accent-green);
+    border-color: rgba(16, 185, 129, 0.5);
+}
+
+.btn-premium .badge {
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.5);
 }
 
 /* Review Form Enhancements */
