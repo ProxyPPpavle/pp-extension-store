@@ -1624,44 +1624,52 @@ iframe[id*="pro-"] {
     opacity: 1;
 }
 
+/* Member Access Profile Actions - Moved below info */
 .profile-actions {
     display: flex;
-    gap: 12px;
-    margin-top: 1rem;
+    flex-direction: column;
+    /* Stacked below info */
+    gap: 10px;
+    margin-top: 1.2rem;
     width: 100%;
 }
 
 .profile-actions button {
-    flex: 1;
-    height: 44px;
-    border-radius: 12px;
-    font-size: 0.75rem;
-    font-weight: 900;
+    width: 100%;
+    height: 48px;
+    border-radius: 14px;
+    font-size: 0.8rem;
+    font-weight: 800;
     text-transform: uppercase;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.3s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     border: none;
-    margin: 0;
 }
 
 .btn-mini-copy {
-    background: var(--accent-green) !important;
-    color: #000 !important;
+    background: var(--accent-green);
+    color: #000;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);
+}
+
+.btn-mini-copy:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
 }
 
 .btn-outline-mini {
-    background: rgba(255, 255, 255, 0.05) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    color: white !important;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
 }
 
 .btn-outline-mini:hover {
-    background: rgba(239, 68, 68, 0.2) !important;
-    border-color: #ef4444 !important;
-    color: #ef4444 !important;
+    background: rgba(239, 68, 68, 0.1);
+    border-color: #ef4444;
+    color: #ef4444;
 }
 
 /* Shortcuts Info */
@@ -1782,162 +1790,148 @@ iframe[id*="pro-"] {
     opacity: 0.6;
 }
 
+/* Badge Polishing */
+/* Badge System */
 .badge {
     position: absolute;
-    top: -18px;
-    right: -10px;
-    background: #050505;
-    padding: 6px 14px;
+    top: -15px;
+    right: 25px;
+    padding: 6px 16px;
     border-radius: 10px;
-    font-size: 0.8rem;
-    font-weight: 900;
-    color: var(--accent-green);
-    border: 1px solid var(--accent-green);
+    font-size: 0.75rem;
+    font-weight: 950;
+    text-transform: uppercase;
+    letter-spacing: 1px;
     z-index: 100;
-    box-shadow: 0 0 25px rgba(16, 185, 129, 0.5);
     pointer-events: none;
-    white-space: nowrap;
+    background: #000;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.8);
 }
 
+.btn-free .badge {
+    color: var(--accent-green);
+    border-color: rgba(16, 185, 129, 0.5);
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+}
+
+/* White PRICE Badge as requested */
 .btn-premium .badge {
-    border-color: #a855f7;
-    color: #d8b4fe;
-    box-shadow: 0 0 25px rgba(168, 85, 247, 0.5);
+    color: #ffffff;
+    /* Clean White/Silver as requested */
+    border-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
 }
 
-/* --- Star Rating System --- */
+/* Shiny Premium Buttons */
+/* Elite Shiny Sweep Animation */
+.btn-premium {
+    position: relative;
+    overflow: hidden;
+    background: var(--gradient) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-premium::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -150%;
+    width: 60%;
+    height: 300%;
+    background: linear-gradient(to right,
+            rgba(255, 255, 255, 0) 0%,
+            rgba(255, 255, 255, 0.3) 50%,
+            rgba(255, 255, 255, 0) 100%);
+    transform: rotate(30deg);
+    animation: glossy-sweep 3.5s infinite ease-out;
+}
+
+@keyframes glossy-sweep {
+    0% {
+        left: -150%;
+    }
+
+    25% {
+        left: 150%;
+    }
+
+    100% {
+        left: 150%;
+    }
+}
+
+/* Review Form Enhancements */
+/* Review Form Refinement */
+.review-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    max-width: 650px;
+    margin: 2.5rem auto;
+    background: rgba(15, 23, 42, 0.65);
+    padding: 3rem;
+    border-radius: 40px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4);
+}
+
 .star-rating {
     display: flex;
-    gap: 0.5rem;
     justify-content: center;
-    margin: 1rem 0;
-    font-size: 2rem;
+    gap: 15px;
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.star-rating .star {
     cursor: pointer;
+    color: rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
 }
 
-.star {
-    color: rgba(255, 255, 255, 0.2);
-    transition: all 0.2s;
-}
-
-.star.active {
+.star-rating .star.active,
+.star-rating .star:hover {
     color: #fbbf24;
-    text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
-}
-
-.star:hover {
+    /* Rich Gold */
     transform: scale(1.2);
-}
-
-/* --- Reviews System --- */
-#reviews-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 5;
-    overflow: hidden;
-}
-
-.review-float {
-    position: absolute;
-    background: rgba(15, 23, 42, 0.5);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    padding: 1.2rem;
-    border-radius: 16px;
-    width: 250px;
-    backdrop-filter: blur(10px);
-    opacity: 0;
-    transition: opacity 1s;
-    pointer-events: auto;
-}
-
-.review-float.active {
-    opacity: 0.7;
-}
-
-.review-float .name {
-    font-weight: 800;
-    color: var(--accent-green);
-    display: block;
-    margin-bottom: 0.2rem;
-    font-size: 0.9rem;
-}
-
-.review-float .comment {
-    color: #cbd5e1;
-    font-size: 0.85rem;
-    line-height: 1.4;
-    font-style: italic;
-}
-
-.review-float .stars {
-    color: #fbbf24;
-    margin-top: 0.4rem;
-    display: block;
-    font-size: 0.8rem;
-}
-
-.review-form-section {
-    padding: 100px 0;
-    background: rgba(0, 0, 0, 0.2);
-    position: relative;
-    z-index: 10;
-}
-
-.review-form {
-    background: rgba(15, 23, 42, 0.4);
-    border: 1px solid var(--glass-border);
-    padding: 3rem;
-    border-radius: 30px;
-    max-width: 600px;
-    margin: 0 auto;
-    backdrop-filter: blur(20px);
-}
-
-.form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-    margin-top: 1.5rem;
+    filter: drop-shadow(0 0 10px rgba(251, 191, 36, 0.4));
 }
 
 .review-form input,
-.review-form textarea,
-.review-form select {
-    background: #000;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 1rem;
-    border-radius: 12px;
-    color: white;
-}
-
 .review-form textarea {
-    grid-column: span 2;
-    height: 120px;
-    resize: none;
+    background: rgba(0, 0, 0, 0.4) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    padding: 1.25rem !important;
+    border-radius: 16px !important;
+    color: #fff !important;
+    font-size: 1rem !important;
+    transition: all 0.3s !important;
 }
 
-.review-form select {
-    grid-column: span 2;
+.review-form input:focus,
+.review-form textarea:focus {
+    border-color: var(--accent-green) !important;
+    background: rgba(0, 0, 0, 0.6) !important;
+    outline: none !important;
 }
 
 .btn-submit-review {
-    background: var(--gradient);
-    border: none;
-    color: white;
-    padding: 1.2rem;
-    border-radius: 12px;
-    font-weight: 800;
-    cursor: pointer;
-    margin-top: 1rem;
-    width: 100%;
-    transition: 0.3s;
+    background: var(--accent-green) !important;
+    color: #000 !important;
+    border: none !important;
+    padding: 1.2rem !important;
+    border-radius: 16px !important;
+    font-weight: 950 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+    cursor: pointer !important;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+    margin-top: 1rem !important;
 }
 
 .btn-submit-review:hover {
-    box-shadow: 0 10px 30px rgba(168, 85, 247, 0.4);
-    transform: translateY(-2px);
+    filter: brightness(1.25);
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(16, 185, 129, 0.4);
 }

@@ -286,43 +286,12 @@ document.addEventListener('DOMContentLoaded', () => {
         window.addEventListener('resize', initMatrix);
     }
 
-    // --- Reviews ---
-    const startFloatingReviews = async () => {
-        const data = await safeFetch(`${apiUrl}/get-reviews`);
-        if (data.status === 'success' && data.reviews?.length > 0) {
-            data.reviews.slice(0, 5).forEach((rev, i) => setTimeout(() => createFloatingReview(rev), i * 3000));
-            setInterval(() => {
-                const randomRev = data.reviews[Math.floor(Math.random() * data.reviews.length)];
-                createFloatingReview(randomRev);
-            }, 8000);
-        }
-    };
-
-    const createFloatingReview = (rev) => {
-        const container = document.getElementById('reviews-container');
-        if (!container) return;
-        const div = document.createElement('div');
-        div.className = 'review-float';
-        div.style.left = Math.random() * 80 + 5 + '%';
-        div.style.top = '110vh';
-        div.innerHTML = `<span class="name">${rev.name}</span><p class="comment">"${rev.comment}"</p><span class="stars">${'⭐'.repeat(rev.rating)}</span>`;
-        container.appendChild(div);
-        setTimeout(() => div.classList.add('active'), 100);
-        let pos = 110;
-        const drift = setInterval(() => {
-            pos -= 0.15;
-            div.style.top = pos + 'vh';
-            if (pos < -20) { clearInterval(drift); div.remove(); }
-        }, 40);
-    };
-
     // --- Initial AOS & AOS triggers ---
     if (typeof AOS !== 'undefined') {
         AOS.init({ duration: 1000, once: true, offset: 50 });
     }
 
     // Start Loops
-    setTimeout(startFloatingReviews, 2000);
     injectVignette();
     startAdGuardian();
 });

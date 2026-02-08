@@ -57,6 +57,7 @@
           </div>
         </div>
       </div>
+      <!-- Buttons now below info -->
       <div class="profile-actions">
         <button class="btn-mini-copy" id="btn-copy-id-mini">Copy ID</button>
         <button class="btn-outline-mini" id="btn-change-key">Reset</button>
@@ -77,9 +78,6 @@
       </ul>
     </div>
   </nav>
-
-  <!-- Floating Reviews Background -->
-  <div id="reviews-container"></div>
 
   <header class="hero">
     <canvas id="matrix-canvas"></canvas>
@@ -184,19 +182,17 @@
         </div>
 
         <form id="review-form" class="review-form" data-aos="fade-up">
-          <div class="form-grid">
-            <input type="text" id="review-name" placeholder="Your Display Name" required>
-            <input type="email" id="review-email" placeholder="Email (Autofilled if logged in)" required>
-            <div class="star-rating" id="review-stars-ui">
-              <i class="fas fa-star star" data-value="1"></i>
-              <i class="fas fa-star star" data-value="2"></i>
-              <i class="fas fa-star star" data-value="3"></i>
-              <i class="fas fa-star star" data-value="4"></i>
-              <i class="fas fa-star star" data-value="5"></i>
-            </div>
-            <input type="hidden" id="review-rating" value="5">
-            <textarea id="review-comment" placeholder="What do you think about our tools?" required></textarea>
+          <div class="star-rating" id="review-stars-ui">
+            <i class="fas fa-star star" data-value="1"></i>
+            <i class="fas fa-star star" data-value="2"></i>
+            <i class="fas fa-star star" data-value="3"></i>
+            <i class="fas fa-star star" data-value="4"></i>
+            <i class="fas fa-star star" data-value="5"></i>
           </div>
+          <input type="hidden" id="review-rating" value="5">
+          <input type="text" id="review-name" placeholder="Your Display Name" required>
+          <input type="email" id="review-email" placeholder="Email (Autofilled if logged in)" required>
+          <textarea id="review-comment" placeholder="What do you think about our tools?" required></textarea>
           <button type="submit" class="btn-submit-review">Publish Review</button>
         </form>
       </div>
@@ -275,57 +271,30 @@
           </div>
         </div>
       </div>
-      </div>
-
-      <div class="review-card" data-aos="fade-up" data-aos-delay="200">
-        <div class="review-stars">
-          <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i
-            class="fas fa-star"></i>
-        </div>
-        <p class="review-text">"Cleanest UI I've seen in a browser extension. Installation was super easy
-          following the guide."</p>
-        <div class="review-author">
-          <div class="author-avatar">AK</div>
-          <div class="author-info">
-            <h4>Alice Kane</h4>
-            <span>Software Engineer</span>
-          </div>
-        </div>
-      </div>
-      </div>
-
-      <div class="add-comment" data-aos="zoom-in">
-        <h3>Leave a <span class="gradient-text">Review</span></h3>
-        <form class="comment-form">
-          <input type="text" placeholder="Your Name" required>
-          <textarea placeholder="Share your experience with PP Store..." rows="4" required></textarea>
-          <button type="submit" class="btn-primary">Post Review</button>
-        </form>
-      </div>
-      </div>
     </section>
+  </main>
 
-    <!-- Partner Section (Smart Link) -->
-    <section class="partners-section">
-      <div class="container">
-        <div class="partners-grid" data-aos="fade-up">
-          <div class="partner-card">
-            <span class="partner-badge">Premium Offer</span>
-            <h4>Explore Our Partner Network</h4>
-            <p>Discover exclusive trading tools and automation scripts from our trusted collaborators.</p>
-            <a href="https://is.gd/8GvRR9" target="_blank" class="btn-partner">View What's New <i
-                class="fas fa-external-link-alt"></i></a>
-          </div>
-          <div class="partner-card">
-            <span class="partner-badge">Community Support</span>
-            <h4>Support Our Development</h4>
-            <p>Help us keep the PP Store free! Click below to see our special community-driven initiatives.</p>
-            <a href="https://is.gd/8GvRR9" target="_blank" class="btn-partner">Show Your Support <i
-                class="fas fa-heart"></i></a>
-          </div>
+  <!-- Partner Section (Smart Link) -->
+  <section class="partners-section">
+    <div class="container">
+      <div class="partners-grid" data-aos="fade-up">
+        <div class="partner-card">
+          <span class="partner-badge">Premium Offer</span>
+          <h4>Explore Our Partner Network</h4>
+          <p>Discover exclusive trading tools and automation scripts from our trusted collaborators.</p>
+          <a href="https://is.gd/8GvRR9" target="_blank" class="btn-partner">View What's New <i
+              class="fas fa-external-link-alt"></i></a>
+        </div>
+        <div class="partner-card">
+          <span class="partner-badge">Community Support</span>
+          <h4>Support Our Development</h4>
+          <p>Help us keep the PP Store free! Click below to see our special community-driven initiatives.</p>
+          <a href="https://is.gd/8GvRR9" target="_blank" class="btn-partner">Show Your Support <i
+              class="fas fa-heart"></i></a>
         </div>
       </div>
-    </section>
+    </div>
+  </section>
   </main>
 
   <footer>
