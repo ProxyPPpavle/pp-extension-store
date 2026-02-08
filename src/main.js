@@ -114,8 +114,18 @@ document.addEventListener('DOMContentLoaded', () => {
         updateProfileUI();
     });
 
-    document.getElementById('btn-change-key')?.addEventListener('click', () => {
-        if (confirm("Reset account status? New verification required.")) {
+    document.getElementById('btn-change-key')?.addEventListener('click', async () => {
+        if (confirm("Reset account status? This will PERMANENTLY delete your ID from our database and you will need to re-verify.")) {
+            if (currentUserEmail) {
+                const res = await safeFetch(`${apiUrl}/reset-account`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: currentUserEmail })
+                });
+                if (res.status === 'success') {
+                    console.log("Account deleted on server.");
+                }
+            }
             localStorage.clear();
             location.reload();
         }
