@@ -18,10 +18,18 @@
   <div class="bg-lines"></div>
   <div class="stonks-vector"></div>
 
-  <!-- Top-Left Login Box -->
+  <!-- Top-Left Member Access Box -->
   <div class="login-box" data-aos="fade-right">
     <h5><i class="fas fa-user-shield"></i> Member Access</h5>
-    <input type="email" id="user-email-top" class="login-input" placeholder="Enter email to unlock...">
+    <p>Please enter your email to proceed. Installation is disabled for non-members.</p>
+    <input type="email" id="user-email-top" class="login-input" placeholder="Enter email...">
+
+    <!-- Hidden until code is sent -->
+    <div id="code-section" class="code-wrapper">
+      <p>A 4-digit code was sent (check console for demo).</p>
+      <input type="text" id="verify-code-input" class="login-input" placeholder="4-digit code" maxlength="4">
+    </div>
+
     <button id="btn-login-top" class="btn-login">Verify Status</button>
   </div>
 
@@ -92,22 +100,17 @@
               <i class="fas fa-robot"></i>
             </div>
             <h3>PPBot</h3>
-            <p>The flagship automation tool. Scale your productivity with precision and zero latency. Used by top-tier
-              developers and power users worldwide.</p>
-            <ul class="feature-list">
-              <li><i class="fas fa-check"></i> Advanced AI Integration</li>
-              <li><i class="fas fa-check"></i> Unlimited Task Pipelines</li>
-              <li><i class="fas fa-check"></i> 24/7 Priority Support</li>
-            </ul>
+            <p class="ext-desc">Invisible AI Agent that you can call at any time. Seamlessly integrated into any
+              webpage, providing instant automation while remaining completely undetectable.</p>
 
             <div class="download-actions">
               <a href="#" class="btn-free download-trigger" data-type="free">
-                <span class="badge">Free</span>
+                <span class="badge">FREE</span>
                 <span class="btn-content"><i class="fas fa-download"></i> Basic</span>
                 <span class="btn-subtext">Ads supported</span>
               </a>
               <a href="#" class="btn-premium download-trigger" data-type="premium">
-                <span class="badge">$29.99</span>
+                <span class="badge">PRICE: $29.99</span>
                 <span class="btn-content"><i class="fas fa-crown"></i> Premium</span>
                 <span class="btn-subtext">Lifetime Access</span>
               </a>
@@ -146,15 +149,15 @@
         <form id="review-form" class="review-form" data-aos="fade-up">
           <div class="form-grid">
             <input type="text" id="review-name" placeholder="Your Display Name" required>
-            <input type="email" id="review-email" placeholder="Your Registration Email" required>
-            <select id="review-rating" required>
-              <option value="" disabled selected>Rate Your Experience</option>
-              <option value="5">⭐⭐⭐⭐⭐ (Excellent)</option>
-              <option value="4">⭐⭐⭐⭐ (Great)</option>
-              <option value="3">⭐⭐⭐ (Average)</option>
-              <option value="2">⭐⭐ (Poor)</option>
-              <option value="1">⭐ (Terrible)</option>
-            </select>
+            <input type="email" id="review-email" placeholder="Email (Autofilled if logged in)" required>
+            <div class="star-rating" id="review-stars-ui">
+              <i class="fas fa-star star" data-value="1"></i>
+              <i class="fas fa-star star" data-value="2"></i>
+              <i class="fas fa-star star" data-value="3"></i>
+              <i class="fas fa-star star" data-value="4"></i>
+              <i class="fas fa-star star" data-value="5"></i>
+            </div>
+            <input type="hidden" id="review-rating" value="5">
             <textarea id="review-comment" placeholder="What do you think about our tools?" required></textarea>
           </div>
           <button type="submit" class="btn-submit-review">Publish Review</button>

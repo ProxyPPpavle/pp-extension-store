@@ -183,71 +183,138 @@ document.addEventListener('DOMContentLoaded', () => {
         adStorage.canShowVignette = true;
     }, 2 * 60 * 1000);
 
-    // --- Registration & Email Logic ---
+    // --- Registration & Email Verification Logic ---
     const topEmailInput = document.getElementById('user-email-top');
     const loginBtn = document.getElementById('btn-login-top');
+    const codeSection = document.getElementById('code-section');
+    const codeInput = document.getElementById('verify-code-input');
     const downloadTriggers = document.querySelectorAll('.download-trigger');
+    const loginBox = document.querySelector('.login-box');
     const modal = document.getElementById('id-modal');
     const idDisplay = document.getElementById('generated-id');
-    const copyBtn = document.getElementById('copy-id-btn');
 
     let currentUserEmail = localStorage.getItem('pp_user_email') || '';
-    if (currentUserEmail) {
-        topEmailInput.value = currentUserEmail;
-        topEmailInput.style.borderColor = 'var(--accent-green)';
+    let isVerified = localStorage.getItem('pp_verified') === 'true';
+
+    // Ako je već verifikovan, sakrij boks
+    if (isVerified && currentUserEmail) {
+        loginBox.style.display = 'none';
+        document.getElementById('review-email').value = currentUserEmail;
     }
 
-    loginBtn.addEventListener('click', () => {
+    loginBtn.addEventListener('click', async () => {
         const email = topEmailInput.value.trim();
-        if (!email || !email.includes('@')) {
-            topEmailInput.style.borderColor = '#ef4444';
-            topEmailInput.focus();
-            return;
+        const code = codeInput.value.trim();
+
+        if (loginBtn.textContent === 'Verify Status') {
+            // Faza 1: Slanje koda
+            if (!email || !email.includes('@')) {
+                topEmailInput.style.borderColor = '#ef4444';
+                topEmailInput.focus();
+                return;
+            }
+
+            try {
+                const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+                const res = await fetch(`${apiUrl}/send-code`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+                const data = await res.json();
+
+                if (data.status === 'success') {
+                    codeSection.style.display = 'flex';
+                    loginBtn.textContent = 'Confirm Code';
+                    topEmailInput.disabled = true;
+                    alert('Verification code sent! Check your email (or server console).');
+                }
+            } catch (err) { alert('Server error.'); }
+
+        } else {
+            // Faza 2: Provera koda
+            if (!code || code.length !== 4) {
+                codeInput.style.borderColor = '#ef4444';
+                codeInput.focus();
+                return;
+            }
+
+            try {
+                const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+                const res = await fetch(`${apiUrl}/verify-code`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: topEmailInput.value.trim(), code })
+                });
+                const data = await res.json();
+
+                if (data.status === 'success') {
+                    isVerified = true;
+                    currentUserEmail = topEmailInput.value.trim();
+                    localStorage.setItem('pp_user_email', currentUserEmail);
+                    localStorage.setItem('pp_verified', 'true');
+
+                    document.getElementById('review-email').value = currentUserEmail;
+                    loginBox.style.opacity = '0';
+                    setTimeout(() => loginBox.style.display = 'none', 500);
+                    alert('Successfully verified! Downloads are now unlocked.');
+                } else {
+                    alert('Invalid code. Please try again.');
+                }
+            } catch (err) { alert('Verification failed.'); }
         }
-        currentUserEmail = email;
-        localStorage.setItem('pp_user_email', email);
-        topEmailInput.style.borderColor = 'var(--accent-green)';
-        alert('Email verified! You can now download extensions.');
     });
 
     downloadTriggers.forEach(trigger => {
         trigger.addEventListener('click', async (e) => {
             e.preventDefault();
 
-            if (!currentUserEmail) {
-                alert('Please enter your email in the Member Access box (top-left) first!');
+            if (!isVerified) {
+                alert('Access Denied. Please verify your membership in the top-left box first.');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
                 topEmailInput.focus();
-                topEmailInput.style.borderColor = '#ef4444';
                 return;
             }
 
             const type = trigger.getAttribute('data-type');
-
             try {
                 const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-
                 const response = await fetch(`${apiUrl}/register-client`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        accountType: type,
-                        email: currentUserEmail
-                    })
+                    body: JSON.stringify({ accountType: type, email: currentUserEmail })
                 });
-
+                const data = await response.json();
                 if (data.status === 'success') {
                     idDisplay.textContent = data.clientId;
                     modal.style.display = 'flex';
-                } else {
-                    alert('Error: ' + data.message);
                 }
-            } catch (err) {
-                console.error("Server error:", err);
-                alert('Server connection error.');
-            }
+            } catch (err) { alert('Server connection error.'); }
         });
     });
+
+    // --- Star Rating Interaction ---
+    const stars = document.querySelectorAll('.star');
+    const ratingInput = document.getElementById('review-rating');
+
+    stars.forEach(star => {
+        star.addEventListener('click', () => {
+            const val = star.getAttribute('data-value');
+            ratingInput.value = val;
+            updateStarsUI(val);
+        });
+    });
+
+    const updateStarsUI = (val) => {
+        stars.forEach(s => {
+            if (s.getAttribute('data-value') <= val) {
+                s.classList.add('active');
+            } else {
+                s.classList.remove('active');
+            }
+        });
+    };
+    updateStarsUI(5); // Default
 
     // --- Reviews system (Floating & Form) ---
     const reviewsContainer = document.getElementById('reviews-container');
@@ -258,22 +325,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
             const res = await fetch(`${apiUrl}/get-reviews`);
             const data = await res.json();
-
             if (data.status === 'success' && data.reviews && data.reviews.length > 0) {
-                // Initial burst
-                data.reviews.slice(0, 5).forEach((rev, i) => {
-                    setTimeout(() => createFloatingReview(rev), i * 2000);
-                });
-
-                // Continuous drift
+                data.reviews.slice(0, 5).forEach((rev, i) => setTimeout(() => createFloatingReview(rev), i * 3000));
                 setInterval(() => {
                     const randomRev = data.reviews[Math.floor(Math.random() * data.reviews.length)];
                     createFloatingReview(randomRev);
-                }, 7000);
+                }, 8000);
             }
-        } catch (err) {
-            console.error('Reviews error:', err);
-        }
+        } catch (err) { console.error('Reviews error:', err); }
     };
 
     const createFloatingReview = (rev) => {
@@ -281,24 +340,14 @@ document.addEventListener('DOMContentLoaded', () => {
         div.className = 'review-float';
         div.style.left = Math.random() * 80 + 5 + '%';
         div.style.top = '110vh';
-        div.innerHTML = `
-            <span class="name">${rev.name}</span>
-            <p class="comment">"${rev.comment}"</p>
-            <span class="stars">${'⭐'.repeat(rev.rating)}</span>
-        `;
+        div.innerHTML = `<span class="name">${rev.name}</span><p class="comment">"${rev.comment}"</p><span class="stars">${'⭐'.repeat(rev.rating)}</span>`;
         reviewsContainer.appendChild(div);
-
         setTimeout(() => div.classList.add('active'), 100);
-
-        // Drifting effect using JS to avoid CSS keyframe limitations on dynamic values
         let pos = 110;
         const driftInt = setInterval(() => {
-            pos -= 0.15;
+            pos -= 0.12;
             div.style.top = pos + 'vh';
-            if (pos < -20) {
-                clearInterval(driftInt);
-                div.remove();
-            }
+            if (pos < -20) { clearInterval(driftInt); div.remove(); }
         }, 30);
     };
 
@@ -307,14 +356,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const btn = reviewForm.querySelector('button');
         btn.textContent = 'Publishing...';
         btn.disabled = true;
-
         const formData = {
             name: document.getElementById('review-name').value,
             email: document.getElementById('review-email').value,
             rating: document.getElementById('review-rating').value,
             comment: document.getElementById('review-comment').value
         };
-
         try {
             const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
             const res = await fetch(`${apiUrl}/add-review`, {
@@ -322,29 +369,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)
             });
-            const data = await res.json();
-
-            if (data.status === 'success') {
-                alert('Review published! Thank you for your feedback.');
+            if ((await res.json()).status === 'success') {
+                alert('Review published!');
                 reviewForm.reset();
+                updateStarsUI(5);
+                if (currentUserEmail) document.getElementById('review-email').value = currentUserEmail;
             }
-        } catch (err) {
-            alert('Error submitting review.');
-        } finally {
-            btn.textContent = 'Publish Review';
-            btn.disabled = false;
-        }
+        } catch (err) { alert('Post failed.'); }
+        finally { btn.textContent = 'Publish Review'; btn.disabled = false; }
     });
 
-    // Copy ID Logic
+    // START ALL
+    setTimeout(startFloatingReviews, 2000);
+    setTimeout(injectVignette, 500);
+    startAdGuardian();
+
+    // Copy ID logic
+    const copyBtn = document.getElementById('copy-id-btn');
     copyBtn.addEventListener('click', () => {
-        const id = idDisplay.textContent;
-        navigator.clipboard.writeText(id).then(() => {
-            copyBtn.innerHTML = '<i class="fas fa-check"></i> Kopirano!';
-            setTimeout(() => {
-                copyBtn.innerHTML = '<i class="fas fa-copy"></i> Kopiraj ID';
-            }, 2000);
-        });
+        navigator.clipboard.writeText(idDisplay.textContent);
+        copyBtn.textContent = 'Copied!';
+        setTimeout(() => copyBtn.textContent = 'Copy to Clipboard', 2000);
     });
 
     // Matrix Effect
