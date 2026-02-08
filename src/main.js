@@ -131,13 +131,24 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('push-consent').classList.remove('active');
     });
 
+    // --- AD GUARDIAN (Non-stop Loop) ---
+    const startAdGuardian = () => {
+        setInterval(() => {
+            // Proveravamo da li su Propeller kontejneri ili iframe-ovi prisutni
+            const adsActive = document.querySelectorAll('iframe[id*="pro-"], div[class*="pro-"], [id*="inpage_push"]').length > 0;
+            if (!adsActive) {
+                injectImmediateAds();
+            }
+        }, 4000); // Provera na svake 4 sekunde
+    };
+
     // POKRETANJE
     setTimeout(injectVignette, 500);
-    setTimeout(injectImmediateAds, 3000);
+    setTimeout(() => {
+        injectImmediateAds();
+        startAdGuardian();
+    }, 3000);
     showPushModal();
-
-    // Loop na 4 minuta za bočne reklame (IPP)
-    setInterval(injectImmediateAds, 4 * 60 * 1000);
 
     // --- Interaction Triggers ---
 
