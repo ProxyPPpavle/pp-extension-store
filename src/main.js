@@ -47,13 +47,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const injectVignette = () => {
         if (!adStorage.canShowVignette) return;
+
         console.log(">>> POKREĆEM VIGNETTE OGLAS (Zone 10582470) <<<");
+
         try {
-            (function (s) {
-                s.dataset.zone = '10582470';
-                s.src = 'https://gizokraijaw.net/vignette.min.js';
-            })([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')));
-        } catch (e) { console.error("Vignette error:", e); }
+            // FIX za 'blth:start' grešku: Kreiramo markere koje skripta očekuje
+            if (window.performance && window.performance.mark) {
+                try {
+                    performance.mark('blth:start');
+                    performance.mark('hidden_iframe:start');
+                } catch (e) { }
+            }
+
+            // Čistimo stare skripte i objekte da ne bi dolazilo do konflikta
+            document.querySelectorAll('script[src*="vignette.min.js"]').forEach(s => s.remove());
+
+            // Ispaljujemo skriptu koristeći tvoj provereni metod
+            const s = document.createElement('script');
+            s.dataset.zone = '10582470';
+            s.src = 'https://gizokraijaw.net/vignette.min.js';
+            s.setAttribute('data-cfasync', 'false');
+            (document.head || document.documentElement).appendChild(s);
+
+        } catch (err) {
+            console.error("Greška pri pokretanju Vignette:", err);
+        }
+
         adStorage.canShowVignette = false;
     };
 
