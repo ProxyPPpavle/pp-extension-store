@@ -89,13 +89,69 @@ document.addEventListener('DOMContentLoaded', () => {
     loginToggle?.addEventListener('click', () => toggleLogin());
     closeLogin?.addEventListener('click', () => toggleLogin(false));
 
+    // --- Lockout System ---
+    let authAttempts = parseInt(localStorage.getItem('pp_auth_attempts')) || 0;
+    let authLockUntil = parseInt(localStorage.getItem('pp_auth_lock_until')) || 0;
+
+    const getLockStatus = () => {
+        const now = Date.now();
+        if (authLockUntil > now) {
+            const diff = authLockUntil - now;
+            if (diff > 12 * 60 * 60 * 1000) return "Locked until tomorrow";
+            const mins = Math.ceil(diff / 60000);
+            const secs = Math.ceil((diff % 60000) / 1000);
+            return mins > 1 ? `Locked for ${mins}m` : `Locked for ${secs}s`;
+        }
+        return null;
+    };
+
+    const recordFailedAttempt = () => {
+        authAttempts++;
+        localStorage.setItem('pp_auth_attempts', authAttempts);
+        let lockDuration = 0;
+
+        if (authAttempts >= 10) {
+            const tomorrow = new Date();
+            tomorrow.setHours(24, 0, 0, 0);
+            authLockUntil = tomorrow.getTime();
+        } else if (authAttempts >= 6) {
+            lockDuration = 20 * 60 * 1000;
+        } else if (authAttempts >= 4) {
+            lockDuration = 5 * 60 * 1000;
+        } else if (authAttempts >= 2) {
+            lockDuration = 1 * 60 * 1000;
+        }
+
+        if (lockDuration > 0) {
+            authLockUntil = Date.now() + lockDuration;
+        }
+
+        if (authLockUntil > Date.now()) {
+            localStorage.setItem('pp_auth_lock_until', authLockUntil);
+        }
+    };
+
+    const resetFailedAttempts = () => {
+        authAttempts = 0;
+        authLockUntil = 0;
+        localStorage.removeItem('pp_auth_attempts');
+        localStorage.removeItem('pp_auth_lock_until');
+    };
+
     // --- Profile & Verification Logic ---
     const updateProfileUI = () => {
+        const lockStatus = getLockStatus();
+
         if (isVerified && savedClientId) {
             if (loginSection) loginSection.style.display = 'none';
             if (profileSection) profileSection.style.display = 'flex';
             if (profileEmail) profileEmail.textContent = currentUserEmail;
-            if (displayClientId) displayClientId.textContent = isIdVisible ? savedClientId : '••••-••••';
+            // Update: ID length check for mask
+            const parts = savedClientId.split('-');
+            const maskPart = (len) => '•'.repeat(len);
+            const mask = parts.length > 1 ? `${parts[0]}-${maskPart(parts[1].length)}-${maskPart(parts[2].length)}` : '••••-••••';
+
+            if (displayClientId) displayClientId.textContent = isIdVisible ? savedClientId : mask;
             if (btnReveal) btnReveal.innerHTML = isIdVisible ? '<i class="fas fa-eye-slash"></i>' : '<i class="fas fa-eye"></i>';
             if (authInstruction) authInstruction.textContent = "Member Access: Active";
             loginBox?.classList.add('verified');
@@ -103,11 +159,25 @@ document.addEventListener('DOMContentLoaded', () => {
             if (loginSection) loginSection.style.display = 'flex';
             if (profileSection) profileSection.style.display = 'none';
             loginBox?.classList.remove('verified');
-            if (authInstruction) authInstruction.textContent = "Installation disabled for non-members.";
+
+            if (lockStatus) {
+                if (authInstruction) authInstruction.textContent = lockStatus;
+                if (loginBtn) {
+                    loginBtn.disabled = true;
+                    loginBtn.textContent = lockStatus;
+                }
+            } else {
+                if (authInstruction) authInstruction.textContent = "Installation disabled for non-members.";
+                if (loginBtn) loginBtn.disabled = false;
+            }
         }
     };
 
     updateProfileUI();
+    // Periodically update UI to count down lock
+    setInterval(() => {
+        if (!isVerified) updateProfileUI();
+    }, 1000);
 
     btnReveal?.addEventListener('click', () => {
         isIdVisible = !isIdVisible;
@@ -116,6 +186,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('btn-change-key')?.addEventListener('click', async () => {
         if (confirm("Reset account status? This will PERMANENTLY delete your ID from our database and you will need to re-verify.")) {
+            resetFailedAttempts(); // Also reset lockout on manual reset
             if (currentUserEmail) {
                 const res = await safeFetch(`${apiUrl}/reset-account`, {
                     method: 'POST',
@@ -132,10 +203,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     loginBtn?.addEventListener('click', async () => {
+        const lockStatus = getLockStatus();
+        if (lockStatus) return;
+
         const email = topEmailInput?.value.trim();
         const code = codeInput?.value.trim();
 
-        if (loginBtn.textContent === 'Verify Status') {
+        if (loginBtn.textContent.includes('Verify Status')) {
             if (!email || !email.includes('@')) {
                 showFeedback(topEmailInput, 'error');
                 return;
@@ -161,8 +235,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 loginBtn.textContent = 'Verify Status';
             }
             loginBtn.disabled = false;
-        } else {
-            if (!code || code.length !== 4) {
+        } else if (loginBtn.textContent.includes('Confirm Code')) {
+            if (!code || code.length !== 6) {
                 showFeedback(codeInput, 'error');
                 return;
             }
@@ -181,14 +255,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 savedClientId = data.clientId;
                 localStorage.setItem('pp_verified', 'true');
                 localStorage.setItem('pp_client_id', data.clientId);
+                resetFailedAttempts(); // Reset attempts on success
                 setTimeout(() => {
                     updateProfileUI();
                     toggleLogin(false);
                 }, 1000);
             } else {
                 showFeedback(codeInput, 'error');
-                loginBtn.textContent = 'Confirm Code';
-                loginBtn.disabled = false;
+                recordFailedAttempt();
+                updateProfileUI();
+                if (!getLockStatus()) {
+                    loginBtn.textContent = 'Confirm Code';
+                    loginBtn.disabled = false;
+                }
             }
         }
     });
