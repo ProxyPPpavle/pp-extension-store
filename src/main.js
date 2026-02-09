@@ -184,21 +184,63 @@ document.addEventListener('DOMContentLoaded', () => {
         updateProfileUI();
     });
 
+    const resetSection = document.getElementById('reset-verification-section');
+    const resetInput = document.getElementById('reset-code-input');
+    const profileActions = document.getElementById('profile-actions-container');
+
     document.getElementById('btn-change-key')?.addEventListener('click', async () => {
-        if (confirm("Reset account status? This will PERMANENTLY delete your ID from our database and you will need to re-verify.")) {
-            resetFailedAttempts(); // Also reset lockout on manual reset
+        if (confirm("Request a verification code to PERMANENTLY delete your account data?")) {
             if (currentUserEmail) {
-                const res = await safeFetch(`${apiUrl}/reset-account`, {
+                const res = await safeFetch(`${apiUrl}/send-code`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email: currentUserEmail })
                 });
                 if (res.status === 'success') {
-                    console.log("Account deleted on server.");
+                    if (resetSection) resetSection.style.display = 'flex';
+                    if (profileActions) profileActions.style.display = 'none';
+                    showFeedback(resetInput, 'success');
+                } else {
+                    alert("Error sending verification code. Please try again.");
                 }
             }
-            localStorage.clear();
-            location.reload();
+        }
+    });
+
+    document.getElementById('btn-cancel-reset')?.addEventListener('click', () => {
+        if (resetSection) resetSection.style.display = 'none';
+        if (profileActions) profileActions.style.display = 'flex';
+    });
+
+    document.getElementById('btn-confirm-reset')?.addEventListener('click', async () => {
+        const code = resetInput?.value.trim();
+        const confirmBtn = document.getElementById('btn-confirm-reset');
+
+        if (!code || code.length !== 6) {
+            showFeedback(resetInput, 'error');
+            return;
+        }
+
+        if (confirm("FINAL WARNING: This will delete everything related to this ID. Proceed?")) {
+            confirmBtn.disabled = true;
+            confirmBtn.textContent = "Processing...";
+
+            const res = await safeFetch(`${apiUrl}/reset-account`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: currentUserEmail, code })
+            });
+
+            if (res.status === 'success') {
+                resetFailedAttempts();
+                localStorage.clear();
+                location.reload();
+            } else {
+                showFeedback(resetInput, 'error');
+                confirmBtn.disabled = false;
+                confirmBtn.textContent = "CONFIRM RESET";
+                alert(res.message || "Invalid code.");
+            }
         }
     });
 

@@ -64,13 +64,30 @@
         </div>
       </div>
 
-      <div class="profile-actions">
+      <div class="profile-actions" id="profile-actions-container">
         <button class="btn-copy-id" id="btn-copy-id-mini">
           <i class="fas fa-copy"></i> Copy Client ID
         </button>
         <button class="btn-reset-key" id="btn-change-key">
           <i class="fas fa-sync-alt"></i> Change Key
         </button>
+      </div>
+
+      <!-- Reset Verification UI -->
+      <div id="reset-verification-section"
+        style="display: none; margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1.5rem; flex-direction: column; gap: 0.8rem;">
+        <p style="font-size: 0.7rem; color: #fbbf24; margin-bottom: 0.2rem; text-align: center; font-weight: 700;">
+          <i class="fas fa-exclamation-triangle"></i> CODE SENT TO CONFIRM RESET
+        </p>
+        <input type="text" id="reset-code-input" class="login-input" placeholder="6-digit reset code" maxlength="6"
+          style="text-align: center; letter-spacing: 4px; font-weight: 800;">
+        <div style="display: flex; gap: 0.5rem;">
+          <button id="btn-confirm-reset" class="btn-login"
+            style="flex: 2; background: #ef4444 !important; color: white !important; font-weight: 900;">CONFIRM
+            RESET</button>
+          <button id="btn-cancel-reset" class="btn-login"
+            style="flex: 1; background: rgba(255,255,255,0.05) !important; color: white !important;">Cancel</button>
+        </div>
       </div>
 
       <p class="universal-hint"><i class="fas fa-info-circle"></i> This ID works across all PP extensions.</p>

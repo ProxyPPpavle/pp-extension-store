@@ -196,9 +196,17 @@ nav {
     }
 }
 
-.btn-primary:hover {
+.btn-primary:hover:not(:disabled) {
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+}
+
+.btn-primary:disabled,
+.btn-login:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    filter: grayscale(1);
+    transform: none !important;
 }
 
 .btn-outline {
