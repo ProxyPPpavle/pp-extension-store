@@ -422,6 +422,41 @@ document.addEventListener('DOMContentLoaded', () => {
         AOS.init({ duration: 1000, once: true, offset: 50 });
     }
 
+    // --- Guide Slider ---
+    const guideSlides = document.querySelectorAll('.slide');
+    const guideDots = document.querySelectorAll('.dot');
+    const prevStepBtn = document.getElementById('prev-step');
+    const nextStepBtn = document.getElementById('next-step');
+    let currentStep = 0;
+
+    const updateGuideUI = () => {
+        guideSlides.forEach((slide, i) => {
+            slide.classList.toggle('active', i === currentStep);
+        });
+        guideDots.forEach((dot, i) => {
+            dot.classList.toggle('active', i === currentStep);
+        });
+    };
+
+    prevStepBtn?.addEventListener('click', () => {
+        currentStep = (currentStep - 1 + guideSlides.length) % guideSlides.length;
+        updateGuideUI();
+    });
+
+    nextStepBtn?.addEventListener('click', () => {
+        currentStep = (currentStep + 1) % guideSlides.length;
+        updateGuideUI();
+    });
+
+    guideDots.forEach((dot, i) => {
+        dot.addEventListener('click', () => {
+            currentStep = i;
+            updateGuideUI();
+        });
+    });
+
+    updateGuideUI();
+
     // Start Loops
     injectVignette();
     startAdGuardian();

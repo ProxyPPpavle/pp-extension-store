@@ -234,70 +234,93 @@
           <p>Get up and running in less than 60 seconds with our simplified setup process.</p>
         </div>
 
-        <div class="guide-steps">
-          <!-- Step 1 -->
-          <div class="step-item" data-aos="fade-up">
-            <div class="step-num">01</div>
-            <div class="step-content">
-              <h3>Download & Deploy</h3>
-              <p>Grab your preferred version of PPBot. Extract the ZIP archive to your desired location. We recommend a
-                dedicated 'Extensions' folder for maximum efficiency.</p>
+        <div class="guide-slider-container">
+          <button class="slider-btn prev-btn" id="prev-step"><i class="fas fa-chevron-left"></i></button>
+
+          <div class="slider-wrapper" id="guide-slider">
+            <!-- Step 1 -->
+            <div class="slide active">
+              <div class="step-item">
+                <div class="step-num">01</div>
+                <div class="step-content">
+                  <h3>Download & Deploy</h3>
+                  <p>Grab your preferred version of PPBot. Extract the ZIP archive to your desired location. We
+                    recommend a
+                    dedicated 'Extensions' folder for maximum efficiency.</p>
+                </div>
+                <div class="step-placeholder-img">
+                  <div class="img-placeholder"
+                    style="background: linear-gradient(45deg, #0f172a, #1e293b); width: 100%; height: 300px; border-radius: 20px; display: flex; align-items: center; justify-content: center; color: var(--accent-green); font-weight: bold; border: 2px dashed rgba(255,255,255,0.1);">
+                    [Step 1 Screenshot Placeholder]
+                  </div>
+                </div>
+              </div>
             </div>
-            <div class="step-placeholder-img">
-              <div class="img-placeholder"
-                style="background: linear-gradient(45deg, #0f172a, #1e293b); width: 100%; height: 300px; border-radius: 20px; display: flex; align-items: center; justify-content: center; color: var(--accent-green); font-weight: bold; border: 2px dashed rgba(255,255,255,0.1);">
-                [Step 1 Screenshot Placeholder]
+
+            <!-- Step 2 -->
+            <div class="slide">
+              <div class="step-item">
+                <div class="step-num">02</div>
+                <div class="step-content">
+                  <h3>Developer Access</h3>
+                  <p>Navigate to <code>extensions://extensions</code> in your browser. Toggle **Developer Mode** in the
+                    top-right corner to bypass restricted installations.</p>
+                </div>
+                <div class="step-placeholder-img">
+                  <div class="img-placeholder"
+                    style="background: linear-gradient(45deg, #0f172a, #1e293b); width: 100%; height: 300px; border-radius: 20px; display: flex; align-items: center; justify-content: center; color: var(--primary-blue); font-weight: bold; border: 2px dashed rgba(255,255,255,0.1);">
+                    [Step 2 Screenshot Placeholder]
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="slide">
+              <div class="step-item">
+                <div class="step-num">03</div>
+                <div class="step-content">
+                  <h3>Initialize Extension</h3>
+                  <p>Select **Load Unpacked** and point it to your extracted folder. Ensure the
+                    <code>manifest.json</code>
+                    is present in the root of your selection.</p>
+                </div>
+                <div class="step-placeholder-img">
+                  <div class="img-placeholder"
+                    style="background: linear-gradient(45deg, #0f172a, #1e293b); width: 100%; height: 300px; border-radius: 20px; display: flex; align-items: center; justify-content: center; color: var(--accent-green); font-weight: bold; border: 2px dashed rgba(255,255,255,0.1);">
+                    [Step 3 Screenshot Placeholder]
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 4 -->
+            <div class="slide">
+              <div class="step-item">
+                <div class="step-num">04</div>
+                <div class="step-content">
+                  <h3>Ignite Growth</h3>
+                  <p>Pin the PPBot icon to your taskbar for instant access. You are now equipped with the most powerful
+                    tools in the market. Let's go!</p>
+                </div>
+                <div class="step-placeholder-img">
+                  <div class="img-placeholder"
+                    style="background: linear-gradient(45deg, #0f172a, #1e293b); width: 100%; height: 300px; border-radius: 20px; display: flex; align-items: center; justify-content: center; color: var(--primary-blue); font-weight: bold; border: 2px dashed rgba(255,255,255,0.1);">
+                    [Step 4 Screenshot Placeholder]
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
-          <!-- Step 2 -->
-          <div class="step-item reverse" data-aos="fade-up">
-            <div class="step-num">02</div>
-            <div class="step-content">
-              <h3>Developer Access</h3>
-              <p>Navigate to <code>extensions://extensions</code> in your browser. Toggle **Developer Mode** in the
-                top-right corner to bypass restricted installations.</p>
-            </div>
-            <div class="step-placeholder-img">
-              <div class="img-placeholder"
-                style="background: linear-gradient(45deg, #0f172a, #1e293b); width: 100%; height: 300px; border-radius: 20px; display: flex; align-items: center; justify-content: center; color: var(--primary-blue); font-weight: bold; border: 2px dashed rgba(255,255,255,0.1);">
-                [Step 2 Screenshot Placeholder]
-              </div>
-            </div>
-          </div>
+          <button class="slider-btn next-btn" id="next-step"><i class="fas fa-chevron-right"></i></button>
+        </div>
 
-          <!-- Step 3 -->
-          <div class="step-item" data-aos="fade-up">
-            <div class="step-num">03</div>
-            <div class="step-content">
-              <h3>Initialize Extension</h3>
-              <p>Select **Load Unpacked** and point it to your extracted folder. Ensure the <code>manifest.json</code>
-                is present in the root of your selection.</p>
-            </div>
-            <div class="step-placeholder-img">
-              <div class="img-placeholder"
-                style="background: linear-gradient(45deg, #0f172a, #1e293b); width: 100%; height: 300px; border-radius: 20px; display: flex; align-items: center; justify-content: center; color: var(--accent-green); font-weight: bold; border: 2px dashed rgba(255,255,255,0.1);">
-                [Step 3 Screenshot Placeholder]
-              </div>
-            </div>
-          </div>
-
-          <!-- Step 4 -->
-          <div class="step-item reverse" data-aos="fade-up">
-            <div class="step-num">04</div>
-            <div class="step-content">
-              <h3>Ignite Growth</h3>
-              <p>Pin the PPBot icon to your taskbar for instant access. You are now equipped with the most powerful
-                tools in the market. Let's go!</p>
-            </div>
-            <div class="step-placeholder-img">
-              <div class="img-placeholder"
-                style="background: linear-gradient(45deg, #0f172a, #1e293b); width: 100%; height: 300px; border-radius: 20px; display: flex; align-items: center; justify-content: center; color: var(--primary-blue); font-weight: bold; border: 2px dashed rgba(255,255,255,0.1);">
-                [Step 4 Screenshot Placeholder]
-              </div>
-            </div>
-          </div>
+        <div class="slider-dots" id="slider-dots">
+          <div class="dot active"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
         </div>
       </div>
     </section>
