@@ -10,6 +10,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Selection state
     let activeExtensionId = 'ppbot';
 
+    // Optimization: Visit Tracking
+    let visitCount = parseInt(localStorage.getItem('pp_profile_visits') || '0');
+    visitCount++;
+    localStorage.setItem('pp_profile_visits', visitCount.toString());
+
     if (!isVerified || !email || !clientId) {
         window.location.href = '/';
         return;
@@ -45,7 +50,6 @@ document.addEventListener('DOMContentLoaded', () => {
         toastMsg.textContent = message;
         toast.className = type === 'error' ? 'show error' : 'show';
 
-        // Icon update
         const icon = toast.querySelector('i');
         icon.className = type === 'error' ? 'fas fa-exclamation-circle' : 'fas fa-check-circle';
 
@@ -92,10 +96,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Change Key Logic ---
     btnChangeTrigger.addEventListener('click', async () => {
-        // --- Click Rate Limit / Debounce ---
         const lastRequest = parseInt(localStorage.getItem('pp_last_reset_request') || '0');
         const now = Date.now();
-        const cooldown = 60000; // 60 seconds
+        const cooldown = 60000;
 
         if (now - lastRequest < cooldown) {
             const wait = Math.ceil((cooldown - (now - lastRequest)) / 1000);
@@ -138,6 +141,8 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             if (res.status === 'success') {
                 localStorage.setItem('pp_client_id', res.newClientId);
+                // Clear cached credits on ID change
+                localStorage.removeItem('pp_last_credits');
                 notify('Global Client Key successfully updated!');
                 setTimeout(() => window.location.reload(), 2000);
             } else {
@@ -166,6 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // --- Credits & Ad Logic ---
     const today = new Date().toDateString();
     const lastAdReset = localStorage.getItem(`pp_ad_reset_${email}`);
     if (lastAdReset !== today) {
@@ -173,19 +179,27 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem(`pp_ads_today_${email}`, '0');
     }
 
-    const updateCreditsUI = async () => {
+    const updateCreditsUI = async (forceFetch = false) => {
         const id = localStorage.getItem('pp_client_id');
-        const data = await safeFetch(`${apiUrl}/check-client`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ clientId: id })
-        });
+        let cachedCredits = localStorage.getItem('pp_last_credits');
 
-        if (data.status === 'success') {
-            creditCountEl.textContent = data.credits;
-        } else {
-            creditCountEl.textContent = '--';
+        // Strategy: Only fetch if forceFetch, OR first time, OR every 10th visit
+        const shouldFetch = forceFetch || !cachedCredits || visitCount === 1 || visitCount % 10 === 0;
+
+        if (shouldFetch) {
+            const data = await safeFetch(`${apiUrl}/check-client`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ clientId: id })
+            });
+
+            if (data.status === 'success') {
+                cachedCredits = data.credits.toString();
+                localStorage.setItem('pp_last_credits', cachedCredits);
+            }
         }
+
+        creditCountEl.textContent = cachedCredits || '--';
 
         const adsToday = parseInt(localStorage.getItem(`pp_ads_today_${email}`) || '0');
         const adsSession = parseInt(sessionStorage.getItem(`pp_ads_session_${email}`) || '0');
@@ -225,6 +239,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const finishAd = async () => {
         adSimulation.style.display = 'none';
         const id = localStorage.getItem('pp_client_id');
+
+        // 1. Tell database to boost
         const data = await safeFetch(`${apiUrl}/boost-credits`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -232,14 +248,27 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         if (data.status === 'success') {
-            const adsToday = parseInt(localStorage.getItem('pp_ads_today_${email}') || '0');
+            // 2. Optimization: Update UI & LocalStorage without fresh fetch
+            let updatedCredits = parseInt(localStorage.getItem('pp_last_credits') || '0') + 2;
+            localStorage.setItem('pp_last_credits', updatedCredits.toString());
+            creditCountEl.textContent = updatedCredits;
+
+            const adsToday = parseInt(localStorage.getItem(`pp_ads_today_${email}`) || '0');
             const adsSession = parseInt(sessionStorage.getItem(`pp_ads_session_${email}`) || '0');
 
             localStorage.setItem(`pp_ads_today_${email}`, (adsToday + 1).toString());
             sessionStorage.setItem(`pp_ads_session_${email}`, (adsSession + 1).toString());
 
-            await updateCreditsUI();
             notify('Credits boosted successfully!');
+
+            // Re-update the limit text
+            const newAdsToday = adsToday + 1;
+            const newAdsSession = adsSession + 1;
+            adLimitStatus.textContent = `Today: ${newAdsToday}/6 Rewards Used | Session: ${newAdsSession}/3`;
+            if (newAdsToday >= 6 || newAdsSession >= 3) {
+                btnWatchAd.disabled = true;
+                btnWatchAd.textContent = 'LIMIT REACHED';
+            }
         } else {
             notify('Booster synchronization failed.', 'error');
         }
