@@ -86,7 +86,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    loginToggle?.addEventListener('click', () => toggleLogin());
+    loginToggle?.addEventListener('click', () => {
+        if (isVerified) {
+            window.open('/profile.html', '_blank');
+        } else {
+            toggleLogin();
+        }
+    });
     closeLogin?.addEventListener('click', () => toggleLogin(false));
 
     // --- Lockout System ---
@@ -174,6 +180,10 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     updateProfileUI();
+    if (isVerified && loginToggle) {
+        loginToggle.innerHTML = '<i class="fas fa-user-check"></i> <span class="toggle-text">My Profile</span>';
+    }
+
     // Periodically update UI to count down lock
     setInterval(() => {
         if (!isVerified) updateProfileUI();
@@ -299,7 +309,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 localStorage.setItem('pp_client_id', data.clientId);
                 resetFailedAttempts(); // Reset attempts on success
                 setTimeout(() => {
-                    updateProfileUI();
+                    window.open('/profile.html', '_blank');
                     toggleLogin(false);
                 }, 1000);
             } else {

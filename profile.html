@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Member Access | PP Extension Store</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/src/style.css">
+    <style>
+        .profile-page {
+            min-height: 100vh;
+            padding: 4rem 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .profile-container {
+            max-width: 900px;
+            width: 100%;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(20px);
+            border-radius: 40px;
+            border: 1px solid var(--glass-border);
+            padding: 3rem;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .profile-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 1.5rem;
+        }
+
+        .profile-header h1 {
+            font-size: 2rem;
+            font-weight: 800;
+        }
+
+        .user-info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .info-card {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 1.5rem;
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .info-card label {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-gray);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .info-card .value {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-white);
+        }
+
+        .client-id-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .btn-icon {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-white);
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-icon:hover {
+            background: var(--primary-blue);
+            border-color: var(--primary-blue);
+        }
+
+        .credits-section {
+            margin-top: 2rem;
+        }
+
+        .credits-section h2 {
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .credits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .ext-credit-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
+            padding: 1.5rem;
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: transform 0.3s;
+        }
+
+        .ext-credit-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-green);
+        }
+
+        .ext-name {
+            font-weight: 800;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .credit-count {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--accent-green);
+            margin: 0.5rem 0;
+        }
+
+        .credit-label {
+            font-size: 0.8rem;
+            color: var(--text-gray);
+        }
+
+        .ad-section {
+            margin-top: 4rem;
+            background: var(--gradient);
+            padding: 2rem;
+            border-radius: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+        }
+
+        .ad-text h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .btn-ad {
+            background: white;
+            color: var(--bg-black);
+            padding: 1rem 2rem;
+            border-radius: 16px;
+            font-weight: 800;
+            text-decoration: none;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-ad:hover:not(:disabled) {
+            transform: scale(1.05);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-ad:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .ad-status {
+            font-size: 0.8rem;
+            margin-top: 0.8rem;
+            text-align: right;
+            opacity: 0.8;
+        }
+
+        .back-home {
+            margin-top: 2rem;
+            color: var(--text-gray);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+        }
+
+        .back-home:hover {
+            color: var(--text-white);
+        }
+
+        #change-key-section {
+            display: none;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="glow-bg"></div>
+    <div class="bg-lines"></div>
+
+    <div class="profile-page">
+        <div class="profile-container">
+            <div class="profile-header">
+                <h1><i class="fas fa-user-shield gradient-text"></i> Member Access</h1>
+                <div class="id-badge">Universal Access</div>
+            </div>
+
+            <div class="user-info-grid">
+                <div class="info-card">
+                    <label>Active Email</label>
+                    <div class="value" id="user-email">...</div>
+                </div>
+                <div class="info-card">
+                    <label>Client ID</label>
+                    <div class="client-id-wrapper">
+                        <div class="value" id="client-id">••••-••••</div>
+                        <button class="btn-icon" id="btn-reveal"><i class="fas fa-eye"></i></button>
+                        <button class="btn-icon" id="btn-copy"><i class="fas fa-copy"></i></button>
+                        <button class="btn-icon" id="btn-change-trigger"><i class="fas fa-sync-alt"></i></button>
+                    </div>
+                    <!-- Change Key Logic -->
+                    <div id="change-key-section">
+                        <p style="font-size: 0.7rem; color: #fbbf24; margin-bottom: 0.5rem;">Enter 6-digit code to reset
+                            key</p>
+                        <input type="text" id="reset-code" placeholder="XXXXXX" maxlength="6"
+                            style="background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); color: white; padding: 0.5rem; border-radius: 8px; width: 100px; text-align: center; letter-spacing: 2px;">
+                        <button id="btn-confirm-change" class="btn-primary"
+                            style="padding: 0.5rem 1rem; font-size: 0.7rem;">Confirm</button>
+                        <button id="btn-cancel-change"
+                            style="background:none; border:none; color: var(--text-gray); cursor:pointer; font-size: 0.7rem;">Cancel</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="credits-section">
+                <h2><i class="fas fa-coins" style="color: #fbbf24;"></i> Service Credits</h2>
+                <div class="credits-grid" id="credits-grid">
+                    <!-- Credits will be injected here -->
+                    <div class="ext-credit-card">
+                        <span class="ext-name">PPBot (Chrome)</span>
+                        <div class="credit-count" id="credit-ppbot">0</div>
+                        <span class="credit-label">Available Actions</span>
+                    </div>
+                    <div class="ext-credit-card">
+                        <span class="ext-name">PP Predictor</span>
+                        <div class="credit-count" id="credit-predictor">0</div>
+                        <span class="credit-label">Available Actions</span>
+                    </div>
+                    <div class="ext-credit-card">
+                        <span class="ext-name">PP Desktop</span>
+                        <div class="credit-count" id="credit-desktop">0</div>
+                        <span class="credit-label">Available Actions</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ad-section">
+                <div class="ad-text">
+                    <h3>Earn Extra Credits</h3>
+                    <p>Watch a short advertisement to receive <strong>+2 Credits</strong> for your tools.</p>
+                </div>
+                <div>
+                    <select id="ad-target-select"
+                        style="padding: 0.8rem; border-radius: 12px; border: none; margin-bottom: 1rem; width: 100%; font-family: inherit;">
+                        <option value="ppbot">PPBot (Chrome)</option>
+                        <option value="predictor">PP Predictor</option>
+                        <option value="desktop">PP Desktop</option>
+                    </select>
+                    <button id="btn-watch-ad" class="btn-ad">Watch Ad & Earn</button>
+                    <div class="ad-status" id="ad-limit-status">Ads used today: 0/6</div>
+                </div>
+            </div>
+        </div>
+
+        <a href="/" class="back-home"><i class="fas fa-arrow-left"></i> Back to Store Home</a>
+    </div>
+
+    <!-- Hidden Ad Preloader/Simulation -->
+    <div id="ad-simulation"
+        style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:black; z-index:1000; display:none; flex-direction:column; align-items:center; justify-content:center; color:white;">
+        <h2 id="ad-timer">Advertisement (15s)</h2>
+        <p>Loading premium growth content...</p>
+        <div
+            style="width: 200px; height: 10px; background: #333; margin-top: 1rem; border-radius: 5px; overflow: hidden;">
+            <div id="ad-progress" style="width: 0%; height: 100%; background: var(--accent-green);"></div>
+        </div>
+    </div>
+
+    <script type="module" src="/src/profile.js"></script>
+</body>
+
+</html>

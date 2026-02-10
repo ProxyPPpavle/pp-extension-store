@@ -41,57 +41,6 @@
       </div>
       <button id="btn-login-top" class="btn-login">Verify Status</button>
     </div>
-
-    <!-- Profile Section (Hidden by default) -->
-    <div id="profile-section" style="display: none;">
-      <div class="user-profile-card">
-        <div class="profile-header-mini">
-          <i class="fas fa-id-badge"></i>
-          <span class="access-badge">Universal ID</span>
-        </div>
-
-        <div class="profile-field">
-          <label><i class="fas fa-envelope"></i> Active Email</label>
-          <div class="field-value" id="profile-email">...</div>
-        </div>
-
-        <div class="profile-field">
-          <label><i class="fas fa-key"></i> Client ID</label>
-          <div class="id-display-box">
-            <span id="display-client-id">••••-••••</span>
-            <button id="btn-reveal-id" class="reveal-trigger"><i class="fas fa-eye"></i></button>
-          </div>
-        </div>
-      </div>
-
-      <div class="profile-actions" id="profile-actions-container">
-        <button class="btn-copy-id" id="btn-copy-id-mini">
-          <i class="fas fa-copy"></i> Copy Client ID
-        </button>
-        <button class="btn-reset-key" id="btn-change-key">
-          <i class="fas fa-sync-alt"></i> Change Key
-        </button>
-      </div>
-
-      <!-- Reset Verification UI -->
-      <div id="reset-verification-section"
-        style="display: none; margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1.5rem; flex-direction: column; gap: 0.8rem;">
-        <p style="font-size: 0.7rem; color: #fbbf24; margin-bottom: 0.2rem; text-align: center; font-weight: 700;">
-          <i class="fas fa-exclamation-triangle"></i> CODE SENT TO CONFIRM RESET
-        </p>
-        <input type="text" id="reset-code-input" class="login-input" placeholder="6-digit reset code" maxlength="6"
-          style="text-align: center; letter-spacing: 4px; font-weight: 800;">
-        <div style="display: flex; gap: 0.5rem;">
-          <button id="btn-confirm-reset" class="btn-login"
-            style="flex: 2; background: #ef4444 !important; color: white !important; font-weight: 900;">CONFIRM
-            RESET</button>
-          <button id="btn-cancel-reset" class="btn-login"
-            style="flex: 1; background: rgba(255,255,255,0.05) !important; color: white !important;">Cancel</button>
-        </div>
-      </div>
-
-      <p class="universal-hint"><i class="fas fa-info-circle"></i> This ID works across all PP extensions.</p>
-    </div>
   </div>
 
   <nav>
@@ -324,29 +273,28 @@
         </div>
       </div>
     </section>
-  </main>
 
-  <!-- Partner Section (Smart Link) -->
-  <section class="partners-section">
-    <div class="container">
-      <div class="partners-grid" data-aos="fade-up">
-        <div class="partner-card">
-          <span class="partner-badge">Premium Offer</span>
-          <h4>Explore Our Partner Network</h4>
-          <p>Discover exclusive trading tools and automation scripts from our trusted collaborators.</p>
-          <a href="https://is.gd/8GvRR9" target="_blank" class="btn-partner">View What's New <i
-              class="fas fa-external-link-alt"></i></a>
-        </div>
-        <div class="partner-card">
-          <span class="partner-badge">Community Support</span>
-          <h4>Support Our Development</h4>
-          <p>Help us keep the PP Store free! Click below to see our special community-driven initiatives.</p>
-          <a href="https://is.gd/8GvRR9" target="_blank" class="btn-partner">Show Your Support <i
-              class="fas fa-heart"></i></a>
+    <!-- Partner Section (Smart Link) -->
+    <section class="partners-section">
+      <div class="container">
+        <div class="partners-grid" data-aos="fade-up">
+          <div class="partner-card">
+            <span class="partner-badge">Premium Offer</span>
+            <h4>Explore Our Partner Network</h4>
+            <p>Discover exclusive trading tools and automation scripts from our trusted collaborators.</p>
+            <a href="https://is.gd/8GvRR9" target="_blank" class="btn-partner">View What's New <i
+                class="fas fa-external-link-alt"></i></a>
+          </div>
+          <div class="partner-card">
+            <span class="partner-badge">Community Support</span>
+            <h4>Support Our Development</h4>
+            <p>Help us keep the PP Store free! Click below to see our special community-driven initiatives.</p>
+            <a href="https://is.gd/8GvRR9" target="_blank" class="btn-partner">Show Your Support <i
+                class="fas fa-heart"></i></a>
+          </div>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
   </main>
 
   <footer>
