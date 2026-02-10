@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Selection state
     let activeExtensionId = 'ppbot';
+    let availableAssets = [];
 
     // Optimization: Visit Tracking
     let visitCount = parseInt(localStorage.getItem('pp_profile_visits') || '0');
@@ -41,6 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const adSimulation = document.getElementById('ad-simulation');
     const adTimer = document.getElementById('ad-timer');
     const adProgress = document.getElementById('ad-progress');
+    const possessedList = document.getElementById('possessed-extensions-list');
 
     // Toast logic
     const toast = document.getElementById('pp-toast');
@@ -155,23 +157,75 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    const navItems = document.querySelectorAll('.ext-nav-item[data-id]:not(.locked)');
-    navItems.forEach(item => {
-        item.addEventListener('click', () => {
-            const id = item.getAttribute('data-id');
-            const name = item.getAttribute('data-name');
-            activeExtensionId = id;
-
-            navItems.forEach(el => el.classList.remove('active'));
-            item.classList.add('active');
-
-            currentExtName.textContent = name;
-            creditsLabel.textContent = `Compute Credits (Sync via Client ID)`;
-            if (adTargetName) adTargetName.textContent = name;
-
-            updateCreditsUI();
+    // --- Dynamic Asset Loading ---
+    const loadAssets = async () => {
+        const res = await safeFetch(`${apiUrl}/get-user-assets`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
         });
-    });
+
+        if (res.status === 'success') {
+            availableAssets = res.assets;
+            renderAssetList();
+        } else {
+            possessedList.innerHTML = '<div class="ext-nav-empty">No active extensions found.</div>';
+        }
+    };
+
+    const assetConfig = {
+        'ppbot': { name: 'PPBot Standard', icon: 'fa-robot' },
+        'pp-screen': { name: 'PP Screen', icon: 'fa-desktop' },
+        'predictor': { name: 'PP Predictor', icon: 'fa-chart-pie' }
+    };
+
+    const renderAssetList = () => {
+        if (availableAssets.length === 0) {
+            possessedList.innerHTML = '<div class="ext-nav-empty">No active extensions.</div>';
+            return;
+        }
+
+        possessedList.innerHTML = '';
+        availableAssets.forEach(asset => {
+            const config = assetConfig[asset.extension_id] || { name: asset.extension_id, icon: 'fa-plug' };
+            const isActive = asset.extension_id === activeExtensionId;
+
+            const item = document.createElement('div');
+            item.className = `ext-nav-item ${isActive ? 'active' : ''}`;
+            item.setAttribute('data-id', asset.extension_id);
+            item.setAttribute('data-name', config.name);
+            item.innerHTML = `
+                <i class="fas ${config.icon}"></i>
+                <div class="ext-nav-text">
+                    <span class="name">${config.name}</span>
+                    <span class="sub">${asset.account_type.toUpperCase()} Account</span>
+                </div>
+                <div class="dot"></div>
+            `;
+
+            item.addEventListener('click', () => {
+                activeExtensionId = asset.extension_id;
+                document.querySelectorAll('.ext-nav-item').forEach(el => el.classList.remove('active'));
+                item.classList.add('active');
+                switchAsset(asset.extension_id, config.name);
+            });
+
+            possessedList.appendChild(item);
+        });
+
+        // Set initial name and switch
+        const initial = availableAssets[0];
+        const initialConfig = assetConfig[initial.extension_id] || { name: initial.extension_id };
+        activeExtensionId = initial.extension_id;
+        switchAsset(initial.extension_id, initialConfig.name);
+    };
+
+    const switchAsset = (id, name) => {
+        currentExtName.textContent = name;
+        creditsLabel.textContent = `Compute Credits (Sync via Client ID)`;
+        if (adTargetName) adTargetName.textContent = name;
+        updateCreditsUI(true); // Force update when switching
+    };
 
     // --- Credits & Ad Logic ---
     const today = new Date().toDateString();
@@ -193,19 +247,18 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await safeFetch(`${apiUrl}/check-client`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ clientId: id, extensionId: activeExtensionId })
+                body: JSON.stringify({ clientId: id, extension_id: activeExtensionId }) // Fixed: changed extensionId to extension_id for check
             });
 
             if (data.status === 'success') {
                 cachedCredits = data.credits.toString();
                 localStorage.setItem(cacheKey, cachedCredits);
             } else {
-                // If it doesn't exist in DB, maybe it hasn't been registered. Show 0 or fetch from server.
                 cachedCredits = '0';
             }
         }
 
-        creditCountEl.textContent = cachedCredits || '--';
+        creditCountEl.textContent = cachedCredits || '0';
 
         const adsToday = parseInt(localStorage.getItem(`pp_ads_today_${email}`) || '0');
         const adsSession = parseInt(sessionStorage.getItem(`pp_ads_session_${email}`) || '0');
@@ -251,7 +304,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const data = await safeFetch(`${apiUrl}/boost-credits`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ clientId: id, extensionId: activeExtensionId })
+            body: JSON.stringify({ clientId: id, extension_id: activeExtensionId })
         });
 
         if (data.status === 'success') {
@@ -268,7 +321,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             notify('Credits boosted successfully!');
 
-            // Re-update the limit text
             const newAdsToday = adsToday + 1;
             const newAdsSession = adsSession + 1;
             adLimitStatus.textContent = `Today: ${newAdsToday}/6 Rewards Used | Session: ${newAdsSession}/3`;
@@ -281,6 +333,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    updateCreditsUI();
+    loadAssets();
     updateClientIdUI();
 });

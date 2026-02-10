@@ -451,13 +451,14 @@ nav {
 .extension-card {
     background: var(--bg-slate);
     border: 1px solid var(--glass-border);
-    padding: 3rem;
+    padding: 2.5rem 2.5rem 1.5rem 2.5rem;
     border-radius: 32px;
     max-width: 500px;
     position: relative;
     overflow: hidden;
     transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    animation: float 8s ease-in-out infinite;
+    display: flex;
+    flex-direction: column;
 }
 
 .extension-card:hover {
@@ -550,32 +551,51 @@ nav {
     margin-top: 2rem;
 }
 
-.coming-soon-btn {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px dashed var(--glass-border);
-    color: var(--text-gray);
-    padding: 1.5rem;
-    border-radius: 20px;
-    text-align: center;
-    font-weight: 700;
-    font-size: 1.1rem;
+/* Coming Soon Overlays */
+.coming-soon-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(2, 6, 23, 0.75);
+    backdrop-filter: blur(8px);
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
-    opacity: 0.8;
+    z-index: 10;
+    text-align: center;
+    padding: 2rem;
+}
+
+.overlay-content i {
+    font-size: 3rem;
+    color: var(--accent-green);
+    margin-bottom: 1rem;
+    display: block;
+}
+
+.overlay-content h3 {
+    font-size: 2rem;
+    letter-spacing: 2px;
+    margin-bottom: 0.5rem;
+    color: white;
+}
+
+.overlay-content p {
+    color: var(--text-gray);
+    font-size: 1rem;
 }
 
 .btn-free {
     display: flex;
     flex-direction: column;
     align-items: center;
-    background: var(--glass-bg);
+    background: rgba(255, 255, 255, 0.05);
     border: 1px solid var(--glass-border);
     color: var(--text-white);
-    padding: 1.5rem 1rem;
-    border-radius: 20px;
+    padding: 1.2rem 1rem;
+    border-radius: 16px;
     text-align: center;
     font-weight: 800;
     font-size: 1rem;
@@ -592,19 +612,7 @@ nav {
     box-shadow: 0 10px 20px rgba(34, 197, 94, 0.2);
 }
 
-.btn-free .badge {
-    position: absolute;
-    top: -8px;
-    right: 12px;
-    font-size: 0.6rem;
-    background: var(--accent-green);
-    color: var(--bg-black);
-    padding: 3px 8px;
-    border-radius: 6px;
-    font-weight: 800;
-    text-transform: uppercase;
-    box-shadow: 0 4px 10px rgba(34, 197, 94, 0.3);
-}
+/* Badges removed from protruding */
 
 .btn-premium {
     display: flex;
@@ -613,14 +621,14 @@ nav {
     background: var(--gradient-premium);
     color: white;
     text-decoration: none;
-    padding: 1.5rem 1rem;
-    border-radius: 20px;
+    padding: 1.2rem 1rem;
+    border-radius: 16px;
     text-align: center;
     font-weight: 800;
     font-size: 1rem;
     letter-spacing: -0.5px;
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    box-shadow: 0 10px 30px rgba(245, 158, 11, 0.3);
+    box-shadow: 0 10px 30px rgba(239, 68, 68, 0.2);
     position: relative;
     cursor: pointer;
 }
@@ -645,19 +653,7 @@ nav {
     filter: brightness(1.2);
 }
 
-.btn-premium .badge {
-    position: absolute;
-    top: -8px;
-    right: 12px;
-    font-size: 0.6rem;
-    background: white;
-    color: #ef4444;
-    padding: 3px 8px;
-    border-radius: 6px;
-    font-weight: 800;
-    text-transform: uppercase;
-    box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);
-}
+/* Badges removed from protruding */
 
 .btn-subtext {
     font-size: 0.7rem;
@@ -690,14 +686,28 @@ nav {
     font-size: 1.1rem;
     display: flex;
     align-items: center;
-    gap: 0.8rem;
+    justify-content: center;
+    gap: 0.6rem;
+    width: 100%;
 }
 
-.btn-size {
-    font-size: 0.75rem;
-    opacity: 0.8;
-    font-weight: 400;
+.btn-subtext {
+    font-size: 0.65rem;
+    opacity: 0.6;
     margin-top: 4px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.locked:hover {
+    transform: none !important;
+}
+
+.coming-soon-overlay:hover h3 {
+    color: var(--accent-green);
+    transform: scale(1.05);
+    transition: all 0.3s;
 }
 
 /* Guide Section */
