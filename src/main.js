@@ -346,24 +346,39 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- Downloads ---
+    const simulateDownload = (type) => {
+        console.log(`[DOWNLOAD] Starting download for: ${type}`);
+        // Here you would normally trigger the actual zip download
+        // window.location.href = `/downloads/${type}.zip`;
+    };
+
     downloadTriggers.forEach(trigger => {
         trigger.addEventListener('click', async (e) => {
             e.preventDefault();
-            if (!isVerified) {
-                toggleLogin(true);
-                showFeedback(topEmailInput, 'error');
-                return;
+            const type = trigger.getAttribute('data-type'); // e.g. 'ppbot' or 'predictor'
+
+            // 1. All users get the ad/smart-link experience
+            console.log(`[ADS] Showing ad for ${type} download...`);
+
+            // 2. If verified, register the asset in the database
+            if (isVerified && currentUserEmail) {
+                const data = await safeFetch(`${apiUrl}/register-client`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ accountType: 'free', email: currentUserEmail, extensionId: type })
+                });
+
+                if (data.status === 'success') {
+                    if (idDisplayModal) idDisplayModal.textContent = data.clientId;
+                    if (idModal) idModal.style.display = 'flex';
+                }
+            } else {
+                // If not verified, just show the login prompt AFTER the download simulation
+                // OR just let them download and prompt login for "Cloud Sync / Credits"
+                console.log("[DOWNLOAD] User not verified, skipping DB registration.");
             }
-            const type = trigger.getAttribute('data-type'); // 'ppbot' or 'predictor'
-            const data = await safeFetch(`${apiUrl}/register-client`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ accountType: 'free', email: currentUserEmail, extensionId: type })
-            });
-            if (data.status === 'success') {
-                if (idDisplayModal) idDisplayModal.textContent = data.clientId;
-                if (idModal) idModal.style.display = 'flex';
-            }
+
+            simulateDownload(type);
         });
     });
 
