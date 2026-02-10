@@ -13,203 +13,251 @@
     <style>
         .profile-page {
             min-height: 100vh;
-            padding: 4rem 2rem;
+            padding: 2rem;
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
         }
 
         .profile-container {
-            max-width: 900px;
+            max-width: 600px;
             width: 100%;
-            background: rgba(15, 23, 42, 0.8);
-            backdrop-filter: blur(20px);
-            border-radius: 40px;
-            border: 1px solid var(--glass-border);
-            padding: 3rem;
-            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(25px);
+            border-radius: 35px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 2.5rem;
+            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.6);
+            position: relative;
+            overflow: hidden;
+            animation: entry 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes entry {
+            from {
+                opacity: 0;
+                transform: translateY(30px) scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
         }
 
         .profile-header {
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
             align-items: center;
-            margin-bottom: 3rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            padding-bottom: 1.5rem;
+            margin-bottom: 2rem;
+            text-align: center;
         }
 
         .profile-header h1 {
-            font-size: 2rem;
+            font-size: 1.8rem;
             font-weight: 800;
+            margin-bottom: 0.5rem;
         }
 
-        .user-info-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2rem;
-            margin-bottom: 3rem;
+        .id-badge {
+            background: rgba(34, 197, 94, 0.15);
+            color: var(--accent-green);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+
+        .info-section {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 2rem;
         }
 
         .info-card {
             background: rgba(255, 255, 255, 0.03);
-            padding: 1.5rem;
-            border-radius: 24px;
+            padding: 1rem 1.5rem;
+            border-radius: 20px;
             border: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
         }
 
         .info-card label {
-            display: block;
-            font-size: 0.8rem;
+            font-size: 0.65rem;
             color: var(--text-gray);
-            margin-bottom: 0.5rem;
             text-transform: uppercase;
             letter-spacing: 1px;
+            font-weight: 700;
         }
 
         .info-card .value {
-            font-size: 1.2rem;
+            font-size: 1rem;
             font-weight: 600;
             color: var(--text-white);
         }
 
-        .client-id-wrapper {
+        .client-id-controls {
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 0.8rem;
+            margin-top: 0.2rem;
         }
 
-        .btn-icon {
+        .btn-icon-mini {
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
             color: var(--text-white);
-            width: 40px;
-            height: 40px;
-            border-radius: 12px;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             transition: all 0.3s;
-        }
-
-        .btn-icon:hover {
-            background: var(--primary-blue);
-            border-color: var(--primary-blue);
-        }
-
-        .credits-section {
-            margin-top: 2rem;
-        }
-
-        .credits-section h2 {
-            margin-bottom: 1.5rem;
-            font-size: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.8rem;
-        }
-
-        .credits-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .ext-credit-card {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
-            padding: 1.5rem;
-            border-radius: 24px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            transition: transform 0.3s;
-        }
-
-        .ext-credit-card:hover {
-            transform: translateY(-5px);
-            border-color: var(--accent-green);
-        }
-
-        .ext-name {
-            font-weight: 800;
-            font-size: 1.1rem;
-            margin-bottom: 0.5rem;
-            display: block;
-        }
-
-        .credit-count {
-            font-size: 2rem;
-            font-weight: 800;
-            color: var(--accent-green);
-            margin: 0.5rem 0;
-        }
-
-        .credit-label {
             font-size: 0.8rem;
+        }
+
+        .btn-icon-mini:hover {
+            background: var(--accent-green);
+            border-color: var(--accent-green);
+            color: black;
+            transform: scale(1.1);
+        }
+
+        .credits-display {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(16, 185, 129, 0.05));
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            border-radius: 25px;
+            padding: 1.5rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .credits-display .count {
+            font-size: 3rem;
+            font-weight: 950;
+            color: var(--accent-green);
+            line-height: 1;
+            margin: 0.5rem 0;
+            text-shadow: 0 0 30px rgba(34, 197, 94, 0.4);
+        }
+
+        .credits-display label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            font-weight: 800;
+            letter-spacing: 2px;
             color: var(--text-gray);
         }
 
-        .ad-section {
-            margin-top: 4rem;
-            background: var(--gradient);
-            padding: 2rem;
-            border-radius: 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            color: white;
-        }
-
-        .ad-text h3 {
-            font-size: 1.5rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .btn-ad {
-            background: white;
-            color: var(--bg-black);
-            padding: 1rem 2rem;
-            border-radius: 16px;
-            font-weight: 800;
-            text-decoration: none;
+        .boost-section {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px dashed rgba(255, 255, 255, 0.1);
+            border-radius: 25px;
+            padding: 1.5rem;
+            text-align: center;
             transition: all 0.3s;
+        }
+
+        .boost-section:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: var(--accent-green);
+        }
+
+        .btn-boost {
+            background: var(--accent-green);
+            color: black;
+            padding: 0.8rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 900;
+            font-size: 0.9rem;
             border: none;
             cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 0.8rem;
+            width: 100%;
         }
 
-        .btn-ad:hover:not(:disabled) {
-            transform: scale(1.05);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        .btn-boost:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(34, 197, 94, 0.3);
         }
 
-        .btn-ad:disabled {
-            opacity: 0.5;
+        .btn-boost:disabled {
+            background: #2c2c2c;
+            color: #666;
             cursor: not-allowed;
         }
 
-        .ad-status {
-            font-size: 0.8rem;
-            margin-top: 0.8rem;
-            text-align: right;
-            opacity: 0.8;
+        .status-text {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: var(--text-gray);
         }
 
         .back-home {
             margin-top: 2rem;
             color: var(--text-gray);
             text-decoration: none;
-            font-size: 0.9rem;
-            transition: color 0.3s;
+            font-size: 0.8rem;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
         .back-home:hover {
-            color: var(--text-white);
+            color: var(--accent-green);
         }
 
+        /* Change Key Section */
         #change-key-section {
             display: none;
             margin-top: 1rem;
             padding-top: 1rem;
             border-top: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+
+        .code-input-mini {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--glass-border);
+            color: white;
+            padding: 0.6rem;
+            border-radius: 10px;
+            width: 120px;
+            text-align: center;
+            letter-spacing: 3px;
+            font-weight: 900;
+            margin-bottom: 0.8rem;
+        }
+
+        /* Ad Simulation Overlay */
+        #ad-simulation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: black;
+            z-index: 9999;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
         }
     </style>
 </head>
@@ -219,91 +267,75 @@
     <div class="bg-lines"></div>
 
     <div class="profile-page">
-        <div class="profile-container">
+        <div class="profile-container" id="profile-container">
             <div class="profile-header">
-                <h1><i class="fas fa-user-shield gradient-text"></i> Member Access</h1>
-                <div class="id-badge">Universal Access</div>
+                <h1><i class="fas fa-id-card-clip gradient-text"></i> User Intelligence</h1>
+                <div class="id-badge">Verified Member</div>
             </div>
 
-            <div class="user-info-grid">
+            <div class="info-section">
                 <div class="info-card">
-                    <label>Active Email</label>
+                    <label>Registration Email</label>
                     <div class="value" id="user-email">...</div>
                 </div>
                 <div class="info-card">
-                    <label>Client ID</label>
-                    <div class="client-id-wrapper">
+                    <label>Global Client Identity</label>
+                    <div class="client-id-controls">
                         <div class="value" id="client-id">••••-••••</div>
-                        <button class="btn-icon" id="btn-reveal"><i class="fas fa-eye"></i></button>
-                        <button class="btn-icon" id="btn-copy"><i class="fas fa-copy"></i></button>
-                        <button class="btn-icon" id="btn-change-trigger"><i class="fas fa-sync-alt"></i></button>
+                        <button class="btn-icon-mini" id="btn-reveal" title="Reveal ID"><i
+                                class="fas fa-eye"></i></button>
+                        <button class="btn-icon-mini" id="btn-copy" title="Copy ID"><i class="fas fa-copy"></i></button>
+                        <button class="btn-icon-mini" id="btn-change-trigger" title="Reset Key"><i
+                                class="fas fa-sync-alt"></i></button>
                     </div>
-                    <!-- Change Key Logic -->
+
                     <div id="change-key-section">
-                        <p style="font-size: 0.7rem; color: #fbbf24; margin-bottom: 0.5rem;">Enter 6-digit code to reset
-                            key</p>
-                        <input type="text" id="reset-code" placeholder="XXXXXX" maxlength="6"
-                            style="background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); color: white; padding: 0.5rem; border-radius: 8px; width: 100px; text-align: center; letter-spacing: 2px;">
-                        <button id="btn-confirm-change" class="btn-primary"
-                            style="padding: 0.5rem 1rem; font-size: 0.7rem;">Confirm</button>
-                        <button id="btn-cancel-change"
-                            style="background:none; border:none; color: var(--text-gray); cursor:pointer; font-size: 0.7rem;">Cancel</button>
+                        <p style="font-size: 0.65rem; color: #fbbf24; margin-bottom: 0.6rem; font-weight: 700;">CONFIRM
+                            SECURITY RESET</p>
+                        <input type="text" class="code-input-mini" id="reset-code" placeholder="XXXXXX" maxlength="6">
+                        <div style="display: flex; gap: 0.5rem; justify-content: center;">
+                            <button id="btn-confirm-change" class="btn-boost"
+                                style="width: auto; padding: 0.5rem 1.5rem; margin: 0; font-size: 0.75rem;">Proceed</button>
+                            <button id="btn-cancel-change"
+                                style="background:none; border:none; color: var(--text-gray); cursor:pointer; font-size: 0.7rem;">Cancel</button>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div class="credits-section">
-                <h2><i class="fas fa-coins" style="color: #fbbf24;"></i> Service Credits</h2>
-                <div class="credits-grid" id="credits-grid">
-                    <!-- Credits will be injected here -->
-                    <div class="ext-credit-card">
-                        <span class="ext-name">PPBot (Chrome)</span>
-                        <div class="credit-count" id="credit-ppbot">0</div>
-                        <span class="credit-label">Available Actions</span>
-                    </div>
-                    <div class="ext-credit-card">
-                        <span class="ext-name">PP Predictor</span>
-                        <div class="credit-count" id="credit-predictor">0</div>
-                        <span class="credit-label">Available Actions</span>
-                    </div>
-                    <div class="ext-credit-card">
-                        <span class="ext-name">PP Desktop</span>
-                        <div class="credit-count" id="credit-desktop">0</div>
-                        <span class="credit-label">Available Actions</span>
-                    </div>
-                </div>
+            <div class="credits-display">
+                <label>PPBot Command Credits</label>
+                <div class="count" id="credit-ppbot">0</div>
+                <div class="status-text">Available Database Entries</div>
             </div>
 
-            <div class="ad-section">
-                <div class="ad-text">
-                    <h3>Earn Extra Credits</h3>
-                    <p>Watch a short advertisement to receive <strong>+2 Credits</strong> for your tools.</p>
+            <div class="boost-section">
+                <div style="text-align: left; margin-bottom: 0.5rem;">
+                    <h4 style="font-size: 0.9rem; margin-bottom: 0.2rem;"><i class="fas fa-bolt"
+                            style="color: var(--accent-green);"></i> Kinetic Boost</h4>
+                    <p style="font-size: 0.75rem; color: var(--text-gray);">Watch advertisement to gain <strong>+2
+                            Credits</strong> instantly.</p>
                 </div>
-                <div>
-                    <select id="ad-target-select"
-                        style="padding: 0.8rem; border-radius: 12px; border: none; margin-bottom: 1rem; width: 100%; font-family: inherit;">
-                        <option value="ppbot">PPBot (Chrome)</option>
-                        <option value="predictor">PP Predictor</option>
-                        <option value="desktop">PP Desktop</option>
-                    </select>
-                    <button id="btn-watch-ad" class="btn-ad">Watch Ad & Earn</button>
-                    <div class="ad-status" id="ad-limit-status">Ads used today: 0/6</div>
-                </div>
+                <button id="btn-watch-ad" class="btn-boost">Initiate Boost Sequence</button>
+                <div class="status-text" id="ad-limit-status">Rewards Used Today: 0/6</div>
             </div>
         </div>
 
-        <a href="/" class="back-home"><i class="fas fa-arrow-left"></i> Back to Store Home</a>
+        <a href="/" class="back-home"><i class="fas fa-chevron-left"></i> Return to Terminal</a>
     </div>
 
-    <!-- Hidden Ad Preloader/Simulation -->
-    <div id="ad-simulation"
-        style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:black; z-index:1000; display:none; flex-direction:column; align-items:center; justify-content:center; color:white;">
-        <h2 id="ad-timer">Advertisement (15s)</h2>
-        <p>Loading premium growth content...</p>
+    <!-- Ad Overlay -->
+    <div id="ad-simulation">
         <div
-            style="width: 200px; height: 10px; background: #333; margin-top: 1rem; border-radius: 5px; overflow: hidden;">
-            <div id="ad-progress" style="width: 0%; height: 100%; background: var(--accent-green);"></div>
+            style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 1rem; color: var(--accent-green);">
+            Data Processing</div>
+        <h2 id="ad-timer" style="font-size: 2.5rem; font-weight: 950; margin-bottom: 1rem;">15s</h2>
+        <div
+            style="width: 250px; height: 6px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; margin-bottom: 2rem;">
+            <div id="ad-progress"
+                style="width: 0%; height: 100%; background: var(--accent-green); transition: width 1s linear;"></div>
         </div>
+        <p style="color: rgba(255,255,255,0.5); font-size: 0.8rem;">Synthesizing premium tokens...</p>
     </div>
 
     <script type="module" src="/src/profile.js"></script>

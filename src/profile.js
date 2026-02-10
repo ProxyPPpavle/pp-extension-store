@@ -1,12 +1,13 @@
 import './style.css';
 
 document.addEventListener('DOMContentLoaded', () => {
-    // --- State ---
+    // --- State & Config ---
+    const apiUrl = 'https://pp-server-eight.vercel.app';
     const email = localStorage.getItem('pp_user_email') || '';
     const isVerified = localStorage.getItem('pp_verified') === 'true';
-    const clientId = localStorage.getItem('pp_client_id') || 'PP-' + Math.random().toString(36).substring(2, 10).toUpperCase();
+    const clientId = localStorage.getItem('pp_client_id') || '';
 
-    if (!isVerified || !email) {
+    if (!isVerified || !email || !clientId) {
         window.location.href = '/';
         return;
     }
@@ -22,25 +23,32 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnConfirmChange = document.getElementById('btn-confirm-change');
     const btnCancelChange = document.getElementById('btn-cancel-change');
 
-    const creditsEls = {
-        ppbot: document.getElementById('credit-ppbot'),
-        predictor: document.getElementById('credit-predictor'),
-        desktop: document.getElementById('credit-desktop')
-    };
-
+    const creditCountEl = document.getElementById('credit-ppbot');
     const btnWatchAd = document.getElementById('btn-watch-ad');
-    const adTargetSelect = document.getElementById('ad-target-select');
     const adLimitStatus = document.getElementById('ad-limit-status');
     const adSimulation = document.getElementById('ad-simulation');
     const adTimer = document.getElementById('ad-timer');
     const adProgress = document.getElementById('ad-progress');
+
+    // --- Helpers ---
+    async function safeFetch(url, options = {}) {
+        try {
+            const res = await fetch(url, options);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            return await res.json();
+        } catch (err) {
+            console.warn(`[API] Failure at ${url}:`, err.message);
+            return { status: 'error', message: err.message };
+        }
+    }
 
     // --- Initialize Info ---
     userEmailEl.textContent = email;
     let isIdVisible = false;
 
     const updateClientIdUI = () => {
-        clientIdEl.textContent = isIdVisible ? clientId : '••••-••••';
+        const mask = '••••-••••';
+        clientIdEl.textContent = isIdVisible ? clientId : mask;
         btnReveal.innerHTML = isIdVisible ? '<i class="fas fa-eye-slash"></i>' : '<i class="fas fa-eye"></i>';
     };
 
@@ -59,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Change Key Logic ---
     btnChangeTrigger.addEventListener('click', () => {
         changeKeySection.style.display = 'block';
-        alert('Verification code simulated: check your (imaginary) email for "RESET CODE"');
+        alert('Verification code required: request one via support or terminal.');
     });
 
     btnCancelChange.addEventListener('click', () => {
@@ -67,48 +75,59 @@ document.addEventListener('DOMContentLoaded', () => {
         resetCodeInput.value = '';
     });
 
-    btnConfirmChange.addEventListener('click', () => {
-        if (resetCodeInput.value.length === 6) {
-            const newId = 'PP-' + Math.random().toString(36).substring(2, 10).toUpperCase();
-            localStorage.setItem('pp_client_id', newId);
-            window.location.reload();
+    btnConfirmChange.addEventListener('click', async () => {
+        const code = resetCodeInput.value.trim();
+        if (code.length === 6) {
+            const res = await safeFetch(`${apiUrl}/reset-account`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, code })
+            });
+            if (res.status === 'success') {
+                localStorage.clear();
+                window.location.href = '/';
+            } else {
+                alert(res.message || 'Invalid code.');
+            }
         } else {
             alert('Please enter a valid 6-digit code.');
         }
     });
 
-    // --- Credits Logic ---
-    const services = ['ppbot', 'predictor', 'desktop'];
+    // --- Credits & Ad Logic ---
     const today = new Date().toDateString();
 
-    // Daily Reset / Init
-    const lastLogin = localStorage.getItem(`pp_last_login_${email}`);
-    if (lastLogin !== today) {
-        localStorage.setItem(`pp_last_login_${email}`, today);
+    // Local Ad limit tracking
+    const lastAdReset = localStorage.getItem(`pp_ad_reset_${email}`);
+    if (lastAdReset !== today) {
+        localStorage.setItem(`pp_ad_reset_${email}`, today);
         localStorage.setItem(`pp_ads_today_${email}`, '0');
-        // Initial daily credits
-        services.forEach(s => {
-            localStorage.setItem(`pp_credits_${email}_${s}`, '10');
-        });
     }
 
-    const updateCreditsUI = () => {
-        services.forEach(s => {
-            const val = localStorage.getItem(`pp_credits_${email}_${s}`) || '0';
-            creditsEls[s].textContent = val;
+    const updateCreditsUI = async () => {
+        // Fetch Live Credits from Server
+        const data = await safeFetch(`${apiUrl}/check-client`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ clientId })
         });
+
+        if (data.status === 'success') {
+            creditCountEl.textContent = data.credits;
+        } else {
+            creditCountEl.textContent = 'Err';
+        }
 
         const adsToday = parseInt(localStorage.getItem(`pp_ads_today_${email}`) || '0');
         const adsSession = parseInt(sessionStorage.getItem(`pp_ads_session_${email}`) || '0');
-        adLimitStatus.textContent = `Ads used today: ${adsToday}/6 | Session: ${adsSession}/3`;
+        adLimitStatus.textContent = `Rewards Used Today: ${adsToday}/6 | Session: ${adsSession}/3`;
 
         if (adsToday >= 6 || adsSession >= 3) {
             btnWatchAd.disabled = true;
-            btnWatchAd.textContent = 'Daily/Session Limit Reached';
+            btnWatchAd.textContent = 'DAILY LIMIT REACHED';
         }
     };
 
-    // --- Ad Logic ---
     btnWatchAd.addEventListener('click', () => {
         const adsToday = parseInt(localStorage.getItem(`pp_ads_today_${email}`) || '0');
         const adsSession = parseInt(sessionStorage.getItem(`pp_ads_session_${email}`) || '0');
@@ -117,12 +136,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         adSimulation.style.display = 'flex';
         let timeLeft = 15;
-        adTimer.textContent = `Advertisement (${timeLeft}s)`;
+        adTimer.textContent = `${timeLeft}s`;
         adProgress.style.width = '0%';
 
         const interval = setInterval(() => {
             timeLeft--;
-            adTimer.textContent = `Advertisement (${timeLeft}s)`;
+            adTimer.textContent = `${timeLeft}s`;
             adProgress.style.width = `${((15 - timeLeft) / 15) * 100}%`;
 
             if (timeLeft <= 0) {
@@ -132,20 +151,28 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 1000);
     });
 
-    const finishAd = () => {
+    const finishAd = async () => {
         adSimulation.style.display = 'none';
-        const target = adTargetSelect.value;
-        const currentCredits = parseInt(localStorage.getItem(`pp_credits_${email}_${target}`) || '0');
-        localStorage.setItem(`pp_credits_${email}_${target}`, (currentCredits + 2).toString());
 
-        const adsToday = parseInt(localStorage.getItem(`pp_ads_today_${email}`) || '0');
-        const adsSession = parseInt(sessionStorage.getItem(`pp_ads_session_${email}`) || '0');
+        // Call Server to Boost Credits
+        const data = await safeFetch(`${apiUrl}/boost-credits`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ clientId })
+        });
 
-        localStorage.setItem(`pp_ads_today_${email}`, (adsToday + 1).toString());
-        sessionStorage.setItem(`pp_ads_session_${email}`, (adsSession + 1).toString());
+        if (data.status === 'success') {
+            const adsToday = parseInt(localStorage.getItem(`pp_ads_today_${email}`) || '0');
+            const adsSession = parseInt(sessionStorage.getItem(`pp_ads_session_${email}`) || '0');
 
-        updateCreditsUI();
-        alert(`Success! +2 Credits added to ${target.toUpperCase()}`);
+            localStorage.setItem(`pp_ads_today_${email}`, (adsToday + 1).toString());
+            sessionStorage.setItem(`pp_ads_session_${email}`, (adsSession + 1).toString());
+
+            await updateCreditsUI();
+            alert(`Success! +2 Credits synchronized with database.`);
+        } else {
+            alert('Failed to sync credits. Please try again.');
+        }
     };
 
     updateCreditsUI();
