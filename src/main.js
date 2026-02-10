@@ -603,9 +603,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const card = document.createElement('div');
         card.className = 'floating-review';
 
-        // Random horizontal position
-        const left = Math.random() * (window.innerWidth - 300);
-        card.style.left = `${left}px`;
+        // Pick a side: Left (0-15%) or Right (85-100%)
+        const side = Math.random() > 0.5 ? 'left' : 'right';
+        const horizontalPos = Math.random() * 15; // 0-15% range
+
+        if (side === 'left') {
+            card.style.left = `${horizontalPos}%`;
+        } else {
+            card.style.right = `${horizontalPos}%`;
+        }
 
         // Random duration between 15s and 25s
         const duration = 15 + Math.random() * 10;
@@ -633,23 +639,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (res.status === 'success' && res.reviews.length > 0) {
             dynamicReviews = res.reviews;
         } else {
-            // Fallback if no reviews yet
-            dynamicReviews = [
-                { name: "Pavle.M", rating: 5, comment: "Top extensions for growth!" },
-                { name: "Lazar88", rating: 5, comment: "PPBot is extremely fast." },
-                { name: "CryptoWhale", rating: 5, comment: "Institutional edge achieved." }
-            ];
+            dynamicReviews = []; // USER: "Ako nema recenzija ne moraju da lete"
         }
     };
 
     const startReviewLoop = () => {
         setInterval(() => {
-            if (dynamicReviews.length > 0) {
+            if (dynamicReviews && dynamicReviews.length > 0) {
                 const rev = dynamicReviews[reviewIndex];
                 spawnFloatingReview(rev);
                 reviewIndex = (reviewIndex + 1) % dynamicReviews.length;
             }
-        }, 5000); // Spawn every 5 seconds
+        }, 4000); // Spawn every 4 seconds
     };
 
     initFloatingReviews();
