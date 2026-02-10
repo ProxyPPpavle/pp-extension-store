@@ -101,6 +101,12 @@
             color: var(--accent-green);
         }
 
+        .ext-nav-item.locked {
+            opacity: 0.4;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
         .ext-nav-item .dot {
             position: absolute;
             right: 1rem;
@@ -192,12 +198,25 @@
             max-width: 650px;
             width: 100%;
             background: rgba(15, 23, 42, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(34, 197, 94, 0.3);
             border-radius: 36px;
             padding: 3rem;
             position: relative;
-            box-shadow: 0 50px 100px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 0 40px rgba(34, 197, 94, 0.1);
+            animation: module-pulse 3s infinite alternate;
             z-index: 2;
+        }
+
+        @keyframes module-pulse {
+            0% {
+                border-color: rgba(34, 197, 94, 0.2);
+                box-shadow: 0 0 30px rgba(34, 197, 94, 0.05);
+            }
+
+            100% {
+                border-color: rgba(34, 197, 94, 0.6);
+                box-shadow: 0 0 50px rgba(34, 197, 94, 0.2);
+            }
         }
 
         .module-header {
@@ -246,8 +265,8 @@
         }
 
         .booster-well {
-            background: #020617;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(2, 6, 23, 0.95));
+            border: 1.5px solid rgba(34, 197, 94, 0.4);
             border-radius: 28px;
             padding: 2rem;
             display: flex;
@@ -256,6 +275,7 @@
             gap: 1.5rem;
             position: relative;
             z-index: 5;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
         }
 
         .kinetic-cable {
@@ -368,19 +388,12 @@
 
             <div class="nav-section">
                 <label>Active Assets</label>
-                <div class="ext-nav-list">
+                <div class="ext-nav-list" id="possessed-extensions-list">
+                    <!-- Extension items will be injected or kept static if only one -->
                     <div class="ext-nav-item active" data-id="ppbot" data-name="PPBot Standard">
                         <i class="fas fa-robot"></i>
                         <div class="ext-nav-text">
                             <span class="name">PPBot Standard</span>
-                            <span class="sub">Active & Synced</span>
-                        </div>
-                        <div class="dot"></div>
-                    </div>
-                    <div class="ext-nav-item" data-id="predictor" data-name="PP Predictor">
-                        <i class="fas fa-chart-pie"></i>
-                        <div class="ext-nav-text">
-                            <span class="name">PP Predictor</span>
                             <span class="sub">Active & Synced</span>
                         </div>
                         <div class="dot"></div>
@@ -391,7 +404,14 @@
             <div class="nav-section">
                 <label>Store Inventory</label>
                 <div class="ext-nav-list">
-                    <div class="ext-nav-item" style="opacity: 0.4; cursor: not-allowed;">
+                    <div class="ext-nav-item locked">
+                        <i class="fas fa-chart-pie"></i>
+                        <div class="ext-nav-text">
+                            <span class="name">PP Predictor</span>
+                            <span class="sub">Not Purchased</span>
+                        </div>
+                    </div>
+                    <div class="ext-nav-item locked">
                         <i class="fas fa-server"></i>
                         <div class="ext-nav-text">
                             <span class="name">PP Desktop</span>
@@ -470,13 +490,13 @@
                             <h4 style="display: flex; align-items: center; gap: 0.5rem;"><i
                                     class="fas fa-charging-station" style="color: var(--accent-green);"></i> Kinetic
                                 Link</h4>
-                            <p style="font-size: 0.7rem;">Injecting to: <strong id="ad-target-display"
+                            <p style="font-size: 0.75rem;">Injecting to: <strong id="ad-target-display"
                                     style="color: var(--accent-green);">PPBot Standard</strong></p>
                             <div id="ad-limit-status"
-                                style="font-size: 0.6rem; color: var(--text-gray); margin-top: 4px;">Limit Check: 0/6
-                                Rewards Today</div>
+                                style="font-size: 0.65rem; color: rgba(255,255,255,0.6); margin-top: 6px;">Today: 0/6
+                                Rewards Used</div>
                         </div>
-                        <button id="btn-watch-ad" class="btn-boost">Initiate Boost</button>
+                        <button id="btn-watch-ad" class="btn-boost">Synthesize Credits</button>
                     </div>
                 </div>
             </section>

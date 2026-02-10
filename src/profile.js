@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const isVerified = localStorage.getItem('pp_verified') === 'true';
     const clientId = localStorage.getItem('pp_client_id') || '';
 
-    // In-memory UI Selection
+    // Selection state
     let activeExtensionId = 'ppbot';
 
     if (!isVerified || !email || !clientId) {
@@ -32,19 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const adTimer = document.getElementById('ad-timer');
     const adProgress = document.getElementById('ad-progress');
 
-    // --- Helpers ---
-    async function safeFetch(url, options = {}) {
-        try {
-            const res = await fetch(url, options);
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            return await res.json();
-        } catch (err) {
-            console.warn(`[API] Failure at ${url}:`, err.message);
-            return { status: 'error', message: err.message };
-        }
-    }
-
-    // --- Initialize Bottom Global Identity ---
+    // --- Initialize Top Global Identity ---
     userEmailEl.textContent = email;
     let isIdVisible = false;
 
@@ -66,21 +54,18 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => btnCopy.innerHTML = originalIcon, 2000);
     });
 
-    // --- Extension Switching Logic ---
-    const navItems = document.querySelectorAll('.ext-nav-item[data-id]');
+    // --- Extension Logic ---
+    // Note: Reverted to showing ONLY possessed extensions in the active list.
+    const navItems = document.querySelectorAll('.ext-nav-item[data-id]:not(.locked)');
     navItems.forEach(item => {
         item.addEventListener('click', () => {
             const id = item.getAttribute('data-id');
             const name = item.getAttribute('data-name');
-
-            // Switch State
             activeExtensionId = id;
 
-            // Update Sidebar UI
             navItems.forEach(el => el.classList.remove('active'));
             item.classList.add('active');
 
-            // Update Main View
             currentExtName.textContent = name;
             creditsLabel.textContent = `${name} Compute Credits`;
             adTargetDisplay.textContent = name;
@@ -99,8 +84,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const updateCreditsUI = async () => {
         // Fetch Live Credits from Server
-        // Note: Currently server has 1 credit column. 
-        // We'll split it in the UI for Predictor if needed, or just show the same for demo.
         const data = await safeFetch(`${apiUrl}/check-client`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -108,34 +91,38 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         if (data.status === 'success') {
-            // DEMO LOGIC: If it's predictor, maybe show a different number or simulated split
-            if (activeExtensionId === 'predictor') {
-                // Mocking: Just show -10 credits to differentiate for the user
-                creditCountEl.textContent = Math.max(0, data.credits - 10);
-            } else {
-                creditCountEl.textContent = data.credits;
-            }
+            creditCountEl.textContent = data.credits;
         } else {
             creditCountEl.textContent = '--';
         }
 
         const adsToday = parseInt(localStorage.getItem(`pp_ads_today_${email}`) || '0');
         const adsSession = parseInt(sessionStorage.getItem(`pp_ads_session_${email}`) || '0');
-        adLimitStatus.textContent = `Limit Check: ${adsToday}/6 Rewards Today | ${adsSession}/3 Session`;
+        adLimitStatus.textContent = `Today: ${adsToday}/6 Rewards Used | Session: ${adsSession}/3`;
 
         if (adsToday >= 6 || adsSession >= 3) {
             btnWatchAd.disabled = true;
-            btnWatchAd.textContent = 'LINK LIMIT REACHED';
+            btnWatchAd.textContent = 'LIMIT REACHED';
         } else {
             btnWatchAd.disabled = false;
-            btnWatchAd.textContent = 'Initiate Boost';
+            btnWatchAd.textContent = 'Synthesize Credits';
         }
     };
+
+    async function safeFetch(url, options = {}) {
+        try {
+            const res = await fetch(url, options);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            return await res.json();
+        } catch (err) {
+            console.warn(`[API] Failure at ${url}:`, err.message);
+            return { status: 'error', message: err.message };
+        }
+    }
 
     btnWatchAd.addEventListener('click', () => {
         const adsToday = parseInt(localStorage.getItem(`pp_ads_today_${email}`) || '0');
         const adsSession = parseInt(sessionStorage.getItem(`pp_ads_session_${email}`) || '0');
-
         if (adsToday >= 6 || adsSession >= 3) return;
 
         adSimulation.style.display = 'flex';
@@ -158,7 +145,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const finishAd = async () => {
         adSimulation.style.display = 'none';
 
-        // Sync with server
         const data = await safeFetch(`${apiUrl}/boost-credits`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -174,7 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             await updateCreditsUI();
         } else {
-            alert('Booster synchronization failed. Check identity uplink.');
+            alert('Booster synchronization failed.');
         }
     };
 
