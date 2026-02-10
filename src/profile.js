@@ -37,6 +37,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const adTimer = document.getElementById('ad-timer');
     const adProgress = document.getElementById('ad-progress');
 
+    // Toast logic
+    const toast = document.getElementById('pp-toast');
+    const toastMsg = document.getElementById('toast-msg');
+
+    function notify(message, type = 'success') {
+        toastMsg.textContent = message;
+        toast.className = type === 'error' ? 'show error' : 'show';
+
+        // Icon update
+        const icon = toast.querySelector('i');
+        icon.className = type === 'error' ? 'fas fa-exclamation-circle' : 'fas fa-check-circle';
+
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 4000);
+    }
+
     // --- Initialize Top Global Identity ---
     userEmailEl.textContent = email;
     let isIdVisible = false;
@@ -69,6 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
         navigator.clipboard.writeText(id);
         const originalIcon = btnCopy.innerHTML;
         btnCopy.innerHTML = '<i class="fas fa-check"></i>';
+        notify('Client ID copied to clipboard!');
         setTimeout(() => btnCopy.innerHTML = originalIcon, 2000);
     });
 
@@ -77,7 +95,6 @@ document.addEventListener('DOMContentLoaded', () => {
         changeKeySection.style.display = 'block';
         btnChangeTrigger.disabled = true;
 
-        // Request Reset Code
         const res = await safeFetch(`${apiUrl}/send-code`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -85,9 +102,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         if (res.status === 'success') {
-            alert('A security reset code has been sent to your email.');
+            notify('Security reset code sent to your email.');
         } else {
-            alert('Failed to send reset code. Please try again later.');
+            notify('Failed to send reset code. Try again.', 'error');
             changeKeySection.style.display = 'none';
             btnChangeTrigger.disabled = false;
         }
@@ -109,17 +126,16 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             if (res.status === 'success') {
                 localStorage.setItem('pp_client_id', res.newClientId);
-                alert('Success! Your Global Client Key has been updated.');
-                window.location.reload();
+                notify('Global Client Key successfully updated!');
+                setTimeout(() => window.location.reload(), 2000);
             } else {
-                alert(res.message || 'Verification failed. Code may be incorrect.');
+                notify(res.message || 'Verification failed.', 'error');
             }
         } else {
-            alert('Please enter the 6-digit security code.');
+            notify('Enter the 6-digit security code.', 'error');
         }
     });
 
-    // --- Extension Logic ---
     const navItems = document.querySelectorAll('.ext-nav-item[data-id]:not(.locked)');
     navItems.forEach(item => {
         item.addEventListener('click', () => {
@@ -138,7 +154,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // --- Credits & Ad Logic ---
     const today = new Date().toDateString();
     const lastAdReset = localStorage.getItem(`pp_ad_reset_${email}`);
     if (lastAdReset !== today) {
@@ -205,19 +220,19 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         if (data.status === 'success') {
-            const adsToday = parseInt(localStorage.getItem(`pp_ads_today_${email}`) || '0');
+            const adsToday = parseInt(localStorage.getItem('pp_ads_today_${email}') || '0');
             const adsSession = parseInt(sessionStorage.getItem(`pp_ads_session_${email}`) || '0');
 
             localStorage.setItem(`pp_ads_today_${email}`, (adsToday + 1).toString());
             sessionStorage.setItem(`pp_ads_session_${email}`, (adsSession + 1).toString());
 
             await updateCreditsUI();
+            notify('Credits boosted successfully!');
         } else {
-            alert('Booster synchronization failed.');
+            notify('Booster synchronization failed.', 'error');
         }
     };
 
-    // Initial Load
     updateCreditsUI();
     updateClientIdUI();
 });
