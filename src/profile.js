@@ -20,6 +20,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const clientIdEl = document.getElementById('client-id');
     const btnReveal = document.getElementById('btn-reveal');
     const btnCopy = document.getElementById('btn-copy');
+    const btnChangeTrigger = document.getElementById('btn-change-trigger');
+    const changeKeySection = document.getElementById('change-key-section');
+    const resetCodeInput = document.getElementById('reset-code');
+    const btnConfirmChange = document.getElementById('btn-confirm-change');
+    const btnCancelChange = document.getElementById('btn-cancel-change');
 
     const currentExtName = document.getElementById('current-ext-name');
     const creditsLabel = document.getElementById('credits-label');
@@ -36,9 +41,21 @@ document.addEventListener('DOMContentLoaded', () => {
     userEmailEl.textContent = email;
     let isIdVisible = false;
 
+    async function safeFetch(url, options = {}) {
+        try {
+            const res = await fetch(url, options);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            return await res.json();
+        } catch (err) {
+            console.warn(`[API] Failure at ${url}:`, err.message);
+            return { status: 'error', message: err.message };
+        }
+    }
+
     const updateClientIdUI = () => {
         const mask = '••••-••••';
-        clientIdEl.textContent = isIdVisible ? clientId : mask;
+        const displayId = localStorage.getItem('pp_client_id') || 'PP-ERR';
+        clientIdEl.textContent = isIdVisible ? displayId : mask;
         btnReveal.innerHTML = isIdVisible ? '<i class="fas fa-eye-slash"></i>' : '<i class="fas fa-eye"></i>';
     };
 
@@ -48,14 +65,61 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     btnCopy.addEventListener('click', () => {
-        navigator.clipboard.writeText(clientId);
+        const id = localStorage.getItem('pp_client_id');
+        navigator.clipboard.writeText(id);
         const originalIcon = btnCopy.innerHTML;
         btnCopy.innerHTML = '<i class="fas fa-check"></i>';
         setTimeout(() => btnCopy.innerHTML = originalIcon, 2000);
     });
 
+    // --- Change Key Logic ---
+    btnChangeTrigger.addEventListener('click', async () => {
+        changeKeySection.style.display = 'block';
+        btnChangeTrigger.disabled = true;
+
+        // Request Reset Code
+        const res = await safeFetch(`${apiUrl}/send-code`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+        });
+
+        if (res.status === 'success') {
+            alert('A security reset code has been sent to your email.');
+        } else {
+            alert('Failed to send reset code. Please try again later.');
+            changeKeySection.style.display = 'none';
+            btnChangeTrigger.disabled = false;
+        }
+    });
+
+    btnCancelChange.addEventListener('click', () => {
+        changeKeySection.style.display = 'none';
+        btnChangeTrigger.disabled = false;
+        resetCodeInput.value = '';
+    });
+
+    btnConfirmChange.addEventListener('click', async () => {
+        const code = resetCodeInput.value.trim();
+        if (code.length === 6) {
+            const res = await safeFetch(`${apiUrl}/reset-account`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, code })
+            });
+            if (res.status === 'success') {
+                localStorage.setItem('pp_client_id', res.newClientId);
+                alert('Success! Your Global Client Key has been updated.');
+                window.location.reload();
+            } else {
+                alert(res.message || 'Verification failed. Code may be incorrect.');
+            }
+        } else {
+            alert('Please enter the 6-digit security code.');
+        }
+    });
+
     // --- Extension Logic ---
-    // Note: Reverted to showing ONLY possessed extensions in the active list.
     const navItems = document.querySelectorAll('.ext-nav-item[data-id]:not(.locked)');
     navItems.forEach(item => {
         item.addEventListener('click', () => {
@@ -67,7 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
             item.classList.add('active');
 
             currentExtName.textContent = name;
-            creditsLabel.textContent = `${name} Compute Credits`;
+            creditsLabel.textContent = `Compute Credits (Sync via Client ID)`;
             adTargetDisplay.textContent = name;
 
             updateCreditsUI();
@@ -83,11 +147,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const updateCreditsUI = async () => {
-        // Fetch Live Credits from Server
+        const id = localStorage.getItem('pp_client_id');
         const data = await safeFetch(`${apiUrl}/check-client`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ clientId })
+            body: JSON.stringify({ clientId: id })
         });
 
         if (data.status === 'success') {
@@ -105,20 +169,9 @@ document.addEventListener('DOMContentLoaded', () => {
             btnWatchAd.textContent = 'LIMIT REACHED';
         } else {
             btnWatchAd.disabled = false;
-            btnWatchAd.textContent = 'Synthesize Credits';
+            btnWatchAd.textContent = 'Add Credits (Watch Ad)';
         }
     };
-
-    async function safeFetch(url, options = {}) {
-        try {
-            const res = await fetch(url, options);
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            return await res.json();
-        } catch (err) {
-            console.warn(`[API] Failure at ${url}:`, err.message);
-            return { status: 'error', message: err.message };
-        }
-    }
 
     btnWatchAd.addEventListener('click', () => {
         const adsToday = parseInt(localStorage.getItem(`pp_ads_today_${email}`) || '0');
@@ -144,11 +197,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const finishAd = async () => {
         adSimulation.style.display = 'none';
-
+        const id = localStorage.getItem('pp_client_id');
         const data = await safeFetch(`${apiUrl}/boost-credits`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ clientId })
+            body: JSON.stringify({ clientId: id })
         });
 
         if (data.status === 'success') {
