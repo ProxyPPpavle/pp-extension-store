@@ -457,6 +457,82 @@ document.addEventListener('DOMContentLoaded', () => {
 
     updateGuideUI();
 
+    // --- Review System Logic ---
+    const stars = document.querySelectorAll('.star');
+    const ratingInput = document.getElementById('review-rating');
+    const reviewForm = document.getElementById('review-form');
+
+    const updateStars = (rating, isHover = false) => {
+        stars.forEach(s => {
+            const val = parseInt(s.getAttribute('data-value'));
+            if (val <= rating) {
+                s.classList.add('active');
+                if (isHover) s.style.transform = 'scale(1.2)';
+            } else {
+                s.classList.remove('active');
+                if (isHover) s.style.transform = 'scale(1)';
+            }
+        });
+    };
+
+    stars.forEach(star => {
+        star.addEventListener('click', () => {
+            const rating = parseInt(star.getAttribute('data-value'));
+            if (ratingInput) ratingInput.value = rating;
+            updateStars(rating);
+        });
+
+        star.addEventListener('mouseover', () => {
+            const rating = parseInt(star.getAttribute('data-value'));
+            updateStars(rating, true);
+        });
+
+        star.addEventListener('mouseout', () => {
+            const currentRating = parseInt(ratingInput.value || 0);
+            updateStars(currentRating);
+        });
+    });
+
+    reviewForm?.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        // 1. Check if verified
+        if (!currentUserEmail || !isVerified) {
+            alert("Please verify your Member Access first to leave a review.");
+            toggleLogin(true); // Open login box
+            return;
+        }
+
+        // 2. One review per email check
+        const hasReviewed = localStorage.getItem(`pp_reviewed_${currentUserEmail}`);
+        if (hasReviewed) {
+            alert("You have already submitted a review with this email address.");
+            return;
+        }
+
+        const btn = reviewForm.querySelector('button[type="submit"]');
+        const originalText = btn.textContent;
+
+        btn.disabled = true;
+        btn.textContent = 'Publishing...';
+
+        // Simulate API call
+        setTimeout(() => {
+            localStorage.setItem(`pp_reviewed_${currentUserEmail}`, 'true');
+            btn.textContent = 'Success!';
+            btn.style.background = 'var(--accent-green)';
+            reviewForm.reset();
+            if (ratingInput) ratingInput.value = 5;
+            updateStars(5);
+
+            setTimeout(() => {
+                btn.disabled = false;
+                btn.textContent = originalText;
+                btn.style.background = '';
+            }, 3000);
+        }, 1500);
+    });
+
     // Start Loops
     injectVignette();
     startAdGuardian();
