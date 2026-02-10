@@ -266,6 +266,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 showFeedback(topEmailInput, 'error');
                 return;
             }
+
+            // --- Click Rate Limit / Debounce ---
+            const lastRequest = parseInt(localStorage.getItem('pp_last_code_request') || '0');
+            const now = Date.now();
+            const cooldown = 60000; // 60 seconds
+
+            if (now - lastRequest < cooldown) {
+                const wait = Math.ceil((cooldown - (now - lastRequest)) / 1000);
+                alert(`Please wait ${wait}s before requesting another code.`);
+                return;
+            }
+
             loginBtn.disabled = true;
             loginBtn.textContent = 'Sending...';
 
@@ -276,6 +288,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             if (data.status === 'success') {
+                localStorage.setItem('pp_last_code_request', Date.now().toString());
                 showFeedback(topEmailInput, 'success');
                 currentUserEmail = email;
                 localStorage.setItem('pp_user_email', email);

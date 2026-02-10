@@ -92,6 +92,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Change Key Logic ---
     btnChangeTrigger.addEventListener('click', async () => {
+        // --- Click Rate Limit / Debounce ---
+        const lastRequest = parseInt(localStorage.getItem('pp_last_reset_request') || '0');
+        const now = Date.now();
+        const cooldown = 60000; // 60 seconds
+
+        if (now - lastRequest < cooldown) {
+            const wait = Math.ceil((cooldown - (now - lastRequest)) / 1000);
+            notify(`Wait ${wait}s before another request.`, 'error');
+            return;
+        }
+
         changeKeySection.style.display = 'block';
         btnChangeTrigger.disabled = true;
 
@@ -102,6 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         if (res.status === 'success') {
+            localStorage.setItem('pp_last_reset_request', Date.now().toString());
             notify('Security reset code sent to your email.');
         } else {
             notify('Failed to send reset code. Try again.', 'error');
