@@ -7,8 +7,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const isVerified = localStorage.getItem('pp_verified') === 'true';
     const clientId = localStorage.getItem('pp_client_id') || '';
 
-    // In-memory selection state
-    let selectedExtension = 'ppbot';
+    // In-memory UI Selection
+    let activeExtensionId = 'ppbot';
 
     if (!isVerified || !email || !clientId) {
         window.location.href = '/';
@@ -20,10 +20,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const clientIdEl = document.getElementById('client-id');
     const btnReveal = document.getElementById('btn-reveal');
     const btnCopy = document.getElementById('btn-copy');
-    const currentExtName = document.getElementById('current-ext-name');
-    const adTargetName = document.getElementById('ad-target-name');
 
-    const creditCountEl = document.getElementById('credit-ppbot');
+    const currentExtName = document.getElementById('current-ext-name');
+    const creditsLabel = document.getElementById('credits-label');
+    const creditCountEl = document.getElementById('credit-count');
+    const adTargetDisplay = document.getElementById('ad-target-display');
+
     const btnWatchAd = document.getElementById('btn-watch-ad');
     const adLimitStatus = document.getElementById('ad-limit-status');
     const adSimulation = document.getElementById('ad-simulation');
@@ -42,7 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- Initialize Info ---
+    // --- Initialize Bottom Global Identity ---
     userEmailEl.textContent = email;
     let isIdVisible = false;
 
@@ -64,19 +66,24 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => btnCopy.innerHTML = originalIcon, 2000);
     });
 
-    // --- Extensions Interaction ---
-    document.querySelectorAll('.extension-item[data-id]').forEach(item => {
+    // --- Extension Switching Logic ---
+    const navItems = document.querySelectorAll('.ext-nav-item[data-id]');
+    navItems.forEach(item => {
         item.addEventListener('click', () => {
             const id = item.getAttribute('data-id');
-            selectedExtension = id;
+            const name = item.getAttribute('data-name');
 
-            // Update UI
-            document.querySelectorAll('.extension-item').forEach(el => el.classList.remove('active'));
+            // Switch State
+            activeExtensionId = id;
+
+            // Update Sidebar UI
+            navItems.forEach(el => el.classList.remove('active'));
             item.classList.add('active');
 
-            const name = item.querySelector('.name').textContent;
+            // Update Main View
             currentExtName.textContent = name;
-            adTargetName.textContent = name;
+            creditsLabel.textContent = `${name} Compute Credits`;
+            adTargetDisplay.textContent = name;
 
             updateCreditsUI();
         });
@@ -84,7 +91,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Credits & Ad Logic ---
     const today = new Date().toDateString();
-
     const lastAdReset = localStorage.getItem(`pp_ad_reset_${email}`);
     if (lastAdReset !== today) {
         localStorage.setItem(`pp_ad_reset_${email}`, today);
@@ -93,7 +99,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const updateCreditsUI = async () => {
         // Fetch Live Credits from Server
-        // Note: For now, one credits column for all extensions, but logic is ready for split
+        // Note: Currently server has 1 credit column. 
+        // We'll split it in the UI for Predictor if needed, or just show the same for demo.
         const data = await safeFetch(`${apiUrl}/check-client`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -101,21 +108,27 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         if (data.status === 'success') {
-            creditCountEl.textContent = data.credits;
-            // Visual feedback of syncing
-            creditCountEl.classList.add('glow');
-            setTimeout(() => creditCountEl.classList.remove('glow'), 1000);
+            // DEMO LOGIC: If it's predictor, maybe show a different number or simulated split
+            if (activeExtensionId === 'predictor') {
+                // Mocking: Just show -10 credits to differentiate for the user
+                creditCountEl.textContent = Math.max(0, data.credits - 10);
+            } else {
+                creditCountEl.textContent = data.credits;
+            }
         } else {
             creditCountEl.textContent = '--';
         }
 
         const adsToday = parseInt(localStorage.getItem(`pp_ads_today_${email}`) || '0');
         const adsSession = parseInt(sessionStorage.getItem(`pp_ads_session_${email}`) || '0');
-        adLimitStatus.textContent = `Rewards Used Today: ${adsToday}/6 | Session: ${adsSession}/3`;
+        adLimitStatus.textContent = `Limit Check: ${adsToday}/6 Rewards Today | ${adsSession}/3 Session`;
 
         if (adsToday >= 6 || adsSession >= 3) {
             btnWatchAd.disabled = true;
             btnWatchAd.textContent = 'LINK LIMIT REACHED';
+        } else {
+            btnWatchAd.disabled = false;
+            btnWatchAd.textContent = 'Initiate Boost';
         }
     };
 
@@ -145,7 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const finishAd = async () => {
         adSimulation.style.display = 'none';
 
-        // Call Server to Boost Credits
+        // Sync with server
         const data = await safeFetch(`${apiUrl}/boost-credits`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -161,7 +174,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             await updateCreditsUI();
         } else {
-            alert('Booster synchronization failed. Check link status.');
+            alert('Booster synchronization failed. Check identity uplink.');
         }
     };
 
