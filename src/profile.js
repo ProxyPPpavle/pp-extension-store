@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const currentExtName = document.getElementById('current-ext-name');
     const creditsLabel = document.getElementById('credits-label');
     const creditCountEl = document.getElementById('credit-count');
-    const adTargetDisplay = document.getElementById('ad-target-display');
+    const adTargetName = document.getElementById('ad-target-name');
 
     const btnWatchAd = document.getElementById('btn-watch-ad');
     const adLimitStatus = document.getElementById('ad-limit-status');
@@ -141,8 +141,10 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             if (res.status === 'success') {
                 localStorage.setItem('pp_client_id', res.newClientId);
-                // Clear cached credits on ID change
-                localStorage.removeItem('pp_last_credits');
+                // Clear cached credits for all extensions on ID change
+                Object.keys(localStorage).forEach(key => {
+                    if (key.startsWith('pp_last_credits_')) localStorage.removeItem(key);
+                });
                 notify('Global Client Key successfully updated!');
                 setTimeout(() => window.location.reload(), 2000);
             } else {
@@ -165,7 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             currentExtName.textContent = name;
             creditsLabel.textContent = `Compute Credits (Sync via Client ID)`;
-            adTargetDisplay.textContent = name;
+            if (adTargetName) adTargetName.textContent = name;
 
             updateCreditsUI();
         });
@@ -181,21 +183,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const updateCreditsUI = async (forceFetch = false) => {
         const id = localStorage.getItem('pp_client_id');
-        let cachedCredits = localStorage.getItem('pp_last_credits');
+        const cacheKey = `pp_last_credits_${activeExtensionId}`;
+        let cachedCredits = localStorage.getItem(cacheKey);
 
-        // Strategy: Only fetch if forceFetch, OR first time, OR every 10th visit
+        // Strategy: Only fetch if forceFetch, OR first time for this ext, OR every 10th visit
         const shouldFetch = forceFetch || !cachedCredits || visitCount === 1 || visitCount % 10 === 0;
 
         if (shouldFetch) {
             const data = await safeFetch(`${apiUrl}/check-client`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ clientId: id })
+                body: JSON.stringify({ clientId: id, extensionId: activeExtensionId })
             });
 
             if (data.status === 'success') {
                 cachedCredits = data.credits.toString();
-                localStorage.setItem('pp_last_credits', cachedCredits);
+                localStorage.setItem(cacheKey, cachedCredits);
+            } else {
+                // If it doesn't exist in DB, maybe it hasn't been registered. Show 0 or fetch from server.
+                cachedCredits = '0';
             }
         }
 
@@ -239,18 +245,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const finishAd = async () => {
         adSimulation.style.display = 'none';
         const id = localStorage.getItem('pp_client_id');
+        const cacheKey = `pp_last_credits_${activeExtensionId}`;
 
         // 1. Tell database to boost
         const data = await safeFetch(`${apiUrl}/boost-credits`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ clientId: id })
+            body: JSON.stringify({ clientId: id, extensionId: activeExtensionId })
         });
 
         if (data.status === 'success') {
             // 2. Optimization: Update UI & LocalStorage without fresh fetch
-            let updatedCredits = parseInt(localStorage.getItem('pp_last_credits') || '0') + 2;
-            localStorage.setItem('pp_last_credits', updatedCredits.toString());
+            let updatedCredits = parseInt(localStorage.getItem(cacheKey) || '0') + 2;
+            localStorage.setItem(cacheKey, updatedCredits.toString());
             creditCountEl.textContent = updatedCredits;
 
             const adsToday = parseInt(localStorage.getItem(`pp_ads_today_${email}`) || '0');

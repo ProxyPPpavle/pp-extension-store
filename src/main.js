@@ -354,11 +354,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 showFeedback(topEmailInput, 'error');
                 return;
             }
-            const type = trigger.getAttribute('data-type');
+            const type = trigger.getAttribute('data-type'); // 'ppbot' or 'predictor'
             const data = await safeFetch(`${apiUrl}/register-client`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ accountType: type, email: currentUserEmail })
+                body: JSON.stringify({ accountType: 'free', email: currentUserEmail, extensionId: type })
             });
             if (data.status === 'success') {
                 if (idDisplayModal) idDisplayModal.textContent = data.clientId;
