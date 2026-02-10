@@ -531,7 +531,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    reviewForm?.addEventListener('submit', (e) => {
+    reviewForm?.addEventListener('submit', async (e) => {
         e.preventDefault();
 
         // 1. Check if verified
@@ -549,13 +549,27 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const btn = reviewForm.querySelector('button[type="submit"]');
-        const originalText = btn.textContent;
+        const formData = new FormData(reviewForm);
+        const name = formData.get('name') || 'Anonymous';
+        const comment = formData.get('comment');
+        const rating = ratingInput.value;
 
+        if (!comment) {
+            showFeedback(reviewForm.querySelector('textarea'), 'error');
+            return;
+        }
+
+        const originalText = btn.textContent;
         btn.disabled = true;
         btn.textContent = 'Publishing...';
 
-        // Simulate API call
-        setTimeout(() => {
+        const res = await safeFetch(`${apiUrl}/add-review`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, email: currentUserEmail, comment, rating })
+        });
+
+        if (res.status === 'success') {
             localStorage.setItem(`pp_reviewed_${currentUserEmail}`, 'true');
             btn.textContent = 'Success!';
             btn.style.background = 'var(--accent-green)';
@@ -563,13 +577,86 @@ document.addEventListener('DOMContentLoaded', () => {
             if (ratingInput) ratingInput.value = 5;
             updateStars(5);
 
+            // Refresh reviews to include the new one
+            initFloatingReviews();
+
             setTimeout(() => {
                 btn.disabled = false;
                 btn.textContent = originalText;
                 btn.style.background = '';
             }, 3000);
-        }, 1500);
+        } else {
+            notify(res.message || 'Error publishing review', 'error');
+            btn.disabled = false;
+            btn.textContent = originalText;
+        }
     });
+
+    // --- Floating Reviews Logic ---
+    const fragContainer = document.getElementById('floating-reviews-container');
+    let dynamicReviews = [];
+    let reviewIndex = 0;
+
+    const spawnFloatingReview = (rev) => {
+        if (!fragContainer) return;
+
+        const card = document.createElement('div');
+        card.className = 'floating-review';
+
+        // Random horizontal position
+        const left = Math.random() * (window.innerWidth - 300);
+        card.style.left = `${left}px`;
+
+        // Random duration between 15s and 25s
+        const duration = 15 + Math.random() * 10;
+        card.style.animationDuration = `${duration}s`;
+
+        const stars = '★'.repeat(rev.rating) + '☆'.repeat(5 - rev.rating);
+
+        card.innerHTML = `
+            <div class="rev-name">
+                <i class="fas fa-user-circle"></i>
+                ${rev.name}
+            </div>
+            <div class="rev-stars">${stars}</div>
+            <div class="rev-text">"${rev.comment}"</div>
+        `;
+
+        fragContainer.appendChild(card);
+
+        // Cleanup after animation
+        setTimeout(() => card.remove(), duration * 1000);
+    };
+
+    const initFloatingReviews = async () => {
+        const res = await safeFetch(`${apiUrl}/get-reviews`);
+        if (res.status === 'success' && res.reviews.length > 0) {
+            dynamicReviews = res.reviews;
+        } else {
+            // Fallback if no reviews yet
+            dynamicReviews = [
+                { name: "Pavle.M", rating: 5, comment: "Top extensions for growth!" },
+                { name: "Lazar88", rating: 5, comment: "PPBot is extremely fast." },
+                { name: "CryptoWhale", rating: 5, comment: "Institutional edge achieved." }
+            ];
+        }
+    };
+
+    const startReviewLoop = () => {
+        setInterval(() => {
+            if (dynamicReviews.length > 0) {
+                const rev = dynamicReviews[reviewIndex];
+                spawnFloatingReview(rev);
+                reviewIndex = (reviewIndex + 1) % dynamicReviews.length;
+            }
+        }, 5000); // Spawn every 5 seconds
+    };
+
+    initFloatingReviews();
+    startReviewLoop();
+
+    // Refresh reviews from DB every 10 minutes (for testing)
+    setInterval(initFloatingReviews, 10 * 60 * 1000);
 
     // Start Loops
     injectVignette();

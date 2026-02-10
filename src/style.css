@@ -453,7 +453,7 @@ nav {
     border: 1px solid var(--glass-border);
     padding: 2.5rem 2.5rem 1.5rem 2.5rem;
     border-radius: 32px;
-    max-width: 500px;
+    max-width: 420px;
     position: relative;
     overflow: hidden;
     transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -558,14 +558,15 @@ nav {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(2, 6, 23, 0.75);
-    backdrop-filter: blur(8px);
+    background: rgba(2, 6, 23, 0.6);
+    backdrop-filter: blur(4px);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 10;
     text-align: center;
     padding: 2rem;
+    border-radius: inherit;
 }
 
 .overlay-content i {
@@ -2105,4 +2106,72 @@ iframe[id*="pro-"] {
     filter: brightness(1.25);
     transform: translateY(-5px);
     box-shadow: 0 15px 40px rgba(16, 185, 129, 0.4);
+}
+/* Floating Reviews Background Animation */
+#floating-reviews-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+}
+
+.floating-review {
+    position: absolute;
+    background: rgba(15, 23, 42, 0.4);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 1rem 1.5rem;
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 250px;
+    animation: float-drift 20s linear infinite;
+    opacity: 0;
+}
+
+.floating-review .rev-name {
+    font-weight: 800;
+    font-size: 0.8rem;
+    color: var(--accent-green);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.floating-review .rev-text {
+    font-size: 0.7rem;
+    color: var(--text-gray);
+    font-style: italic;
+    line-height: 1.4;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+}
+
+.floating-review .rev-stars {
+    color: #fbbf24;
+    font-size: 0.6rem;
+}
+
+@keyframes float-drift {
+    0% {
+        transform: translate(0, 100vh) rotate(0deg);
+        opacity: 0;
+    }
+    10% {
+        opacity: 0.6;
+    }
+    90% {
+        opacity: 0.6;
+    }
+    100% {
+        transform: translate(0, -100px) rotate(15deg);
+        opacity: 0;
+    }
 }

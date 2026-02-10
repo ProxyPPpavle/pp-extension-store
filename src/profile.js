@@ -180,13 +180,15 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const renderAssetList = () => {
-        if (availableAssets.length === 0) {
+        const activeAssets = availableAssets.filter(a => a.extension_id !== 'predictor');
+
+        if (activeAssets.length === 0) {
             possessedList.innerHTML = '<div class="ext-nav-empty">No active extensions.</div>';
             return;
         }
 
         possessedList.innerHTML = '';
-        availableAssets.forEach(asset => {
+        activeAssets.forEach(asset => {
             const config = assetConfig[asset.extension_id] || { name: asset.extension_id, icon: 'fa-plug' };
             const isActive = asset.extension_id === activeExtensionId;
 
@@ -213,8 +215,8 @@ document.addEventListener('DOMContentLoaded', () => {
             possessedList.appendChild(item);
         });
 
-        // Set initial name and switch
-        const initial = availableAssets[0];
+        // Set initial name and switch to the first valid asset
+        const initial = activeAssets[0];
         const initialConfig = assetConfig[initial.extension_id] || { name: initial.extension_id };
         activeExtensionId = initial.extension_id;
         switchAsset(initial.extension_id, initialConfig.name);
