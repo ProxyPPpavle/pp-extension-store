@@ -7,6 +7,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const isVerified = localStorage.getItem('pp_verified') === 'true';
     const clientId = localStorage.getItem('pp_client_id') || '';
 
+    // In-memory selection state
+    let selectedExtension = 'ppbot';
+
     if (!isVerified || !email || !clientId) {
         window.location.href = '/';
         return;
@@ -17,11 +20,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const clientIdEl = document.getElementById('client-id');
     const btnReveal = document.getElementById('btn-reveal');
     const btnCopy = document.getElementById('btn-copy');
-    const btnChangeTrigger = document.getElementById('btn-change-trigger');
-    const changeKeySection = document.getElementById('change-key-section');
-    const resetCodeInput = document.getElementById('reset-code');
-    const btnConfirmChange = document.getElementById('btn-confirm-change');
-    const btnCancelChange = document.getElementById('btn-cancel-change');
+    const currentExtName = document.getElementById('current-ext-name');
+    const adTargetName = document.getElementById('ad-target-name');
 
     const creditCountEl = document.getElementById('credit-ppbot');
     const btnWatchAd = document.getElementById('btn-watch-ad');
@@ -64,40 +64,27 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => btnCopy.innerHTML = originalIcon, 2000);
     });
 
-    // --- Change Key Logic ---
-    btnChangeTrigger.addEventListener('click', () => {
-        changeKeySection.style.display = 'block';
-        alert('Verification code required: request one via support or terminal.');
-    });
+    // --- Extensions Interaction ---
+    document.querySelectorAll('.extension-item[data-id]').forEach(item => {
+        item.addEventListener('click', () => {
+            const id = item.getAttribute('data-id');
+            selectedExtension = id;
 
-    btnCancelChange.addEventListener('click', () => {
-        changeKeySection.style.display = 'none';
-        resetCodeInput.value = '';
-    });
+            // Update UI
+            document.querySelectorAll('.extension-item').forEach(el => el.classList.remove('active'));
+            item.classList.add('active');
 
-    btnConfirmChange.addEventListener('click', async () => {
-        const code = resetCodeInput.value.trim();
-        if (code.length === 6) {
-            const res = await safeFetch(`${apiUrl}/reset-account`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, code })
-            });
-            if (res.status === 'success') {
-                localStorage.clear();
-                window.location.href = '/';
-            } else {
-                alert(res.message || 'Invalid code.');
-            }
-        } else {
-            alert('Please enter a valid 6-digit code.');
-        }
+            const name = item.querySelector('.name').textContent;
+            currentExtName.textContent = name;
+            adTargetName.textContent = name;
+
+            updateCreditsUI();
+        });
     });
 
     // --- Credits & Ad Logic ---
     const today = new Date().toDateString();
 
-    // Local Ad limit tracking
     const lastAdReset = localStorage.getItem(`pp_ad_reset_${email}`);
     if (lastAdReset !== today) {
         localStorage.setItem(`pp_ad_reset_${email}`, today);
@@ -106,6 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const updateCreditsUI = async () => {
         // Fetch Live Credits from Server
+        // Note: For now, one credits column for all extensions, but logic is ready for split
         const data = await safeFetch(`${apiUrl}/check-client`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -114,8 +102,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (data.status === 'success') {
             creditCountEl.textContent = data.credits;
+            // Visual feedback of syncing
+            creditCountEl.classList.add('glow');
+            setTimeout(() => creditCountEl.classList.remove('glow'), 1000);
         } else {
-            creditCountEl.textContent = 'Err';
+            creditCountEl.textContent = '--';
         }
 
         const adsToday = parseInt(localStorage.getItem(`pp_ads_today_${email}`) || '0');
@@ -124,7 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (adsToday >= 6 || adsSession >= 3) {
             btnWatchAd.disabled = true;
-            btnWatchAd.textContent = 'DAILY LIMIT REACHED';
+            btnWatchAd.textContent = 'LINK LIMIT REACHED';
         }
     };
 
@@ -169,12 +160,12 @@ document.addEventListener('DOMContentLoaded', () => {
             sessionStorage.setItem(`pp_ads_session_${email}`, (adsSession + 1).toString());
 
             await updateCreditsUI();
-            alert(`Success! +2 Credits synchronized with database.`);
         } else {
-            alert('Failed to sync credits. Please try again.');
+            alert('Booster synchronization failed. Check link status.');
         }
     };
 
+    // Initial Load
     updateCreditsUI();
     updateClientIdUI();
 });

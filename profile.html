@@ -11,253 +11,320 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/src/style.css">
     <style>
-        .profile-page {
+        :root {
+            --sidebar-width: 280px;
+        }
+
+        .profile-wrapper {
+            display: flex;
             min-height: 100vh;
-            padding: 2rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .profile-container {
-            max-width: 600px;
-            width: 100%;
-            background: rgba(15, 23, 42, 0.85);
-            backdrop-filter: blur(25px);
-            border-radius: 35px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            padding: 2.5rem;
-            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.6);
-            position: relative;
+            background: #020617;
             overflow: hidden;
-            animation: entry 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
         }
 
-        @keyframes entry {
-            from {
-                opacity: 0;
-                transform: translateY(30px) scale(0.95);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 2rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            z-index: 10;
         }
 
-        .profile-header {
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .sidebar-header i {
+            font-size: 1.5rem;
+            color: var(--accent-green);
+        }
+
+        .sidebar-header h2 {
+            font-size: 1.1rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+
+        .nav-group label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            font-weight: 800;
+            color: var(--text-gray);
+            letter-spacing: 2px;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .extension-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .extension-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 1px solid transparent;
+        }
+
+        .extension-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .extension-item.active {
+            background: rgba(34, 197, 94, 0.1);
+            border-color: rgba(34, 197, 94, 0.3);
+        }
+
+        .extension-item i {
+            font-size: 1.2rem;
+            color: var(--text-gray);
+        }
+
+        .extension-item.active i {
+            color: var(--accent-green);
+        }
+
+        .ext-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .ext-info .name {
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+
+        .ext-info .status {
+            font-size: 0.65rem;
+            color: var(--text-gray);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 3rem;
+            overflow-y: auto;
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin-bottom: 2rem;
-            text-align: center;
+            position: relative;
         }
 
-        .profile-header h1 {
+        .dashboard-grid {
+            max-width: 800px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+
+        .service-card {
+            background: rgba(30, 41, 59, 0.5);
+            backdrop-filter: blur(20px);
+            border-radius: 32px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 3rem;
+            position: relative;
+            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.4);
+        }
+
+        .service-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .service-header h3 {
             font-size: 1.8rem;
             font-weight: 800;
             margin-bottom: 0.5rem;
         }
 
         .id-badge {
-            background: rgba(34, 197, 94, 0.15);
+            background: rgba(34, 197, 94, 0.1);
             color: var(--accent-green);
             padding: 4px 12px;
             border-radius: 20px;
             font-size: 0.7rem;
             font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            border: 1px solid rgba(34, 197, 94, 0.3);
         }
 
-        .info-section {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            margin-bottom: 2rem;
+        .stats-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 3rem;
         }
 
-        .info-card {
+        .stat-box {
             background: rgba(255, 255, 255, 0.03);
-            padding: 1rem 1.5rem;
-            border-radius: 20px;
+            padding: 1.5rem;
+            border-radius: 24px;
+            text-align: center;
             border: 1px solid rgba(255, 255, 255, 0.05);
-            display: flex;
-            flex-direction: column;
-            gap: 0.3rem;
         }
 
-        .info-card label {
-            font-size: 0.65rem;
-            color: var(--text-gray);
+        .stat-box label {
+            font-size: 0.7rem;
             text-transform: uppercase;
+            color: var(--text-gray);
             letter-spacing: 1px;
-            font-weight: 700;
+            display: block;
+            margin-bottom: 0.5rem;
         }
 
-        .info-card .value {
-            font-size: 1rem;
-            font-weight: 600;
-            color: var(--text-white);
-        }
-
-        .client-id-controls {
-            display: flex;
-            align-items: center;
-            gap: 0.8rem;
-            margin-top: 0.2rem;
-        }
-
-        .btn-icon-mini {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: var(--text-white);
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 0.8rem;
-        }
-
-        .btn-icon-mini:hover {
-            background: var(--accent-green);
-            border-color: var(--accent-green);
-            color: black;
-            transform: scale(1.1);
-        }
-
-        .credits-display {
-            background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(16, 185, 129, 0.05));
-            border: 1px solid rgba(34, 197, 94, 0.2);
-            border-radius: 25px;
-            padding: 1.5rem;
-            text-align: center;
-            margin-bottom: 2rem;
-            position: relative;
-        }
-
-        .credits-display .count {
-            font-size: 3rem;
+        .stat-box .value {
+            font-size: 2.5rem;
             font-weight: 950;
+            color: var(--text-white);
+        }
+
+        .stat-box.highlight .value {
             color: var(--accent-green);
-            line-height: 1;
-            margin: 0.5rem 0;
-            text-shadow: 0 0 30px rgba(34, 197, 94, 0.4);
+            text-shadow: 0 0 30px rgba(34, 197, 94, 0.3);
         }
 
-        .credits-display label {
-            font-size: 0.75rem;
-            text-transform: uppercase;
+        /* Kinetic Link Section */
+        .kinetic-booster {
+            margin-top: 2rem;
+            background: rgba(2, 6, 23, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 32px;
+            padding: 2.5rem;
+            position: relative;
+            z-index: 5;
+        }
+
+        .booster-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .booster-text h4 {
+            font-size: 1.2rem;
             font-weight: 800;
-            letter-spacing: 2px;
+            margin-bottom: 0.5rem;
+        }
+
+        .booster-text p {
+            font-size: 0.85rem;
             color: var(--text-gray);
-        }
-
-        .boost-section {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px dashed rgba(255, 255, 255, 0.1);
-            border-radius: 25px;
-            padding: 1.5rem;
-            text-align: center;
-            transition: all 0.3s;
-        }
-
-        .boost-section:hover {
-            background: rgba(255, 255, 255, 0.04);
-            border-color: var(--accent-green);
         }
 
         .btn-boost {
             background: var(--accent-green);
             color: black;
-            padding: 0.8rem 1.5rem;
-            border-radius: 12px;
+            padding: 1rem 2rem;
+            border-radius: 16px;
             font-weight: 900;
-            font-size: 0.9rem;
             border: none;
             cursor: pointer;
             transition: all 0.3s;
-            margin-bottom: 0.8rem;
-            width: 100%;
+            white-space: nowrap;
         }
 
         .btn-boost:hover:not(:disabled) {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 20px rgba(34, 197, 94, 0.3);
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(34, 197, 94, 0.4);
         }
 
-        .btn-boost:disabled {
-            background: #2c2c2c;
-            color: #666;
-            cursor: not-allowed;
+        /* The Wire/Cable Component */
+        .kinetic-wire-container {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            width: 2px;
+            height: 100px;
+            background: linear-gradient(to bottom, transparent, var(--accent-green), transparent);
+            transform: translateX(-50%) translateY(-100%);
+            opacity: 0.3;
         }
 
-        .status-text {
-            font-size: 0.65rem;
-            text-transform: uppercase;
-            font-weight: 700;
-            letter-spacing: 1px;
-            color: var(--text-gray);
+        .kinetic-wire-container::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--accent-green);
+            animation: pulse-wire 2s infinite;
         }
 
-        .back-home {
-            margin-top: 2rem;
-            color: var(--text-gray);
-            text-decoration: none;
-            font-size: 0.8rem;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
+        @keyframes pulse-wire {
+            0% {
+                transform: scaleY(0);
+                transform-origin: top;
+                opacity: 0;
+            }
+
+            50% {
+                transform: scaleY(1);
+                transform-origin: top;
+                opacity: 1;
+            }
+
+            51% {
+                transform: scaleY(1);
+                transform-origin: bottom;
+                opacity: 1;
+            }
+
+            100% {
+                transform: scaleY(0);
+                transform-origin: bottom;
+                opacity: 0;
+            }
         }
 
-        .back-home:hover {
-            color: var(--accent-green);
-        }
-
-        /* Change Key Section */
-        #change-key-section {
-            display: none;
-            margin-top: 1rem;
-            padding-top: 1rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            text-align: center;
-        }
-
-        .code-input-mini {
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid var(--glass-border);
-            color: white;
-            padding: 0.6rem;
-            border-radius: 10px;
-            width: 120px;
-            text-align: center;
-            letter-spacing: 3px;
-            font-weight: 900;
-            margin-bottom: 0.8rem;
-        }
-
-        /* Ad Simulation Overlay */
         #ad-simulation {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: black;
-            z-index: 9999;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
             display: none;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            color: white;
             text-align: center;
+        }
+
+        .back-home {
+            position: absolute;
+            bottom: 2rem;
+            left: 2rem;
+            color: var(--text-gray);
+            text-decoration: none;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .back-home:hover {
+            color: var(--text-white);
         }
     </style>
 </head>
@@ -266,62 +333,106 @@
     <div class="glow-bg"></div>
     <div class="bg-lines"></div>
 
-    <div class="profile-page">
-        <div class="profile-container" id="profile-container">
-            <div class="profile-header">
-                <h1><i class="fas fa-id-card-clip gradient-text"></i> User Intelligence</h1>
-                <div class="id-badge">Verified Member</div>
+    <div class="profile-wrapper">
+        <!-- Dashboard Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <i class="fas fa-microchip"></i>
+                <h2>PP ASSETS</h2>
             </div>
 
-            <div class="info-section">
-                <div class="info-card">
-                    <label>Registration Email</label>
-                    <div class="value" id="user-email">...</div>
-                </div>
-                <div class="info-card">
-                    <label>Global Client Identity</label>
-                    <div class="client-id-controls">
-                        <div class="value" id="client-id">••••-••••</div>
-                        <button class="btn-icon-mini" id="btn-reveal" title="Reveal ID"><i
-                                class="fas fa-eye"></i></button>
-                        <button class="btn-icon-mini" id="btn-copy" title="Copy ID"><i class="fas fa-copy"></i></button>
-                        <button class="btn-icon-mini" id="btn-change-trigger" title="Reset Key"><i
-                                class="fas fa-sync-alt"></i></button>
-                    </div>
-
-                    <div id="change-key-section">
-                        <p style="font-size: 0.65rem; color: #fbbf24; margin-bottom: 0.6rem; font-weight: 700;">CONFIRM
-                            SECURITY RESET</p>
-                        <input type="text" class="code-input-mini" id="reset-code" placeholder="XXXXXX" maxlength="6">
-                        <div style="display: flex; gap: 0.5rem; justify-content: center;">
-                            <button id="btn-confirm-change" class="btn-boost"
-                                style="width: auto; padding: 0.5rem 1.5rem; margin: 0; font-size: 0.75rem;">Proceed</button>
-                            <button id="btn-cancel-change"
-                                style="background:none; border:none; color: var(--text-gray); cursor:pointer; font-size: 0.7rem;">Cancel</button>
+            <div class="nav-group">
+                <label>Active Extensions</label>
+                <div class="extension-list" id="possessed-extensions">
+                    <!-- Extension items will be injected -->
+                    <div class="extension-item active" data-id="ppbot">
+                        <i class="fas fa-robot"></i>
+                        <div class="ext-info">
+                            <span class="name">PPBot Standard</span>
+                            <span class="status">Installed & Active</span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="credits-display">
-                <label>PPBot Command Credits</label>
-                <div class="count" id="credit-ppbot">0</div>
-                <div class="status-text">Available Database Entries</div>
-            </div>
-
-            <div class="boost-section">
-                <div style="text-align: left; margin-bottom: 0.5rem;">
-                    <h4 style="font-size: 0.9rem; margin-bottom: 0.2rem;"><i class="fas fa-bolt"
-                            style="color: var(--accent-green);"></i> Kinetic Boost</h4>
-                    <p style="font-size: 0.75rem; color: var(--text-gray);">Watch advertisement to gain <strong>+2
-                            Credits</strong> instantly.</p>
+            <div class="nav-group">
+                <label>Inactive / Store</label>
+                <div class="extension-list">
+                    <div class="extension-item" style="opacity: 0.4; cursor: not-allowed;">
+                        <i class="fas fa-chart-line"></i>
+                        <div class="ext-info">
+                            <span class="name">PP Predictor</span>
+                            <span class="status">Coming Soon</span>
+                        </div>
+                    </div>
+                    <div class="extension-item" style="opacity: 0.4; cursor: not-allowed;">
+                        <i class="fas fa-desktop"></i>
+                        <div class="ext-info">
+                            <span class="name">PP Desktop</span>
+                            <span class="status">Offline</span>
+                        </div>
+                    </div>
                 </div>
-                <button id="btn-watch-ad" class="btn-boost">Initiate Boost Sequence</button>
-                <div class="status-text" id="ad-limit-status">Rewards Used Today: 0/6</div>
             </div>
-        </div>
 
-        <a href="/" class="back-home"><i class="fas fa-chevron-left"></i> Return to Terminal</a>
+            <div style="margin-top: auto;">
+                <a href="/" class="back-home"><i class="fas fa-arrow-left"></i> Exit Dashboard</a>
+            </div>
+        </aside>
+
+        <!-- Main Dashboard Area -->
+        <main class="main-content">
+            <div class="dashboard-grid">
+                <!-- Main Service Card -->
+                <div class="service-card" id="main-service-node">
+                    <div class="service-header">
+                        <h3 id="current-ext-name">PPBot Standard</h3>
+                        <span class="id-badge">Universal Identity</span>
+                    </div>
+
+                    <div class="stats-row">
+                        <div class="stat-box">
+                            <label>Client Identity</label>
+                            <div class="value" style="font-size: 0.9rem; letter-spacing: 2px;" id="client-id">••••-••••
+                            </div>
+                            <div style="display: flex; gap: 10px; justify-content: center; margin-top: 10px;">
+                                <button class="btn-icon-mini" id="btn-reveal"><i class="fas fa-eye"></i></button>
+                                <button class="btn-icon-mini" id="btn-copy"><i class="fas fa-copy"></i></button>
+                            </div>
+                        </div>
+                        <div class="stat-box highlight">
+                            <label>Compute Credits</label>
+                            <div class="value" id="credit-ppbot">0</div>
+                        </div>
+                    </div>
+
+                    <div class="info-card"
+                        style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); padding: 1.5rem; border-radius: 20px;">
+                        <label
+                            style="font-size: 0.65rem; text-transform: uppercase; color: var(--text-gray); margin-bottom: 0.5rem; display: block;">Verification
+                            Status</label>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; font-weight: 700;">
+                            <i class="fas fa-shield-check" style="color: var(--accent-green);"></i>
+                            <span id="user-email">...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Kinetic Link (Ad Booster) -->
+                <div class="kinetic-booster">
+                    <div class="kinetic-wire-container"></div>
+                    <div class="booster-content">
+                        <div class="booster-text">
+                            <h4><i class="fas fa-bolt" style="color: var(--accent-green);"></i> Kinetic Link</h4>
+                            <p>Targeting: <strong id="ad-target-name">PPBot Standard</strong></p>
+                            <div style="font-size: 0.65rem; color: var(--text-gray); margin-top: 5px;"
+                                id="ad-limit-status">Rewards Used Today: 0/6</div>
+                        </div>
+                        <button id="btn-watch-ad" class="btn-boost">Synthesize Credits</button>
+                    </div>
+                </div>
+            </div>
+        </main>
     </div>
 
     <!-- Ad Overlay -->
@@ -329,9 +440,9 @@
         <div
             style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 1rem; color: var(--accent-green);">
             Data Processing</div>
-        <h2 id="ad-timer" style="font-size: 2.5rem; font-weight: 950; margin-bottom: 1rem;">15s</h2>
+        <h2 id="ad-timer" style="font-size: 3rem; font-weight: 950; margin-bottom: 1rem;">15s</h2>
         <div
-            style="width: 250px; height: 6px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; margin-bottom: 2rem;">
+            style="width: 300px; height: 4px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; margin-bottom: 2rem;">
             <div id="ad-progress"
                 style="width: 0%; height: 100%; background: var(--accent-green); transition: width 1s linear;"></div>
         </div>
