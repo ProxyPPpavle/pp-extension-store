@@ -444,6 +444,8 @@ nav {
 .extension-grid {
     display: flex;
     justify-content: center;
+    gap: 3rem;
+    flex-wrap: wrap;
 }
 
 .extension-card {
@@ -544,8 +546,25 @@ nav {
 .download-actions {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 1rem;
+    gap: 1.5rem;
     margin-top: 2rem;
+}
+
+.coming-soon-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px dashed var(--glass-border);
+    color: var(--text-gray);
+    padding: 1.5rem;
+    border-radius: 20px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 1.1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    opacity: 0.8;
 }
 
 .btn-free {
@@ -555,11 +574,11 @@ nav {
     background: var(--glass-bg);
     border: 1px solid var(--glass-border);
     color: var(--text-white);
-    padding: 1.25rem 2rem;
+    padding: 1.5rem 1rem;
     border-radius: 20px;
     text-align: center;
     font-weight: 800;
-    font-size: 1.1rem;
+    font-size: 1rem;
     letter-spacing: -0.5px;
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     position: relative;
@@ -574,14 +593,17 @@ nav {
 }
 
 .btn-free .badge {
-    font-size: 0.65rem;
+    position: absolute;
+    top: -8px;
+    right: 12px;
+    font-size: 0.6rem;
     background: var(--accent-green);
     color: var(--bg-black);
-    padding: 2px 6px;
-    border-radius: 4px;
-    margin-bottom: 4px;
+    padding: 3px 8px;
+    border-radius: 6px;
     font-weight: 800;
     text-transform: uppercase;
+    box-shadow: 0 4px 10px rgba(34, 197, 94, 0.3);
 }
 
 .btn-premium {
@@ -591,11 +613,11 @@ nav {
     background: var(--gradient-premium);
     color: white;
     text-decoration: none;
-    padding: 1.25rem 2rem;
+    padding: 1.5rem 1rem;
     border-radius: 20px;
     text-align: center;
     font-weight: 800;
-    font-size: 1.1rem;
+    font-size: 1rem;
     letter-spacing: -0.5px;
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     box-shadow: 0 10px 30px rgba(245, 158, 11, 0.3);
@@ -624,14 +646,17 @@ nav {
 }
 
 .btn-premium .badge {
-    font-size: 0.65rem;
-    background: rgba(255, 255, 255, 0.2);
-    color: white;
-    padding: 2px 6px;
-    border-radius: 4px;
-    margin-bottom: 4px;
+    position: absolute;
+    top: -8px;
+    right: 12px;
+    font-size: 0.6rem;
+    background: white;
+    color: #ef4444;
+    padding: 3px 8px;
+    border-radius: 6px;
     font-weight: 800;
     text-transform: uppercase;
+    box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);
 }
 
 .btn-subtext {
