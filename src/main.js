@@ -492,42 +492,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- Ad Injection (Stabilized) ---
-    const injectVignette = () => {
-        if (!adStorage.canShowVignette) return;
-        try {
-            document.querySelectorAll('script[src*="vignette.min.js"]').forEach(s => s.remove());
-            const s = document.createElement('script');
-            s.dataset.zone = '10582470';
-            s.src = 'https://gizokraijaw.net/vignette.min.js';
-            s.setAttribute('data-cfasync', 'false');
-            (document.head || document.documentElement).appendChild(s);
-        } catch (err) { }
-        adStorage.canShowVignette = false;
-    };
-
-    const startAdGuardian = () => {
-        setInterval(() => {
-            const hasAds = document.querySelectorAll('iframe[id*="pro-"], div[class*="pro-"]').length > 0;
-            if (!hasAds) {
-                try {
-                    const adContainer = document.getElementById('ad-loop-container') || document.body;
-                    const s1 = document.createElement('script');
-                    s1.dataset.zone = '10582494';
-                    s1.src = 'https://nap5k.com/tag.min.js';
-                    adContainer.appendChild(s1);
-                } catch (e) { }
-            }
-        }, 5000);
-    };
-
-    document.addEventListener('click', () => {
-        adStorage.clickCount++;
-        if (adStorage.clickCount % 3 === 0) {
-            adStorage.canShowVignette = true;
-            injectVignette();
-        }
-    });
+    // --- ExoClick Ads Only (Propeller Ads Removed) ---
+    // All ad serving is now handled by ExoClick zones embedded in HTML
 
     // --- Matrix Optimization ---
     const canvas = document.getElementById('matrix-canvas');
@@ -760,8 +726,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Refresh reviews from DB every 10 minutes (for testing)
     setInterval(initFloatingReviews, 10 * 60 * 1000);
-
-    // Start Loops
-    injectVignette();
-    startAdGuardian();
 });

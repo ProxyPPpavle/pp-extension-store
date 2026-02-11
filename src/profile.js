@@ -275,30 +275,90 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // --- VAST Video Ad for Credits ---
+    const VAST_URL = 'https://s.magsrv.com/v1/vast.php?idzone=5851404';
+    const profileVastVideo = document.getElementById('profile-vast-video');
+    const profileVastSkip = document.getElementById('profile-vast-skip');
+    const profileVastCountdown = document.getElementById('profile-vast-countdown');
+    const profileVastTimer = document.getElementById('profile-vast-timer');
+
+    let vastCountdownInterval = null;
+
+    const loadProfileVast = async () => {
+        try {
+            const response = await fetch(VAST_URL);
+            const vastXml = await response.text();
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(vastXml, 'text/xml');
+            const mediaFile = xmlDoc.querySelector('MediaFile');
+
+            if (mediaFile && profileVastVideo) {
+                const videoUrl = mediaFile.textContent.trim();
+                profileVastVideo.src = videoUrl;
+                profileVastVideo.play().catch(err => {
+                    console.warn('[VAST] Autoplay blocked:', err);
+                });
+            } else {
+                console.warn('[VAST] No MediaFile found');
+                setTimeout(finishAd, 5000);
+            }
+        } catch (err) {
+            console.error('[VAST] Error loading video:', err);
+            setTimeout(finishAd, 5000);
+        }
+    };
+
+    const closeProfileVast = () => {
+        if (adSimulation) adSimulation.style.display = 'none';
+        if (profileVastVideo) {
+            profileVastVideo.pause();
+            profileVastVideo.src = '';
+        }
+        if (vastCountdownInterval) clearInterval(vastCountdownInterval);
+    };
+
+    profileVastSkip?.addEventListener('click', () => {
+        console.log('[VAST] User skipped ad');
+        closeProfileVast();
+        finishAd();
+    });
+
+    profileVastVideo?.addEventListener('ended', () => {
+        console.log('[VAST] Video completed');
+        closeProfileVast();
+        finishAd();
+    });
+
     btnWatchAd.addEventListener('click', () => {
         const adsToday = parseInt(localStorage.getItem(`pp_ads_today_${email}`) || '0');
         const adsSession = parseInt(sessionStorage.getItem(`pp_ads_session_${email}`) || '0');
         if (adsToday >= 6 || adsSession >= 3) return;
 
+        // Show VAST modal
         adSimulation.style.display = 'flex';
-        let timeLeft = 15;
-        adTimer.textContent = `${timeLeft}s`;
-        adProgress.style.width = '0%';
+        if (profileVastSkip) profileVastSkip.style.display = 'none';
+        if (profileVastCountdown) profileVastCountdown.style.display = 'block';
+        if (profileVastTimer) profileVastTimer.textContent = '5';
 
-        const interval = setInterval(() => {
+        // Load VAST video
+        loadProfileVast();
+
+        // 5-second countdown
+        let timeLeft = 5;
+        vastCountdownInterval = setInterval(() => {
             timeLeft--;
-            adTimer.textContent = `${timeLeft}s`;
-            adProgress.style.width = `${((15 - timeLeft) / 15) * 100}%`;
+            if (profileVastTimer) profileVastTimer.textContent = timeLeft;
 
             if (timeLeft <= 0) {
-                clearInterval(interval);
-                finishAd();
+                clearInterval(vastCountdownInterval);
+                if (profileVastCountdown) profileVastCountdown.style.display = 'none';
+                if (profileVastSkip) profileVastSkip.style.display = 'block';
             }
         }, 1000);
     });
 
     const finishAd = async () => {
-        adSimulation.style.display = 'none';
+        closeProfileVast();
         const id = localStorage.getItem('pp_client_id');
         const cacheKey = `pp_last_credits_${activeExtensionId}`;
 
