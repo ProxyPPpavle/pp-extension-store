@@ -345,7 +345,107 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => e.target.textContent = originalText, 2000);
     });
 
-    // --- Downloads ---
+    // --- Downloads with VAST Video Ads ---
+    const VAST_URL = 'https://s.magsrv.com/v1/vast.php?idzone=5851404';
+
+    const vastModal = document.getElementById('vast-modal');
+    const vastVideo = document.getElementById('vast-video-player');
+    const vastSkipBtn = document.getElementById('vast-skip-btn');
+    const vastCountdown = document.getElementById('vast-countdown');
+    const vastTimer = document.getElementById('vast-timer');
+
+    let vastResolveCallback = null;
+    let skipTimer = null;
+    let countdownInterval = null;
+
+    const showVastAd = () => {
+        return new Promise((resolve) => {
+            vastResolveCallback = resolve;
+
+            // Show modal
+            if (vastModal) vastModal.style.display = 'flex';
+
+            // Reset UI
+            if (vastSkipBtn) vastSkipBtn.style.display = 'none';
+            if (vastCountdown) vastCountdown.style.display = 'block';
+            if (vastTimer) vastTimer.textContent = '5';
+
+            // Parse VAST and load video
+            loadVastVideo(VAST_URL);
+
+            // Start 5-second countdown
+            let timeLeft = 5;
+            countdownInterval = setInterval(() => {
+                timeLeft--;
+                if (vastTimer) vastTimer.textContent = timeLeft;
+
+                if (timeLeft <= 0) {
+                    clearInterval(countdownInterval);
+                    // Show skip button after 5 seconds
+                    if (vastCountdown) vastCountdown.style.display = 'none';
+                    if (vastSkipBtn) vastSkipBtn.style.display = 'block';
+                }
+            }, 1000);
+        });
+    };
+
+    const closeVastAd = () => {
+        if (vastModal) vastModal.style.display = 'none';
+        if (vastVideo) {
+            vastVideo.pause();
+            vastVideo.src = '';
+        }
+        if (skipTimer) clearTimeout(skipTimer);
+        if (countdownInterval) clearInterval(countdownInterval);
+
+        if (vastResolveCallback) {
+            vastResolveCallback();
+            vastResolveCallback = null;
+        }
+    };
+
+    const loadVastVideo = async (vastUrl) => {
+        try {
+            const response = await fetch(vastUrl);
+            const vastXml = await response.text();
+
+            // Parse VAST XML to extract video URL
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(vastXml, 'text/xml');
+
+            // Try to find MediaFile (video URL)
+            const mediaFile = xmlDoc.querySelector('MediaFile');
+            if (mediaFile && vastVideo) {
+                const videoUrl = mediaFile.textContent.trim();
+                vastVideo.src = videoUrl;
+                vastVideo.play().catch(err => {
+                    console.warn('[VAST] Autoplay blocked:', err);
+                    // If autoplay fails, user must click play manually
+                });
+            } else {
+                console.warn('[VAST] No MediaFile found in VAST response');
+                // Fallback: close after 5 seconds anyway
+                setTimeout(closeVastAd, 5000);
+            }
+        } catch (err) {
+            console.error('[VAST] Error loading video:', err);
+            // Fallback: close after 5 seconds
+            setTimeout(closeVastAd, 5000);
+        }
+    };
+
+    // Skip button click
+    vastSkipBtn?.addEventListener('click', () => {
+        console.log('[VAST] User skipped ad');
+        closeVastAd();
+    });
+
+    // Video ended naturally
+    vastVideo?.addEventListener('ended', () => {
+        console.log('[VAST] Video completed');
+        closeVastAd();
+    });
+
     const simulateDownload = (type) => {
         console.log(`[DOWNLOAD] Starting download for: ${type}`);
         // Here you would normally trigger the actual zip download
@@ -357,8 +457,10 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             const type = trigger.getAttribute('data-type'); // e.g. 'ppbot' or 'predictor'
 
-            // 1. All users get the ad/smart-link experience
-            console.log(`[ADS] Showing ad for ${type} download...`);
+            // 1. Show VAST ad and wait for skip/completion
+            console.log(`[ADS] Showing VAST ad for ${type} download...`);
+            await showVastAd();
+            console.log(`[ADS] Ad completed/skipped, proceeding with download...`);
 
             // 2. If verified, register the asset in the database
             if (isVerified && currentUserEmail) {
