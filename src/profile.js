@@ -338,13 +338,13 @@ document.addEventListener('DOMContentLoaded', () => {
         adSimulation.style.display = 'flex';
         if (profileVastSkip) profileVastSkip.style.display = 'none';
         if (profileVastCountdown) profileVastCountdown.style.display = 'block';
-        if (profileVastTimer) profileVastTimer.textContent = '5';
+        if (profileVastTimer) profileVastTimer.textContent = '10';
 
         // Load VAST video
         loadProfileVast();
 
-        // 5-second countdown
-        let timeLeft = 5;
+        // 10-second countdown
+        let timeLeft = 10;
         vastCountdownInterval = setInterval(() => {
             timeLeft--;
             if (profileVastTimer) profileVastTimer.textContent = timeLeft;

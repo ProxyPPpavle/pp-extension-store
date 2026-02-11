@@ -368,13 +368,13 @@ document.addEventListener('DOMContentLoaded', () => {
             // Reset UI
             if (vastSkipBtn) vastSkipBtn.style.display = 'none';
             if (vastCountdown) vastCountdown.style.display = 'block';
-            if (vastTimer) vastTimer.textContent = '5';
+            if (vastTimer) vastTimer.textContent = '10';
 
             // Parse VAST and load video
             loadVastVideo(VAST_URL);
 
-            // Start 5-second countdown
-            let timeLeft = 5;
+            // Start 10-second countdown
+            let timeLeft = 10;
             countdownInterval = setInterval(() => {
                 timeLeft--;
                 if (vastTimer) vastTimer.textContent = timeLeft;
