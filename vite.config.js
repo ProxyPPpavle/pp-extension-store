@@ -6,7 +6,8 @@ export default defineConfig({
         rollupOptions: {
             input: {
                 main: resolve(__dirname, 'index.html'),
-                profile: resolve(__dirname, 'profile.html')
+                profile: resolve(__dirname, 'profile.html'),
+                privacy: resolve(__dirname, 'privacy.html')
             }
         }
     }
