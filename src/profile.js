@@ -277,6 +277,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- VAST Video Ad for Credits ---
     const VAST_URL = 'https://s.magsrv.com/v1/vast.php?idzone=5851404';
+    const VAST_BACKUP_URL = 'https://s.magsrv.com/v1/vast.php?idzone=5851416&ex_av=name';
     const profileVastVideo = document.getElementById('profile-vast-video');
     const profileVastSkip = document.getElementById('profile-vast-skip');
     const profileVastCountdown = document.getElementById('profile-vast-countdown');
@@ -284,9 +285,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let vastCountdownInterval = null;
 
-    const loadProfileVast = async () => {
+    const loadProfileVast = async (isBackup = false) => {
+        const vastUrl = isBackup ? VAST_BACKUP_URL : VAST_URL;
         try {
-            const response = await fetch(VAST_URL);
+            const response = await fetch(vastUrl);
             const vastXml = await response.text();
             const parser = new DOMParser();
             const xmlDoc = parser.parseFromString(vastXml, 'text/xml');
@@ -300,11 +302,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             } else {
                 console.warn('[VAST] No MediaFile found');
-                setTimeout(finishAd, 5000);
+                // If primary failed and we haven't tried backup yet, try backup
+                if (!isBackup) {
+                    console.log('[VAST] Trying backup VAST URL...');
+                    loadProfileVast(true);
+                } else {
+                    // Both failed, still award credits after 10s
+                    console.warn('[VAST] Backup also failed, awarding credits anyway');
+                    setTimeout(finishAd, 10000);
+                }
             }
         } catch (err) {
             console.error('[VAST] Error loading video:', err);
-            setTimeout(finishAd, 5000);
+            // If primary failed and we haven't tried backup yet, try backup
+            if (!isBackup) {
+                console.log('[VAST] Primary failed, trying backup VAST URL...');
+                loadProfileVast(true);
+            } else {
+                // Both failed, still award credits after 10s
+                console.warn('[VAST] Both VAST URLs failed, awarding credits anyway');
+                setTimeout(finishAd, 10000);
+            }
         }
     };
 

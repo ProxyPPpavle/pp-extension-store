@@ -347,6 +347,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Downloads with VAST Video Ads ---
     const VAST_URL = 'https://s.magsrv.com/v1/vast.php?idzone=5851404';
+    const VAST_BACKUP_URL = 'https://s.magsrv.com/v1/vast.php?idzone=5851416&ex_av=name';
 
     const vastModal = document.getElementById('vast-modal');
     const vastVideo = document.getElementById('vast-video-player');
@@ -404,7 +405,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    const loadVastVideo = async (vastUrl) => {
+    const loadVastVideo = async (vastUrl, isBackup = false) => {
         try {
             const response = await fetch(vastUrl);
             const vastXml = await response.text();
@@ -424,13 +425,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             } else {
                 console.warn('[VAST] No MediaFile found in VAST response');
-                // Fallback: close after 5 seconds anyway
-                setTimeout(closeVastAd, 5000);
+                // If primary failed and we haven't tried backup yet, try backup
+                if (!isBackup) {
+                    console.log('[VAST] Trying backup VAST URL...');
+                    loadVastVideo(VAST_BACKUP_URL, true);
+                } else {
+                    // Both failed, close after 10 seconds
+                    console.warn('[VAST] Backup also failed, closing modal');
+                    setTimeout(closeVastAd, 10000);
+                }
             }
         } catch (err) {
             console.error('[VAST] Error loading video:', err);
-            // Fallback: close after 5 seconds
-            setTimeout(closeVastAd, 5000);
+            // If primary failed and we haven't tried backup yet, try backup
+            if (!isBackup) {
+                console.log('[VAST] Primary failed, trying backup VAST URL...');
+                loadVastVideo(VAST_BACKUP_URL, true);
+            } else {
+                // Both failed, close after 10 seconds
+                console.warn('[VAST] Both VAST URLs failed, closing modal');
+                setTimeout(closeVastAd, 10000);
+            }
         }
     };
 
