@@ -463,13 +463,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const simulateDownload = (type) => {
         console.log(`[DOWNLOAD] Starting download for: ${type}`);
-        // Trigger the actual zip download from the assets folder
-        const filename = type.toLowerCase();
+        // Trigger the actual zip download from the public root
+        // Note: type is usually 'ppbot' (lowercase) but file is 'PPBot.zip'
+        // We will hardcode for now to be safe or map it.
+        let fileUrl = './PPBot.zip';
+        if (type.toLowerCase() === 'predictor') fileUrl = './Predictor.zip';
+
         const link = document.createElement('a');
-        // Use relative path to support subdirectory hosting (GitHub Pages)
-        link.href = `./assets/${filename}.zip`;
-        link.download = `${filename}.zip`;
-        document.body.appendChild(link);
+        link.href = fileUrl;
+        link.download = `PPBot_Extension.zip`; // Renaming for user clarity
+        document.body.appendChild(link); // Required for Firefox
         link.click();
         document.body.removeChild(link);
     };
