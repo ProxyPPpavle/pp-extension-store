@@ -276,7 +276,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // --- VAST Video Ad for Credits ---
-    const VAST_URL = 'https://s.magsrv.com/v1/vast.php?idzone=5851404';
+    const VAST_URL = 'https://s.magsrv.com/v1/vast.php?idzone=5851404&ex_av=name';
     const VAST_BACKUP_URL = 'https://s.magsrv.com/v1/vast.php?idzone=5851416&ex_av=name';
     const profileVastVideo = document.getElementById('profile-vast-video');
     const profileVastSkip = document.getElementById('profile-vast-skip');
@@ -307,9 +307,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.log('[VAST] Trying backup VAST URL...');
                     loadProfileVast(true);
                 } else {
-                    // Both failed, still award credits after 10s
+                    // Both failed, still award credits after 15s
                     console.warn('[VAST] Backup also failed, awarding credits anyway');
-                    setTimeout(finishAd, 10000);
+                    setTimeout(finishAd, 15000);
                 }
             }
         } catch (err) {
@@ -319,9 +319,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log('[VAST] Primary failed, trying backup VAST URL...');
                 loadProfileVast(true);
             } else {
-                // Both failed, still award credits after 10s
+                // Both failed, still award credits after 15s
                 console.warn('[VAST] Both VAST URLs failed, awarding credits anyway');
-                setTimeout(finishAd, 10000);
+                setTimeout(finishAd, 15000);
             }
         }
     };
@@ -356,13 +356,13 @@ document.addEventListener('DOMContentLoaded', () => {
         adSimulation.style.display = 'flex';
         if (profileVastSkip) profileVastSkip.style.display = 'none';
         if (profileVastCountdown) profileVastCountdown.style.display = 'block';
-        if (profileVastTimer) profileVastTimer.textContent = '10';
+        if (profileVastTimer) profileVastTimer.textContent = '15';
 
         // Load VAST video
         loadProfileVast();
 
-        // 10-second countdown
-        let timeLeft = 10;
+        // 15-second countdown
+        let timeLeft = 15;
         vastCountdownInterval = setInterval(() => {
             timeLeft--;
             if (profileVastTimer) profileVastTimer.textContent = timeLeft;

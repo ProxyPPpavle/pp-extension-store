@@ -346,7 +346,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- Downloads with VAST Video Ads ---
-    const VAST_URL = 'https://s.magsrv.com/v1/vast.php?idzone=5851404';
+    // --- Downloads with VAST Video Ads ---
+    const VAST_URL = 'https://s.magsrv.com/v1/vast.php?idzone=5851404&ex_av=name';
     const VAST_BACKUP_URL = 'https://s.magsrv.com/v1/vast.php?idzone=5851416&ex_av=name';
 
     const vastModal = document.getElementById('vast-modal');
@@ -369,20 +370,20 @@ document.addEventListener('DOMContentLoaded', () => {
             // Reset UI
             if (vastSkipBtn) vastSkipBtn.style.display = 'none';
             if (vastCountdown) vastCountdown.style.display = 'block';
-            if (vastTimer) vastTimer.textContent = '10';
+            if (vastTimer) vastTimer.textContent = '15';
 
             // Parse VAST and load video
             loadVastVideo(VAST_URL);
 
-            // Start 10-second countdown
-            let timeLeft = 10;
+            // Start 15-second countdown
+            let timeLeft = 15;
             countdownInterval = setInterval(() => {
                 timeLeft--;
                 if (vastTimer) vastTimer.textContent = timeLeft;
 
                 if (timeLeft <= 0) {
                     clearInterval(countdownInterval);
-                    // Show skip button after 5 seconds
+                    // Show skip button after 15 seconds
                     if (vastCountdown) vastCountdown.style.display = 'none';
                     if (vastSkipBtn) vastSkipBtn.style.display = 'block';
                 }
@@ -430,9 +431,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.log('[VAST] Trying backup VAST URL...');
                     loadVastVideo(VAST_BACKUP_URL, true);
                 } else {
-                    // Both failed, close after 10 seconds
+                    // Both failed, close after 15 seconds
                     console.warn('[VAST] Backup also failed, closing modal');
-                    setTimeout(closeVastAd, 10000);
+                    setTimeout(closeVastAd, 15000);
                 }
             }
         } catch (err) {
@@ -442,9 +443,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log('[VAST] Primary failed, trying backup VAST URL...');
                 loadVastVideo(VAST_BACKUP_URL, true);
             } else {
-                // Both failed, close after 10 seconds
+                // Both failed, close after 15 seconds
                 console.warn('[VAST] Both VAST URLs failed, closing modal');
-                setTimeout(closeVastAd, 10000);
+                setTimeout(closeVastAd, 15000);
             }
         }
     };
