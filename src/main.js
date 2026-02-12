@@ -466,7 +466,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Trigger the actual zip download from the assets folder
         const filename = type.toLowerCase();
         const link = document.createElement('a');
-        link.href = `/assets/${filename}.zip`;
+        // Use relative path to support subdirectory hosting (GitHub Pages)
+        link.href = `./assets/${filename}.zip`;
         link.download = `${filename}.zip`;
         document.body.appendChild(link);
         link.click();
