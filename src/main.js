@@ -463,8 +463,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const simulateDownload = (type) => {
         console.log(`[DOWNLOAD] Starting download for: ${type}`);
-        // Here you would normally trigger the actual zip download
-        // window.location.href = `/downloads/${type}.zip`;
+        // Trigger the actual zip download from the assets folder
+        const filename = type.toLowerCase();
+        const link = document.createElement('a');
+        link.href = `/assets/${filename}.zip`;
+        link.download = `${filename}.zip`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     };
 
     downloadTriggers.forEach(trigger => {
