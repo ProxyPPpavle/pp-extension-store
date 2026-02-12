@@ -283,7 +283,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const profileVastCountdown = document.getElementById('profile-vast-countdown');
     const profileVastTimer = document.getElementById('profile-vast-timer');
     const profileVastProgress = document.getElementById('profile-vast-progress');
-    const profileVastClickthrough = document.getElementById('profile-vast-clickthrough');
 
     let vastCountdownInterval = null;
     let profileClickThroughUrl = '';
@@ -305,24 +304,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 const impressionTrackers = xmlDoc.querySelectorAll('Impression');
                 console.log(`[VAST Profile] Found ${impressionTrackers.length} impression trackers`);
 
-                // Fire impressions when video starts playing
+                // Fire impressions after minimum 2 seconds
+                let impressionsFired = false;
                 const fireImpressions = () => {
-                    impressionTrackers.forEach((tracker, index) => {
-                        const impressionUrl = tracker.textContent.trim();
-                        if (impressionUrl) {
-                            console.log(`[VAST Profile] Firing impression ${index + 1}:`, impressionUrl);
-                            // Use fetch with no-cors to avoid CORS issues
-                            fetch(impressionUrl, { method: 'GET', mode: 'no-cors' }).catch(err => {
-                                console.warn('[VAST Profile] Impression tracking failed:', err);
-                            });
-                        }
-                    });
-                    // Remove listener after firing once
-                    profileVastVideo.removeEventListener('play', fireImpressions);
+                    const currentTime = profileVastVideo.currentTime;
+                    if (!impressionsFired && currentTime >= 2) {
+                        impressionTrackers.forEach((tracker, index) => {
+                            const impressionUrl = tracker.textContent.trim();
+                            if (impressionUrl) {
+                                console.log(`[VAST Profile] Firing impression ${index + 1}:`, impressionUrl);
+                                fetch(impressionUrl, { method: 'GET', mode: 'no-cors' }).catch(err => {
+                                    console.warn('[VAST Profile] Impression tracking failed:', err);
+                                });
+                            }
+                        });
+                        impressionsFired = true;
+                        profileVastVideo.removeEventListener('timeupdate', fireImpressions);
+                    }
                 };
 
-                // Add listener to fire impressions on first play
-                profileVastVideo.addEventListener('play', fireImpressions, { once: true });
+                profileVastVideo.addEventListener('timeupdate', fireImpressions);
 
                 // Extract click tracking URLs
                 const clickTrackers = xmlDoc.querySelectorAll('ClickTracking');
@@ -333,27 +334,24 @@ document.addEventListener('DOMContentLoaded', () => {
                     profileClickThroughUrl = clickThroughElement.textContent.trim();
                     console.log('[VAST Profile] Click-through URL:', profileClickThroughUrl);
 
-                    // Enable clickthrough overlay
-                    if (profileVastClickthrough) {
-                        profileVastClickthrough.style.display = 'block';
-                        profileVastClickthrough.addEventListener('click', () => {
-                            console.log('[VAST Profile] User clicked through to advertiser');
+                    // Add click handler directly to video element
+                    profileVastVideo.addEventListener('click', () => {
+                        console.log('[VAST Profile] User clicked through to advertiser');
 
-                            // Fire click trackers
-                            clickTrackers.forEach((tracker) => {
-                                const clickUrl = tracker.textContent.trim();
-                                if (clickUrl) {
-                                    console.log('[VAST Profile] Firing click tracker:', clickUrl);
-                                    fetch(clickUrl, { method: 'GET', mode: 'no-cors' }).catch(() => { });
-                                }
-                            });
-
-                            // Open advertiser page
-                            if (profileClickThroughUrl) {
-                                window.open(profileClickThroughUrl, '_blank');
+                        // Fire click trackers
+                        clickTrackers.forEach((tracker) => {
+                            const clickUrl = tracker.textContent.trim();
+                            if (clickUrl) {
+                                console.log('[VAST Profile] Firing click tracker:', clickUrl);
+                                fetch(clickUrl, { method: 'GET', mode: 'no-cors' }).catch(() => { });
                             }
                         });
-                    }
+
+                        // Open advertiser page
+                        if (profileClickThroughUrl) {
+                            window.open(profileClickThroughUrl, '_blank');
+                        }
+                    });
                 }
 
                 // Progress bar tracking

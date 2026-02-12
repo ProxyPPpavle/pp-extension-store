@@ -356,7 +356,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const vastCountdown = document.getElementById('vast-countdown');
     const vastTimer = document.getElementById('vast-timer');
     const vastProgressBar = document.getElementById('vast-progress-bar');
-    const vastClickthrough = document.getElementById('vast-clickthrough');
 
     let vastResolveCallback = null;
     let skipTimer = null;
@@ -375,7 +374,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (vastCountdown) vastCountdown.style.display = 'block';
             if (vastTimer) vastTimer.textContent = '15';
             if (vastProgressBar) vastProgressBar.style.width = '0%';
-            if (vastClickthrough) vastClickthrough.style.display = 'none';
 
             // Parse VAST and load video
             loadVastVideo(VAST_URL);
@@ -430,24 +428,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 const impressionTrackers = xmlDoc.querySelectorAll('Impression');
                 console.log(`[VAST] Found ${impressionTrackers.length} impression trackers`);
 
-                // Fire impressions when video starts playing
+                // Fire impressions when video starts playing AND after minimum 2 seconds
+                let impressionsFired = false;
                 const fireImpressions = () => {
-                    impressionTrackers.forEach((tracker, index) => {
-                        const impressionUrl = tracker.textContent.trim();
-                        if (impressionUrl) {
-                            console.log(`[VAST] Firing impression ${index + 1}:`, impressionUrl);
-                            // Use fetch with no-cors to avoid CORS issues
-                            fetch(impressionUrl, { method: 'GET', mode: 'no-cors' }).catch(err => {
-                                console.warn('[VAST] Impression tracking failed:', err);
-                            });
-                        }
-                    });
-                    // Remove listener after firing once
-                    vastVideo.removeEventListener('play', fireImpressions);
+                    const currentTime = vastVideo.currentTime;
+                    // Wait at least 2 seconds before firing impressions (ExoClick requirement)
+                    if (!impressionsFired && currentTime >= 2) {
+                        impressionTrackers.forEach((tracker, index) => {
+                            const impressionUrl = tracker.textContent.trim();
+                            if (impressionUrl) {
+                                console.log(`[VAST] Firing impression ${index + 1}:`, impressionUrl);
+                                // Use fetch with no-cors to avoid CORS issues
+                                fetch(impressionUrl, { method: 'GET', mode: 'no-cors' }).catch(err => {
+                                    console.warn('[VAST] Impression tracking failed:', err);
+                                });
+                            }
+                        });
+                        impressionsFired = true;
+                        vastVideo.removeEventListener('timeupdate', fireImpressions);
+                    }
                 };
 
-                // Add listener to fire impressions on first play
-                vastVideo.addEventListener('play', fireImpressions, { once: true });
+                // Listen for timeupdate to fire impressions after 2 seconds
+                vastVideo.addEventListener('timeupdate', fireImpressions);
 
                 // Extract click tracking URLs
                 const clickTrackers = xmlDoc.querySelectorAll('ClickTracking');
@@ -458,27 +461,24 @@ document.addEventListener('DOMContentLoaded', () => {
                     clickThroughUrl = clickThroughElement.textContent.trim();
                     console.log('[VAST] Click-through URL:', clickThroughUrl);
 
-                    // Enable clickthrough overlay
-                    if (vastClickthrough) {
-                        vastClickthrough.style.display = 'block';
-                        vastClickthrough.addEventListener('click', () => {
-                            console.log('[VAST] User clicked through to advertiser');
+                    // Add click handler directly to video element
+                    vastVideo.addEventListener('click', () => {
+                        console.log('[VAST] User clicked through to advertiser');
 
-                            // Fire click trackers
-                            clickTrackers.forEach((tracker) => {
-                                const clickUrl = tracker.textContent.trim();
-                                if (clickUrl) {
-                                    console.log('[VAST] Firing click tracker:', clickUrl);
-                                    fetch(clickUrl, { method: 'GET', mode: 'no-cors' }).catch(() => { });
-                                }
-                            });
-
-                            // Open advertiser page
-                            if (clickThroughUrl) {
-                                window.open(clickThroughUrl, '_blank');
+                        // Fire click trackers
+                        clickTrackers.forEach((tracker) => {
+                            const clickUrl = tracker.textContent.trim();
+                            if (clickUrl) {
+                                console.log('[VAST] Firing click tracker:', clickUrl);
+                                fetch(clickUrl, { method: 'GET', mode: 'no-cors' }).catch(() => { });
                             }
                         });
-                    }
+
+                        // Open advertiser page
+                        if (clickThroughUrl) {
+                            window.open(clickThroughUrl, '_blank');
+                        }
+                    });
                 }
 
                 // Progress bar tracking

@@ -570,27 +570,22 @@
 
                 <!-- Progress Bar -->
                 <div
-                    style="position: absolute; bottom: 0; left: 0; width: 100%; height: 4px; background: rgba(255,255,255,0.2);">
+                    style="position: absolute; bottom: 0; left: 0; width: 100%; height: 4px; background: rgba(255,255,255,0.2); pointer-events: none;">
                     <div id="profile-vast-progress"
                         style="height: 100%; width: 0%; background: var(--accent-green); transition: width 0.1s;"></div>
                 </div>
 
                 <div id="profile-vast-skip"
-                    style="display: none; position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.8); color: #fff; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 600; border: 1px solid rgba(255,255,255,0.2);">
+                    style="display: none; position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.8); color: #fff; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 600; border: 1px solid rgba(255,255,255,0.2); z-index: 10;">
                     Skip Ad →
                 </div>
                 <div id="profile-vast-countdown"
-                    style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.8); color: #fff; padding: 8px 16px; border-radius: 4px; font-size: 14px; font-weight: 600;">
+                    style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.8); color: #fff; padding: 8px 16px; border-radius: 4px; font-size: 14px; font-weight: 600; pointer-events: none;">
                     Please wait <span id="profile-vast-timer">15</span>s
-                </div>
-
-                <!-- Click-through overlay -->
-                <div id="profile-vast-clickthrough"
-                    style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: pointer; z-index: 1;">
                 </div>
             </div>
             <p style="text-align: center; margin-top: 20px; color: #888; font-size: 14px;">
-                <i class="fas fa-coins"></i> Watch the ad to earn credits
+                <i class="fas fa-coins"></i> Watch the ad to earn credits · Click video to visit advertiser
             </p>
         </div>
     </div>
