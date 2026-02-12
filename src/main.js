@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ===== VAST Video Banner (720x90 Leaderboard) =====
     const VAST_BANNER_URL = 'https://s.magsrv.com/v1/vast.php?idzone=5852116&ex_av=name';
+    const vastBannerContainer = document.getElementById('vast-banner-container');
     const vastBannerVideo = document.getElementById('vast-banner-video');
     let bannerClickThroughUrl = '';
 
@@ -19,6 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (mediaFile && vastBannerVideo) {
                 const videoUrl = mediaFile.textContent.trim();
                 vastBannerVideo.src = videoUrl;
+                if (vastBannerContainer) vastBannerContainer.style.display = 'flex';
                 console.log('[VAST Banner] Video loaded:', videoUrl);
 
                 // Extract impression trackers
@@ -74,6 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             } else {
                 console.warn('[VAST Banner] No MediaFile found in VAST response');
+                if (vastBannerContainer) vastBannerContainer.style.display = 'none';
             }
         } catch (err) {
             console.error('[VAST Banner] Error loading banner video:', err);

@@ -17,6 +17,8 @@
     content="Sec-CH-UA https://s.magsrv.com; Sec-CH-UA-Mobile https://s.magsrv.com; Sec-CH-UA-Arch https://s.magsrv.com; Sec-CH-UA-Model https://s.magsrv.com; Sec-CH-UA-Platform https://s.magsrv.com; Sec-CH-UA-Platform-Version https://s.magsrv.com; Sec-CH-UA-Bitness https://s.magsrv.com; Sec-CH-UA-Full-Version-List https://s.magsrv.com; Sec-CH-UA-Full-Version https://s.magsrv.com;">
   <meta http-equiv="Delegate-CH"
     content="Sec-CH-UA https://s.pemsrv.com; Sec-CH-UA-Mobile https://s.pemsrv.com; Sec-CH-UA-Arch https://s.pemsrv.com; Sec-CH-UA-Model https://s.pemsrv.com; Sec-CH-UA-Platform https://s.pemsrv.com; Sec-CH-UA-Platform-Version https://s.pemsrv.com; Sec-CH-UA-Bitness https://s.pemsrv.com; Sec-CH-UA-Full-Version-List https://s.pemsrv.com; Sec-CH-UA-Full-Version https://s.pemsrv.com;">
+  <link rel="icon" type="image/png"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/svgs/solid/robot.svg">
 </head>
 
 <body>
@@ -58,14 +60,23 @@
 
   <nav>
     <div class="container nav-content">
-      <div class="logo">
-        <span class="logo-p">PP</span> Store
+      <div class="nav-left">
+        <div class="logo">
+          <span class="logo-p">PP</span> Store
+        </div>
+        <ul class="nav-links">
+          <li><a href="#extensions">Extensions</a></li>
+          <li><a href="#reviews">Reviews</a></li>
+          <li><a href="#guide">Installation Guide</a></li>
+        </ul>
       </div>
-      <ul class="nav-links">
-        <li><a href="#extensions">Extensions</a></li>
-        <li><a href="#reviews">Reviews</a></li>
-        <li><a href="#guide">Installation Guide</a></li>
-      </ul>
+
+      <!-- VAST Video Banner (Upper Right Header) -->
+      <div class="vast-banner-container" id="vast-banner-container" style="display: none;">
+        <div class="vast-banner-wrapper">
+          <video id="vast-banner-video" muted autoplay loop playsinline></video>
+        </div>
+      </div>
     </div>
   </nav>
 
@@ -103,14 +114,6 @@
     </div>
   </header>
 
-  <!-- VAST Video Banner (720x90 Leaderboard) -->
-  <div class="vast-banner-container">
-    <div class="vast-banner-wrapper">
-      <video id="vast-banner-video"
-        style="width: 728px; height: 90px; display: block; margin: 0 auto; border-radius: 8px; cursor: pointer;" muted
-        autoplay loop playsinline></video>
-    </div>
-  </div>
 
   <main>
     <section id="extensions" class="extensions-section">
