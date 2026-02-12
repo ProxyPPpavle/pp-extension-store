@@ -564,15 +564,29 @@
         <div style="max-width: 800px; width: 90%; position: relative;">
             <div
                 style="position: relative; width: 100%; padding-top: 56.25%; background: #000; border-radius: 20px; overflow: hidden;">
-                <video id="profile-vast-video" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"
-                    playsinline></video>
+                <video id="profile-vast-video"
+                    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: pointer;" playsinline
+                    controls></video>
+
+                <!-- Progress Bar -->
+                <div
+                    style="position: absolute; bottom: 0; left: 0; width: 100%; height: 4px; background: rgba(255,255,255,0.2);">
+                    <div id="profile-vast-progress"
+                        style="height: 100%; width: 0%; background: var(--accent-green); transition: width 0.1s;"></div>
+                </div>
+
                 <div id="profile-vast-skip"
-                    style="display: none; position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.8); color: #fff; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 600;">
+                    style="display: none; position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.8); color: #fff; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 600; border: 1px solid rgba(255,255,255,0.2);">
                     Skip Ad →
                 </div>
                 <div id="profile-vast-countdown"
                     style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.8); color: #fff; padding: 8px 16px; border-radius: 4px; font-size: 14px; font-weight: 600;">
                     Please wait <span id="profile-vast-timer">15</span>s
+                </div>
+
+                <!-- Click-through overlay -->
+                <div id="profile-vast-clickthrough"
+                    style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: pointer; z-index: 1;">
                 </div>
             </div>
             <p style="text-align: center; margin-top: 20px; color: #888; font-size: 14px;">
@@ -594,6 +608,11 @@
     <script type="application/javascript">
         document.addEventListener('creativeDisplayed-5851426', console.log, false);
     </script>
+
+    <!-- ExoClick Native Banner (Bottom Corner) -->
+    <script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script>
+    <ins class="eas6a97888e6" data-zoneid="5851720" data-ex_av="name"></ins>
+    <script>(AdProvider = window.AdProvider || []).push({ "serve": {} });</script>
 
     <script type="module" src="/src/profile.js"></script>
 </body>

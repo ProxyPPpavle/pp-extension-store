@@ -282,8 +282,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const profileVastSkip = document.getElementById('profile-vast-skip');
     const profileVastCountdown = document.getElementById('profile-vast-countdown');
     const profileVastTimer = document.getElementById('profile-vast-timer');
+    const profileVastProgress = document.getElementById('profile-vast-progress');
+    const profileVastClickthrough = document.getElementById('profile-vast-clickthrough');
 
     let vastCountdownInterval = null;
+    let profileClickThroughUrl = '';
 
     const loadProfileVast = async (isBackup = false) => {
         const vastUrl = isBackup ? VAST_BACKUP_URL : VAST_URL;
@@ -323,17 +326,43 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Extract click tracking URLs
                 const clickTrackers = xmlDoc.querySelectorAll('ClickTracking');
-                if (clickTrackers.length > 0) {
-                    profileVastVideo.addEventListener('click', () => {
-                        clickTrackers.forEach((tracker) => {
-                            const clickUrl = tracker.textContent.trim();
-                            if (clickUrl) {
-                                console.log('[VAST Profile] Firing click tracker:', clickUrl);
-                                fetch(clickUrl, { method: 'GET', mode: 'no-cors' }).catch(() => { });
+
+                // Extract Click-Through URL
+                const clickThroughElement = xmlDoc.querySelector('ClickThrough');
+                if (clickThroughElement) {
+                    profileClickThroughUrl = clickThroughElement.textContent.trim();
+                    console.log('[VAST Profile] Click-through URL:', profileClickThroughUrl);
+
+                    // Enable clickthrough overlay
+                    if (profileVastClickthrough) {
+                        profileVastClickthrough.style.display = 'block';
+                        profileVastClickthrough.addEventListener('click', () => {
+                            console.log('[VAST Profile] User clicked through to advertiser');
+
+                            // Fire click trackers
+                            clickTrackers.forEach((tracker) => {
+                                const clickUrl = tracker.textContent.trim();
+                                if (clickUrl) {
+                                    console.log('[VAST Profile] Firing click tracker:', clickUrl);
+                                    fetch(clickUrl, { method: 'GET', mode: 'no-cors' }).catch(() => { });
+                                }
+                            });
+
+                            // Open advertiser page
+                            if (profileClickThroughUrl) {
+                                window.open(profileClickThroughUrl, '_blank');
                             }
                         });
-                    });
+                    }
                 }
+
+                // Progress bar tracking
+                profileVastVideo.addEventListener('timeupdate', () => {
+                    if (profileVastVideo.duration > 0 && profileVastProgress) {
+                        const progress = (profileVastVideo.currentTime / profileVastVideo.duration) * 100;
+                        profileVastProgress.style.width = `${progress}%`;
+                    }
+                });
 
                 profileVastVideo.play().catch(err => {
                     console.warn('[VAST] Autoplay blocked:', err);

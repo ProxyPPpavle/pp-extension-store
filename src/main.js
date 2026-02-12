@@ -355,10 +355,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const vastSkipBtn = document.getElementById('vast-skip-btn');
     const vastCountdown = document.getElementById('vast-countdown');
     const vastTimer = document.getElementById('vast-timer');
+    const vastProgressBar = document.getElementById('vast-progress-bar');
+    const vastClickthrough = document.getElementById('vast-clickthrough');
 
     let vastResolveCallback = null;
     let skipTimer = null;
     let countdownInterval = null;
+    let clickThroughUrl = '';
 
     const showVastAd = () => {
         return new Promise((resolve) => {
@@ -371,6 +374,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (vastSkipBtn) vastSkipBtn.style.display = 'none';
             if (vastCountdown) vastCountdown.style.display = 'block';
             if (vastTimer) vastTimer.textContent = '15';
+            if (vastProgressBar) vastProgressBar.style.width = '0%';
+            if (vastClickthrough) vastClickthrough.style.display = 'none';
 
             // Parse VAST and load video
             loadVastVideo(VAST_URL);
@@ -446,17 +451,43 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Extract click tracking URLs
                 const clickTrackers = xmlDoc.querySelectorAll('ClickTracking');
-                if (clickTrackers.length > 0) {
-                    vastVideo.addEventListener('click', () => {
-                        clickTrackers.forEach((tracker) => {
-                            const clickUrl = tracker.textContent.trim();
-                            if (clickUrl) {
-                                console.log('[VAST] Firing click tracker:', clickUrl);
-                                fetch(clickUrl, { method: 'GET', mode: 'no-cors' }).catch(() => { });
+
+                // Extract Click-Through URL (where user goes when clicking the ad)
+                const clickThroughElement = xmlDoc.querySelector('ClickThrough');
+                if (clickThroughElement) {
+                    clickThroughUrl = clickThroughElement.textContent.trim();
+                    console.log('[VAST] Click-through URL:', clickThroughUrl);
+
+                    // Enable clickthrough overlay
+                    if (vastClickthrough) {
+                        vastClickthrough.style.display = 'block';
+                        vastClickthrough.addEventListener('click', () => {
+                            console.log('[VAST] User clicked through to advertiser');
+
+                            // Fire click trackers
+                            clickTrackers.forEach((tracker) => {
+                                const clickUrl = tracker.textContent.trim();
+                                if (clickUrl) {
+                                    console.log('[VAST] Firing click tracker:', clickUrl);
+                                    fetch(clickUrl, { method: 'GET', mode: 'no-cors' }).catch(() => { });
+                                }
+                            });
+
+                            // Open advertiser page
+                            if (clickThroughUrl) {
+                                window.open(clickThroughUrl, '_blank');
                             }
                         });
-                    });
+                    }
                 }
+
+                // Progress bar tracking
+                vastVideo.addEventListener('timeupdate', () => {
+                    if (vastVideo.duration > 0 && vastProgressBar) {
+                        const progress = (vastVideo.currentTime / vastVideo.duration) * 100;
+                        vastProgressBar.style.width = `${progress}%`;
+                    }
+                });
 
                 vastVideo.play().catch(err => {
                     console.warn('[VAST] Autoplay blocked:', err);
