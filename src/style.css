@@ -2196,40 +2196,13 @@ iframe[id*="pro-"] {
     }
 }
 
-/* --- New Sticky Ad Wrappers --- */
-.sticky-top-ad-wrapper {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: auto;
-    min-height: 90px;
-    /* Estimate for standard leaderboard, ensures space */
-    z-index: 2000;
-    /* Higher than Nav (1000) */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: rgba(2, 6, 23, 0.95);
-    /* Matches dark theme */
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    pointer-events: auto;
-    /* Ensure clicks go to ad */
-}
-
-/* Push navigation down if top ad is present */
-/* We use a class on body or just margin-top on Nav if needed. 
-   For now, we will simply let it be fixed at top. 
-   Ideally, we should push the nav down. */
-body.has-top-ad nav {
-    top: 90px;
-    /* Push nav down by ad height estimate */
-}
+/* --- Sticky Web Ad Wrappers --- */
 
 .sticky-left-ad-wrapper {
     position: fixed;
     top: 50%;
-    left: 0;
+    left: -10px;
+    /* Slight nudge to the left edge */
     transform: translateY(-50%);
     width: 160px;
     /* Standard skyscraper width */
