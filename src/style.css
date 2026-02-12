@@ -2228,3 +2228,35 @@ iframe[id*="pro-"] {
         /* Hide on smaller screens */
     }
 }
+
+/* ===== VAST Video Banner (720x90) ===== */
+.vast-banner-container {
+    width: 100%;
+    padding: 20px 0;
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0.5) 0%, rgba(2, 6, 23, 0) 100%);
+    position: relative;
+    z-index: 5;
+}
+
+.vast-banner-wrapper {
+    max-width: 728px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+#vast-banner-video {
+    box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    object-fit: cover;
+}
+
+#vast-banner-video:hover {
+    transform: scale(1.02);
+    box-shadow: 0 8px 30px rgba(59, 130, 246, 0.5);
+}
+
+@media (max-width: 768px) {
+    .vast-banner-container {
+        display: none;
+    }
+}

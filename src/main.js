@@ -2,6 +2,87 @@ import './style.css';
 
 document.addEventListener('DOMContentLoaded', () => {
 
+    // ===== VAST Video Banner (720x90 Leaderboard) =====
+    const VAST_BANNER_URL = 'https://s.magsrv.com/v1/vast.php?idzone=5852116&ex_av=name';
+    const vastBannerVideo = document.getElementById('vast-banner-video');
+    let bannerClickThroughUrl = '';
+
+    const loadVastBanner = async () => {
+        try {
+            const response = await fetch(VAST_BANNER_URL);
+            const vastXml = await response.text();
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(vastXml, 'text/xml');
+
+            // Get video URL
+            const mediaFile = xmlDoc.querySelector('MediaFile');
+            if (mediaFile && vastBannerVideo) {
+                const videoUrl = mediaFile.textContent.trim();
+                vastBannerVideo.src = videoUrl;
+                console.log('[VAST Banner] Video loaded:', videoUrl);
+
+                // Extract impression trackers
+                const impressionTrackers = xmlDoc.querySelectorAll('Impression');
+                console.log(`[VAST Banner] Found ${impressionTrackers.length} impression trackers`);
+
+                // Fire impressions after 2 seconds of viewing
+                let impressionsFired = false;
+                const fireImpressions = () => {
+                    const currentTime = vastBannerVideo.currentTime;
+                    if (!impressionsFired && currentTime >= 2) {
+                        impressionTrackers.forEach((tracker) => {
+                            const impressionUrl = tracker.textContent.trim();
+                            if (impressionUrl) {
+                                console.log('[VAST Banner] Firing impression:', impressionUrl);
+                                fetch(impressionUrl, { method: 'GET', mode: 'no-cors' }).catch(() => { });
+                            }
+                        });
+                        impressionsFired = true;
+                        vastBannerVideo.removeEventListener('timeupdate', fireImpressions);
+                    }
+                };
+                vastBannerVideo.addEventListener('timeupdate', fireImpressions);
+
+                // Extract click tracking
+                const clickTrackers = xmlDoc.querySelectorAll('ClickTracking');
+                const clickThroughElement = xmlDoc.querySelector('ClickThrough');
+                if (clickThroughElement) {
+                    bannerClickThroughUrl = clickThroughElement.textContent.trim();
+                    console.log('[VAST Banner] Click-through URL:', bannerClickThroughUrl);
+
+                    vastBannerVideo.addEventListener('click', () => {
+                        console.log('[VAST Banner] User clicked banner');
+
+                        // Fire click trackers
+                        clickTrackers.forEach((tracker) => {
+                            const clickUrl = tracker.textContent.trim();
+                            if (clickUrl) {
+                                console.log('[VAST Banner] Firing click tracker:', clickUrl);
+                                fetch(clickUrl, { method: 'GET', mode: 'no-cors' }).catch(() => { });
+                            }
+                        });
+
+                        // Open advertiser page
+                        if (bannerClickThroughUrl) {
+                            window.open(bannerClickThroughUrl, '_blank');
+                        }
+                    });
+                }
+
+                vastBannerVideo.play().catch(err => {
+                    console.warn('[VAST Banner] Autoplay blocked:', err);
+                });
+            } else {
+                console.warn('[VAST Banner] No MediaFile found in VAST response');
+            }
+        } catch (err) {
+            console.error('[VAST Banner] Error loading banner video:', err);
+        }
+    };
+
+    // Load banner video
+    loadVastBanner();
+
     // --- Console Noise Suppression (Handling excessive WebGL warnings from Ads) ---
     (function () {
         const originalGetContext = HTMLCanvasElement.prototype.getContext;
