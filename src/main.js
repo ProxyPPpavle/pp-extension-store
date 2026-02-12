@@ -15,71 +15,83 @@ document.addEventListener('DOMContentLoaded', () => {
             const parser = new DOMParser();
             const xmlDoc = parser.parseFromString(vastXml, 'text/xml');
 
-            // Get video URL
+            const wrapper = document.querySelector('.vast-banner-wrapper');
             const mediaFile = xmlDoc.querySelector('MediaFile');
+            const staticResource = xmlDoc.querySelector('StaticResource');
+
+            const impressionTrackers = xmlDoc.querySelectorAll('Impression');
+
+            const fireImpressions = () => {
+                impressionTrackers.forEach((tracker) => {
+                    const impressionUrl = tracker.textContent.trim();
+                    if (impressionUrl) {
+                        console.log('[VAST Banner] Firing impression:', impressionUrl);
+                        fetch(impressionUrl, { method: 'GET', mode: 'no-cors' }).catch(() => { });
+                    }
+                });
+            };
+
             if (mediaFile && vastBannerVideo) {
+                // Handle Video Banner
                 const videoUrl = mediaFile.textContent.trim();
+                vastBannerVideo.style.display = 'block';
                 vastBannerVideo.src = videoUrl;
                 if (vastBannerContainer) vastBannerContainer.style.display = 'flex';
                 console.log('[VAST Banner] Video loaded:', videoUrl);
 
-                // Extract impression trackers
-                const impressionTrackers = xmlDoc.querySelectorAll('Impression');
-                console.log(`[VAST Banner] Found ${impressionTrackers.length} impression trackers`);
-
-                // Fire impressions after 2 seconds of viewing
                 let impressionsFired = false;
-                const fireImpressions = () => {
-                    const currentTime = vastBannerVideo.currentTime;
-                    if (!impressionsFired && currentTime >= 2) {
-                        impressionTrackers.forEach((tracker) => {
-                            const impressionUrl = tracker.textContent.trim();
-                            if (impressionUrl) {
-                                console.log('[VAST Banner] Firing impression:', impressionUrl);
-                                fetch(impressionUrl, { method: 'GET', mode: 'no-cors' }).catch(() => { });
-                            }
-                        });
+                vastBannerVideo.addEventListener('timeupdate', () => {
+                    if (!impressionsFired && vastBannerVideo.currentTime >= 2) {
+                        fireImpressions();
                         impressionsFired = true;
-                        vastBannerVideo.removeEventListener('timeupdate', fireImpressions);
                     }
-                };
-                vastBannerVideo.addEventListener('timeupdate', fireImpressions);
+                });
 
-                // Extract click tracking
-                const clickTrackers = xmlDoc.querySelectorAll('ClickTracking');
-                const clickThroughElement = xmlDoc.querySelector('ClickThrough');
-                if (clickThroughElement) {
-                    bannerClickThroughUrl = clickThroughElement.textContent.trim();
-                    console.log('[VAST Banner] Click-through URL:', bannerClickThroughUrl);
-
+                // Click tracking
+                const clickThrough = xmlDoc.querySelector('ClickThrough');
+                if (clickThrough) {
+                    bannerClickThroughUrl = clickThrough.textContent.trim();
                     vastBannerVideo.addEventListener('click', () => {
-                        console.log('[VAST Banner] User clicked banner');
-
-                        // Fire click trackers
-                        clickTrackers.forEach((tracker) => {
-                            const clickUrl = tracker.textContent.trim();
-                            if (clickUrl) {
-                                console.log('[VAST Banner] Firing click tracker:', clickUrl);
-                                fetch(clickUrl, { method: 'GET', mode: 'no-cors' }).catch(() => { });
-                            }
-                        });
-
-                        // Open advertiser page
-                        if (bannerClickThroughUrl) {
-                            window.open(bannerClickThroughUrl, '_blank');
-                        }
+                        window.open(bannerClickThroughUrl, '_blank');
                     });
                 }
 
-                vastBannerVideo.play().catch(err => {
-                    console.warn('[VAST Banner] Autoplay blocked:', err);
-                });
+                vastBannerVideo.play().catch(() => { });
+            } else if (staticResource && wrapper) {
+                // Handle Static Image Banner
+                const imageUrl = staticResource.textContent.trim();
+                const clickThrough = xmlDoc.querySelector('NonLinearClickThrough') || xmlDoc.querySelector('ClickThrough');
+                bannerClickThroughUrl = clickThrough ? clickThrough.textContent.trim() : '';
+
+                // Create image element
+                const img = document.createElement('img');
+                img.src = imageUrl;
+                img.id = 'vast-banner-video'; // Re-use ID for styles or use class
+                img.style.height = '60px';
+                img.style.width = 'auto';
+                img.style.cursor = 'pointer';
+                img.style.borderRadius = '6px';
+
+                // Replace video with image
+                wrapper.innerHTML = '';
+                wrapper.appendChild(img);
+                if (vastBannerContainer) vastBannerContainer.style.display = 'flex';
+                console.log('[VAST Banner] Image loaded:', imageUrl);
+
+                // Fire impressions for static banner after 2 seconds
+                setTimeout(fireImpressions, 2000);
+
+                if (bannerClickThroughUrl) {
+                    img.addEventListener('click', () => {
+                        window.open(bannerClickThroughUrl, '_blank');
+                    });
+                }
             } else {
-                console.warn('[VAST Banner] No MediaFile found in VAST response');
+                console.warn('[VAST Banner] No suitable MediaFile or StaticResource found');
                 if (vastBannerContainer) vastBannerContainer.style.display = 'none';
             }
         } catch (err) {
-            console.error('[VAST Banner] Error loading banner video:', err);
+            console.error('[VAST Banner] Error loading banner:', err);
         }
     };
 
