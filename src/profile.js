@@ -297,6 +297,44 @@ document.addEventListener('DOMContentLoaded', () => {
             if (mediaFile && profileVastVideo) {
                 const videoUrl = mediaFile.textContent.trim();
                 profileVastVideo.src = videoUrl;
+
+                // CRITICAL: Extract and fire impression tracking URLs
+                const impressionTrackers = xmlDoc.querySelectorAll('Impression');
+                console.log(`[VAST Profile] Found ${impressionTrackers.length} impression trackers`);
+
+                // Fire impressions when video starts playing
+                const fireImpressions = () => {
+                    impressionTrackers.forEach((tracker, index) => {
+                        const impressionUrl = tracker.textContent.trim();
+                        if (impressionUrl) {
+                            console.log(`[VAST Profile] Firing impression ${index + 1}:`, impressionUrl);
+                            // Use fetch with no-cors to avoid CORS issues
+                            fetch(impressionUrl, { method: 'GET', mode: 'no-cors' }).catch(err => {
+                                console.warn('[VAST Profile] Impression tracking failed:', err);
+                            });
+                        }
+                    });
+                    // Remove listener after firing once
+                    profileVastVideo.removeEventListener('play', fireImpressions);
+                };
+
+                // Add listener to fire impressions on first play
+                profileVastVideo.addEventListener('play', fireImpressions, { once: true });
+
+                // Extract click tracking URLs
+                const clickTrackers = xmlDoc.querySelectorAll('ClickTracking');
+                if (clickTrackers.length > 0) {
+                    profileVastVideo.addEventListener('click', () => {
+                        clickTrackers.forEach((tracker) => {
+                            const clickUrl = tracker.textContent.trim();
+                            if (clickUrl) {
+                                console.log('[VAST Profile] Firing click tracker:', clickUrl);
+                                fetch(clickUrl, { method: 'GET', mode: 'no-cors' }).catch(() => { });
+                            }
+                        });
+                    });
+                }
+
                 profileVastVideo.play().catch(err => {
                     console.warn('[VAST] Autoplay blocked:', err);
                 });
