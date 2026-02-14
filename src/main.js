@@ -417,38 +417,67 @@ document.addEventListener('DOMContentLoaded', () => {
                 const videoUrl = mediaFile.textContent.trim();
                 vastVideo.src = videoUrl;
 
+                // --- VAST Tracking Logic ---
                 const impressionTrackers = xmlDoc.querySelectorAll('Impression');
+                const trackingEvents = xmlDoc.querySelectorAll('Tracking');
+
+                const fireTrackingUrl = (url) => {
+                    if (url) fetch(url, { method: 'GET', mode: 'no-cors' }).catch(() => { });
+                };
+
+                const fireEvent = (eventName) => {
+                    trackingEvents.forEach(t => {
+                        if (t.getAttribute('event') === eventName) fireTrackingUrl(t.textContent.trim());
+                    });
+                };
+
+                // 1. Impression tracking
                 let impressionsFired = false;
                 const fireImpressions = () => {
-                    const currentTime = vastVideo.currentTime;
-                    if (!impressionsFired && currentTime >= 2) {
-                        impressionTrackers.forEach((tracker) => {
-                            const url = tracker.textContent.trim();
-                            if (url) fetch(url, { method: 'GET', mode: 'no-cors' }).catch(() => { });
-                        });
+                    if (!impressionsFired && vastVideo.currentTime >= 2) {
+                        impressionTrackers.forEach(t => fireTrackingUrl(t.textContent.trim()));
                         impressionsFired = true;
                         vastVideo.removeEventListener('timeupdate', fireImpressions);
                     }
                 };
                 vastVideo.addEventListener('timeupdate', fireImpressions);
 
+                // 2. Event tracking (Start, Quartiles, Complete)
+                let q1 = false, q2 = false, q3 = false;
+                vastVideo.addEventListener('play', () => fireEvent('start'), { once: true });
+
+                vastVideo.addEventListener('timeupdate', () => {
+                    const progress = vastVideo.currentTime / vastVideo.duration;
+                    if (!q1 && progress >= 0.25) { fireEvent('firstQuartile'); q1 = true; }
+                    if (!q2 && progress >= 0.50) { fireEvent('midpoint'); q2 = true; }
+                    if (!q3 && progress >= 0.75) { fireEvent('thirdQuartile'); q3 = true; }
+
+                    if (vastProgressBar) {
+                        vastProgressBar.style.width = `${(vastVideo.currentTime / vastVideo.duration) * 100}%`;
+                    }
+                });
+
+                vastVideo.addEventListener('ended', () => {
+                    fireEvent('complete');
+                    console.log('[VAST] Video completed naturally');
+                    closeVastAd();
+                });
+
+                // 3. Click Tracking
                 const clickThroughElement = xmlDoc.querySelector('ClickThrough');
+                const clickTrackers = xmlDoc.querySelectorAll('ClickTracking');
+
                 if (clickThroughElement) {
                     clickThroughUrl = clickThroughElement.textContent.trim();
                     const handleAdClick = () => {
-                        if (clickThroughUrl) window.open(clickThroughUrl, '_blank');
+                        if (clickThroughUrl) {
+                            clickTrackers.forEach(t => fireTrackingUrl(t.textContent.trim()));
+                            window.open(clickThroughUrl, '_blank');
+                        }
                     };
                     vastVideo.addEventListener('click', handleAdClick);
-                    // Task: Progress bar click = Video click
                     if (vastProgressClickArea) vastProgressClickArea.addEventListener('click', handleAdClick);
                 }
-
-                vastVideo.addEventListener('timeupdate', () => {
-                    if (vastVideo.duration > 0 && vastProgressBar) {
-                        const progress = (vastVideo.currentTime / vastVideo.duration) * 100;
-                        vastProgressBar.style.width = `${progress}%`;
-                    }
-                });
 
                 vastVideo.play().catch(() => { });
             } else {
@@ -467,11 +496,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Video ended naturally - Only then do we allow closing/proceeding
-    vastVideo?.addEventListener('ended', () => {
-        console.log('[VAST] Video completed');
-        closeVastAd();
-    });
+
 
     const simulateDownload = (type) => {
         console.log(`[DOWNLOAD] Starting download for: ${type}`);
