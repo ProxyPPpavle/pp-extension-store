@@ -422,20 +422,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 const trackingEvents = xmlDoc.querySelectorAll('Tracking');
 
                 const fireTrackingUrl = (url) => {
-                    if (url) fetch(url, { method: 'GET', mode: 'no-cors' }).catch(() => { });
+                    if (!url) return;
+                    console.log('[VAST Tracking] Firing beacon:', url);
+                    const img = new Image();
+                    img.src = url.trim();
                 };
 
                 const fireEvent = (eventName) => {
                     trackingEvents.forEach(t => {
-                        if (t.getAttribute('event') === eventName) fireTrackingUrl(t.textContent.trim());
+                        if (t.getAttribute('event') === eventName) fireTrackingUrl(t.textContent);
                     });
                 };
 
-                // 1. Impression tracking
+                // 1. Impression tracking (Primary revenue event)
                 let impressionsFired = false;
                 const fireImpressions = () => {
-                    if (!impressionsFired && vastVideo.currentTime >= 2) {
-                        impressionTrackers.forEach(t => fireTrackingUrl(t.textContent.trim()));
+                    if (!impressionsFired && vastVideo.currentTime >= 1) {
+                        console.log('[VAST] Firing primary impressions...');
+                        impressionTrackers.forEach(t => fireTrackingUrl(t.textContent));
                         impressionsFired = true;
                         vastVideo.removeEventListener('timeupdate', fireImpressions);
                     }
