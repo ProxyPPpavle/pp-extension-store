@@ -286,6 +286,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let vastCountdownInterval = null;
     let profileClickThroughUrl = '';
+    let qSentProfile = { q1: false, q2: false, q3: false, comp: false };
 
     const loadProfileVast = async (isBackup = false) => {
         const vastUrl = isBackup ? VAST_BACKUP_URL : VAST_URL;
@@ -300,30 +301,31 @@ document.addEventListener('DOMContentLoaded', () => {
             let currentUrl = vastUrl;
             let depth = 0;
 
-            // --- VAST Follower (Handles Wrappers) ---
+            // --- VAST Follower (Handles Wrappers up to 5 levels) ---
             while (depth < 5) {
                 const response = await fetch(currentUrl);
                 const xmlText = await response.text();
                 const parser = new DOMParser();
                 const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
 
-                xmlDoc.querySelectorAll('Impression').forEach(imp => allImpressions.push(imp.textContent.trim()));
-                xmlDoc.querySelectorAll('Tracking').forEach(t => {
-                    const event = t.getAttribute('event');
-                    if (allTracking[event]) allTracking[event].push(t.textContent.trim());
-                });
-                xmlDoc.querySelectorAll('ClickTracking').forEach(ct => allTracking.clickTracking.push(ct.textContent.trim()));
+                const getTags = (name) => xmlDoc.getElementsByTagName(name);
+                for (let imp of getTags('Impression')) allImpressions.push(imp.textContent.trim());
+                for (let track of getTags('Tracking')) {
+                    const event = track.getAttribute('event');
+                    if (allTracking[event]) allTracking[event].push(track.textContent.trim());
+                }
+                for (let ct of getTags('ClickTracking')) allTracking.clickTracking.push(ct.textContent.trim());
 
-                const ctElem = xmlDoc.querySelector('ClickThrough');
+                const ctElem = getTags('ClickThrough')[0];
                 if (ctElem && !clickThrough) clickThrough = ctElem.textContent.trim();
 
-                const mfElem = xmlDoc.querySelector('MediaFile');
+                const mfElem = getTags('MediaFile')[0];
                 if (mfElem) {
                     mediaFile = mfElem.textContent.trim();
                     break;
                 }
 
-                const wrapperElem = xmlDoc.querySelector('VASTAdTagURI');
+                const wrapperElem = getTags('VASTAdTagURI')[0];
                 if (wrapperElem) {
                     currentUrl = wrapperElem.textContent.trim();
                     depth++;
@@ -335,19 +337,21 @@ document.addEventListener('DOMContentLoaded', () => {
             if (mediaFile && profileVastVideo) {
                 profileVastVideo.src = mediaFile;
                 profileClickThroughUrl = clickThrough;
+                qSentProfile = { q1: false, q2: false, q3: false, comp: false };
 
                 window._vast_beacons = window._vast_beacons || [];
                 const fireTrackingUrl = (url) => {
                     if (!url) return;
                     const cleanUrl = url.trim();
-                    console.log('[VAST Profile Tracking] Firing:', cleanUrl);
-                    if (navigator.sendBeacon) {
-                        navigator.sendBeacon(cleanUrl);
-                    } else {
-                        const img = new Image();
-                        window._vast_beacons.push(img);
-                        img.src = cleanUrl;
-                    }
+                    if (!cleanUrl) return;
+                    console.log('[VAST Profile Tracking] Firing Pixel:', cleanUrl);
+                    const img = new Image();
+                    window._vast_beacons.push(img);
+                    img.onload = img.onerror = () => {
+                        const idx = window._vast_beacons.indexOf(img);
+                        if (idx > -1) window._vast_beacons.splice(idx, 1);
+                    };
+                    img.src = cleanUrl;
                 };
 
                 const fireEvent = (eventName) => {
@@ -371,17 +375,24 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (!qSentProfile.q1 && progress >= 0.25) { fireEvent('firstQuartile'); qSentProfile.q1 = true; }
                         if (!qSentProfile.q2 && progress >= 0.50) { fireEvent('midpoint'); qSentProfile.q2 = true; }
                         if (!qSentProfile.q3 && progress >= 0.75) { fireEvent('thirdQuartile'); qSentProfile.q3 = true; }
-                        if (!qSentProfile.comp && progress >= 0.98) { fireEvent('complete'); qSentProfile.comp = true; }
-                        if (profileVastProgress) profileVastProgress.style.width = `${progress * 100}%`;
+
+                        // Revenue: Complete signal
+                        if (!qSentProfile.comp && progress >= 0.96) {
+                            fireEvent('complete');
+                            qSentProfile.comp = true;
+                            console.log('[VAST Profile] Complete fired at 96%');
+                        }
+
+                        if (profileVastProgress) {
+                            profileVastProgress.style.width = `${progress * 100}%`;
+                        }
                     }
                 };
 
                 const handleAdClick = (e) => {
-                    console.log('[VAST Profile] Interaction detected');
-                    if (profileClickThroughUrl) {
-                        allTracking.clickTracking.forEach(url => fireTrackingUrl(url));
-                        window.open(profileClickThroughUrl, '_blank');
-                    }
+                    console.log('[VAST Profile] User clicked ad');
+                    allTracking.clickTracking.forEach(url => fireTrackingUrl(url));
+                    if (profileClickThroughUrl) window.open(profileClickThroughUrl, '_blank');
                 };
 
                 profileVastVideo.onclick = handleAdClick;
@@ -394,18 +405,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 };
 
                 profileVastVideo.play().catch(() => { });
-                qSentProfile = { q1: false, q2: false, q3: false, comp: false };
             } else {
                 if (!isBackup) loadProfileVast(true);
                 else setTimeout(finishAd, 15000);
             }
         } catch (err) {
+            console.error('[VAST Profile] Load error:', err);
             if (!isBackup) loadProfileVast(true);
             else setTimeout(finishAd, 15000);
         }
     };
-
-    let qSentProfile = { q1: false, q2: false, q3: false, comp: false };
 
     const closeProfileVast = () => {
         if (adSimulation) adSimulation.style.display = 'none';

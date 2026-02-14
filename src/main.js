@@ -416,62 +416,62 @@ document.addEventListener('DOMContentLoaded', () => {
             let currentUrl = vastUrl;
             let depth = 0;
 
-            // --- VAST Follower (Handles Wrappers) ---
+            // --- VAST Follower (Handles Wrappers up to 5 levels) ---
             while (depth < 5) {
                 const response = await fetch(currentUrl);
                 const xmlText = await response.text();
                 const parser = new DOMParser();
                 const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
 
-                // Accumulate Impressions
-                xmlDoc.querySelectorAll('Impression').forEach(imp => allImpressions.push(imp.textContent.trim()));
+                // Robust extraction using tag names (works better with namespaces)
+                const getTags = (name) => xmlDoc.getElementsByTagName(name);
 
-                // Accumulate Tracking Events
-                xmlDoc.querySelectorAll('Tracking').forEach(t => {
-                    const event = t.getAttribute('event');
-                    if (allTracking[event]) allTracking[event].push(t.textContent.trim());
-                });
+                for (let imp of getTags('Impression')) allImpressions.push(imp.textContent.trim());
 
-                // Accumulate Click Tracking
-                xmlDoc.querySelectorAll('ClickTracking').forEach(ct => allTracking.clickTracking.push(ct.textContent.trim()));
+                for (let track of getTags('Tracking')) {
+                    const event = track.getAttribute('event');
+                    if (allTracking[event]) allTracking[event].push(track.textContent.trim());
+                }
 
-                // Find ClickThrough (only keep the first valid one found)
-                const ctElem = xmlDoc.querySelector('ClickThrough');
+                for (let ct of getTags('ClickTracking')) allTracking.clickTracking.push(ct.textContent.trim());
+
+                const ctElem = getTags('ClickThrough')[0];
                 if (ctElem && !clickThrough) clickThrough = ctElem.textContent.trim();
 
-                // Find MediaFile (if found, we are at InLine)
-                const mfElem = xmlDoc.querySelector('MediaFile');
+                const mfElem = getTags('MediaFile')[0];
                 if (mfElem) {
                     mediaFile = mfElem.textContent.trim();
                     break;
                 }
 
-                // Follow Wrapper
-                const wrapperElem = xmlDoc.querySelector('VASTAdTagURI');
+                const wrapperElem = getTags('VASTAdTagURI')[0];
                 if (wrapperElem) {
                     currentUrl = wrapperElem.textContent.trim();
                     depth++;
                 } else {
-                    break; // No wrapper and no media file
+                    break;
                 }
             }
 
             if (mediaFile && vastVideo) {
                 vastVideo.src = mediaFile;
                 clickThroughUrl = clickThrough;
+                qSent = { q1: false, q2: false, q3: false, comp: false };
 
+                // Robust GET tracking (Image beacons)
                 window._vast_beacons = window._vast_beacons || [];
                 const fireTrackingUrl = (url) => {
                     if (!url) return;
                     const cleanUrl = url.trim();
-                    console.log('[VAST Tracking] Firing:', cleanUrl);
-                    if (navigator.sendBeacon) {
-                        navigator.sendBeacon(cleanUrl);
-                    } else {
-                        const img = new Image();
-                        window._vast_beacons.push(img);
-                        img.src = cleanUrl;
-                    }
+                    if (!cleanUrl) return;
+                    console.log('[VAST Tracking] Firing Pixel:', cleanUrl);
+                    const img = new Image();
+                    window._vast_beacons.push(img);
+                    img.onload = img.onerror = () => {
+                        const idx = window._vast_beacons.indexOf(img);
+                        if (idx > -1) window._vast_beacons.splice(idx, 1);
+                    };
+                    img.src = cleanUrl;
                 };
 
                 const fireEvent = (eventName) => {
@@ -484,29 +484,39 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 let impressionsFired = false;
                 vastVideo.ontimeupdate = () => {
+                    // Start tracking
                     if (!impressionsFired && vastVideo.currentTime > 0.5) {
                         allImpressions.forEach(url => fireTrackingUrl(url));
                         fireEvent('start');
                         impressionsFired = true;
                     }
 
+                    // Progress & Quartiles
                     if (vastVideo.duration > 0) {
                         const progress = vastVideo.currentTime / vastVideo.duration;
                         if (!qSent.q1 && progress >= 0.25) { fireEvent('firstQuartile'); qSent.q1 = true; }
                         if (!qSent.q2 && progress >= 0.50) { fireEvent('midpoint'); qSent.q2 = true; }
                         if (!qSent.q3 && progress >= 0.75) { fireEvent('thirdQuartile'); qSent.q3 = true; }
-                        if (!qSent.comp && progress >= 0.98) { fireEvent('complete'); qSent.comp = true; }
-                        if (vastProgressBar) vastProgressBar.style.width = `${progress * 100}%`;
+
+                        // Revenue critical: Complete signal
+                        if (!qSent.comp && progress >= 0.96) {
+                            fireEvent('complete');
+                            qSent.comp = true;
+                            console.log('[VAST] Complete event fired at 96%');
+                        }
+
+                        // Update Visual Progress Bar
+                        if (vastProgressBar) {
+                            vastProgressBar.style.width = `${progress * 100}%`;
+                        }
                     }
                 };
 
-                // Unified Click Handler
+                // Click Implementation
                 const handleAdClick = (e) => {
-                    console.log('[VAST] Interaction detected');
-                    if (clickThroughUrl) {
-                        allTracking.clickTracking.forEach(url => fireTrackingUrl(url));
-                        window.open(clickThroughUrl, '_blank');
-                    }
+                    console.log('[VAST] User clicked ad');
+                    allTracking.clickTracking.forEach(url => fireTrackingUrl(url));
+                    if (clickThroughUrl) window.open(clickThroughUrl, '_blank');
                 };
 
                 vastVideo.onclick = handleAdClick;
@@ -518,18 +528,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 };
 
                 vastVideo.play().catch(() => { });
-                qSent = { q1: false, q2: false, q3: false, comp: false };
             } else {
                 if (!isBackup) loadVastVideo(VAST_BACKUP_URL, true);
                 else setTimeout(closeVastAd, 15000);
             }
         } catch (err) {
+            console.error('[VAST] Load error:', err);
             if (!isBackup) loadVastVideo(VAST_BACKUP_URL, true);
             else setTimeout(closeVastAd, 15000);
         }
     };
-
-
 
     const simulateDownload = (type) => {
         console.log(`[DOWNLOAD] Starting download for: ${type}`);
