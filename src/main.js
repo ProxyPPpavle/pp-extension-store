@@ -2,102 +2,6 @@ import './style.css';
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    // ===== VAST Video Banner (720x90 Leaderboard) =====
-    const VAST_BANNER_URL = 'https://s.magsrv.com/v1/vast.php?idzone=5852116&ex_av=name';
-    const vastBannerContainer = document.getElementById('vast-banner-container');
-    const vastBannerVideo = document.getElementById('vast-banner-video');
-    let bannerClickThroughUrl = '';
-
-    const loadVastBanner = async () => {
-        try {
-            const response = await fetch(VAST_BANNER_URL);
-            const vastXml = await response.text();
-            const parser = new DOMParser();
-            const xmlDoc = parser.parseFromString(vastXml, 'text/xml');
-
-            const wrapper = document.querySelector('.vast-banner-wrapper');
-            const mediaFile = xmlDoc.querySelector('MediaFile');
-            const staticResource = xmlDoc.querySelector('StaticResource');
-
-            const impressionTrackers = xmlDoc.querySelectorAll('Impression');
-
-            const fireImpressions = () => {
-                impressionTrackers.forEach((tracker) => {
-                    const impressionUrl = tracker.textContent.trim();
-                    if (impressionUrl) {
-                        console.log('[VAST Banner] Firing impression:', impressionUrl);
-                        fetch(impressionUrl, { method: 'GET', mode: 'no-cors' }).catch(() => { });
-                    }
-                });
-            };
-
-            if (mediaFile && vastBannerVideo) {
-                // Handle Video Banner
-                const videoUrl = mediaFile.textContent.trim();
-                vastBannerVideo.style.display = 'block';
-                vastBannerVideo.src = videoUrl;
-                if (vastBannerContainer) vastBannerContainer.style.display = 'flex';
-                console.log('[VAST Banner] Video loaded:', videoUrl);
-
-                let impressionsFired = false;
-                vastBannerVideo.addEventListener('timeupdate', () => {
-                    if (!impressionsFired && vastBannerVideo.currentTime >= 2) {
-                        fireImpressions();
-                        impressionsFired = true;
-                    }
-                });
-
-                // Click tracking
-                const clickThrough = xmlDoc.querySelector('ClickThrough');
-                if (clickThrough) {
-                    bannerClickThroughUrl = clickThrough.textContent.trim();
-                    vastBannerVideo.addEventListener('click', () => {
-                        window.open(bannerClickThroughUrl, '_blank');
-                    });
-                }
-
-                vastBannerVideo.play().catch(() => { });
-            } else if (staticResource && wrapper) {
-                // Handle Static Image Banner
-                const imageUrl = staticResource.textContent.trim();
-                const clickThrough = xmlDoc.querySelector('NonLinearClickThrough') || xmlDoc.querySelector('ClickThrough');
-                bannerClickThroughUrl = clickThrough ? clickThrough.textContent.trim() : '';
-
-                // Create image element
-                const img = document.createElement('img');
-                img.src = imageUrl;
-                img.id = 'vast-banner-video'; // Re-use ID for styles or use class
-                img.style.height = '60px';
-                img.style.width = 'auto';
-                img.style.cursor = 'pointer';
-                img.style.borderRadius = '6px';
-
-                // Replace video with image
-                wrapper.innerHTML = '';
-                wrapper.appendChild(img);
-                if (vastBannerContainer) vastBannerContainer.style.display = 'flex';
-                console.log('[VAST Banner] Image loaded:', imageUrl);
-
-                // Fire impressions for static banner after 2 seconds
-                setTimeout(fireImpressions, 2000);
-
-                if (bannerClickThroughUrl) {
-                    img.addEventListener('click', () => {
-                        window.open(bannerClickThroughUrl, '_blank');
-                    });
-                }
-            } else {
-                console.warn('[VAST Banner] No suitable MediaFile or StaticResource found');
-                if (vastBannerContainer) vastBannerContainer.style.display = 'none';
-            }
-        } catch (err) {
-            console.error('[VAST Banner] Error loading banner:', err);
-        }
-    };
-
-    // Load banner video
-    loadVastBanner();
-
     // --- Console Noise Suppression (Handling excessive WebGL warnings from Ads) ---
     (function () {
         const originalGetContext = HTMLCanvasElement.prototype.getContext;
@@ -448,13 +352,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const vastModal = document.getElementById('vast-modal');
     const vastVideo = document.getElementById('vast-video-player');
-    const vastSkipBtn = document.getElementById('vast-skip-btn');
     const vastCountdown = document.getElementById('vast-countdown');
     const vastTimer = document.getElementById('vast-timer');
     const vastProgressBar = document.getElementById('vast-progress-bar');
+    const vastProgressClickArea = document.getElementById('vast-progress-click-area');
 
     let vastResolveCallback = null;
-    let skipTimer = null;
     let countdownInterval = null;
     let clickThroughUrl = '';
 
@@ -466,7 +369,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (vastModal) vastModal.style.display = 'flex';
 
             // Reset UI
-            if (vastSkipBtn) vastSkipBtn.style.display = 'none';
             if (vastCountdown) vastCountdown.style.display = 'block';
             if (vastTimer) vastTimer.textContent = '15';
             if (vastProgressBar) vastProgressBar.style.width = '0%';
@@ -474,17 +376,15 @@ document.addEventListener('DOMContentLoaded', () => {
             // Parse VAST and load video
             loadVastVideo(VAST_URL);
 
-            // Start 15-second countdown
+            // Start countdown (informative only, no skip)
             let timeLeft = 15;
             countdownInterval = setInterval(() => {
                 timeLeft--;
-                if (vastTimer) vastTimer.textContent = timeLeft;
+                if (vastTimer) vastTimer.textContent = (timeLeft > 0) ? timeLeft : 0;
 
                 if (timeLeft <= 0) {
                     clearInterval(countdownInterval);
-                    // Show skip button after 15 seconds
                     if (vastCountdown) vastCountdown.style.display = 'none';
-                    if (vastSkipBtn) vastSkipBtn.style.display = 'block';
                 }
             }, 1000);
         });
@@ -496,7 +396,6 @@ document.addEventListener('DOMContentLoaded', () => {
             vastVideo.pause();
             vastVideo.src = '';
         }
-        if (skipTimer) clearTimeout(skipTimer);
         if (countdownInterval) clearInterval(countdownInterval);
 
         if (vastResolveCallback) {
@@ -510,74 +409,40 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch(vastUrl);
             const vastXml = await response.text();
 
-            // Parse VAST XML to extract video URL
             const parser = new DOMParser();
             const xmlDoc = parser.parseFromString(vastXml, 'text/xml');
 
-            // Try to find MediaFile (video URL)
             const mediaFile = xmlDoc.querySelector('MediaFile');
             if (mediaFile && vastVideo) {
                 const videoUrl = mediaFile.textContent.trim();
                 vastVideo.src = videoUrl;
 
-                // CRITICAL: Extract and fire impression tracking URLs
                 const impressionTrackers = xmlDoc.querySelectorAll('Impression');
-                console.log(`[VAST] Found ${impressionTrackers.length} impression trackers`);
-
-                // Fire impressions when video starts playing AND after minimum 2 seconds
                 let impressionsFired = false;
                 const fireImpressions = () => {
                     const currentTime = vastVideo.currentTime;
-                    // Wait at least 2 seconds before firing impressions (ExoClick requirement)
                     if (!impressionsFired && currentTime >= 2) {
-                        impressionTrackers.forEach((tracker, index) => {
-                            const impressionUrl = tracker.textContent.trim();
-                            if (impressionUrl) {
-                                console.log(`[VAST] Firing impression ${index + 1}:`, impressionUrl);
-                                // Use fetch with no-cors to avoid CORS issues
-                                fetch(impressionUrl, { method: 'GET', mode: 'no-cors' }).catch(err => {
-                                    console.warn('[VAST] Impression tracking failed:', err);
-                                });
-                            }
+                        impressionTrackers.forEach((tracker) => {
+                            const url = tracker.textContent.trim();
+                            if (url) fetch(url, { method: 'GET', mode: 'no-cors' }).catch(() => { });
                         });
                         impressionsFired = true;
                         vastVideo.removeEventListener('timeupdate', fireImpressions);
                     }
                 };
-
-                // Listen for timeupdate to fire impressions after 2 seconds
                 vastVideo.addEventListener('timeupdate', fireImpressions);
 
-                // Extract click tracking URLs
-                const clickTrackers = xmlDoc.querySelectorAll('ClickTracking');
-
-                // Extract Click-Through URL (where user goes when clicking the ad)
                 const clickThroughElement = xmlDoc.querySelector('ClickThrough');
                 if (clickThroughElement) {
                     clickThroughUrl = clickThroughElement.textContent.trim();
-                    console.log('[VAST] Click-through URL:', clickThroughUrl);
-
-                    // Add click handler directly to video element
-                    vastVideo.addEventListener('click', () => {
-                        console.log('[VAST] User clicked through to advertiser');
-
-                        // Fire click trackers
-                        clickTrackers.forEach((tracker) => {
-                            const clickUrl = tracker.textContent.trim();
-                            if (clickUrl) {
-                                console.log('[VAST] Firing click tracker:', clickUrl);
-                                fetch(clickUrl, { method: 'GET', mode: 'no-cors' }).catch(() => { });
-                            }
-                        });
-
-                        // Open advertiser page
-                        if (clickThroughUrl) {
-                            window.open(clickThroughUrl, '_blank');
-                        }
-                    });
+                    const handleAdClick = () => {
+                        if (clickThroughUrl) window.open(clickThroughUrl, '_blank');
+                    };
+                    vastVideo.addEventListener('click', handleAdClick);
+                    // Task: Progress bar click = Video click
+                    if (vastProgressClickArea) vastProgressClickArea.addEventListener('click', handleAdClick);
                 }
 
-                // Progress bar tracking
                 vastVideo.addEventListener('timeupdate', () => {
                     if (vastVideo.duration > 0 && vastProgressBar) {
                         const progress = (vastVideo.currentTime / vastVideo.duration) * 100;
@@ -585,43 +450,24 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 });
 
-                vastVideo.play().catch(err => {
-                    console.warn('[VAST] Autoplay blocked:', err);
-                    // If autoplay fails, user must click play manually
-                });
+                vastVideo.play().catch(() => { });
             } else {
-                console.warn('[VAST] No MediaFile found in VAST response');
-                // If primary failed and we haven't tried backup yet, try backup
                 if (!isBackup) {
-                    console.log('[VAST] Trying backup VAST URL...');
                     loadVastVideo(VAST_BACKUP_URL, true);
                 } else {
-                    // Both failed, close after 15 seconds
-                    console.warn('[VAST] Backup also failed, closing modal');
                     setTimeout(closeVastAd, 15000);
                 }
             }
         } catch (err) {
-            console.error('[VAST] Error loading video:', err);
-            // If primary failed and we haven't tried backup yet, try backup
             if (!isBackup) {
-                console.log('[VAST] Primary failed, trying backup VAST URL...');
                 loadVastVideo(VAST_BACKUP_URL, true);
             } else {
-                // Both failed, close after 15 seconds
-                console.warn('[VAST] Both VAST URLs failed, closing modal');
                 setTimeout(closeVastAd, 15000);
             }
         }
     };
 
-    // Skip button click
-    vastSkipBtn?.addEventListener('click', () => {
-        console.log('[VAST] User skipped ad');
-        closeVastAd();
-    });
-
-    // Video ended naturally
+    // Video ended naturally - Only then do we allow closing/proceeding
     vastVideo?.addEventListener('ended', () => {
         console.log('[VAST] Video completed');
         closeVastAd();

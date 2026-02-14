@@ -279,10 +279,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const VAST_URL = 'https://s.magsrv.com/v1/vast.php?idzone=5851404&ex_av=name';
     const VAST_BACKUP_URL = 'https://s.magsrv.com/v1/vast.php?idzone=5851416&ex_av=name';
     const profileVastVideo = document.getElementById('profile-vast-video');
-    const profileVastSkip = document.getElementById('profile-vast-skip');
     const profileVastCountdown = document.getElementById('profile-vast-countdown');
     const profileVastTimer = document.getElementById('profile-vast-timer');
     const profileVastProgress = document.getElementById('profile-vast-progress');
+    const profileVastProgressClickArea = document.getElementById('profile-vast-progress-click-area');
 
     let vastCountdownInterval = null;
     let profileClickThroughUrl = '';
@@ -300,61 +300,31 @@ document.addEventListener('DOMContentLoaded', () => {
                 const videoUrl = mediaFile.textContent.trim();
                 profileVastVideo.src = videoUrl;
 
-                // CRITICAL: Extract and fire impression tracking URLs
                 const impressionTrackers = xmlDoc.querySelectorAll('Impression');
-                console.log(`[VAST Profile] Found ${impressionTrackers.length} impression trackers`);
-
-                // Fire impressions after minimum 2 seconds
                 let impressionsFired = false;
                 const fireImpressions = () => {
                     const currentTime = profileVastVideo.currentTime;
                     if (!impressionsFired && currentTime >= 2) {
-                        impressionTrackers.forEach((tracker, index) => {
-                            const impressionUrl = tracker.textContent.trim();
-                            if (impressionUrl) {
-                                console.log(`[VAST Profile] Firing impression ${index + 1}:`, impressionUrl);
-                                fetch(impressionUrl, { method: 'GET', mode: 'no-cors' }).catch(err => {
-                                    console.warn('[VAST Profile] Impression tracking failed:', err);
-                                });
-                            }
+                        impressionTrackers.forEach((tracker) => {
+                            const url = tracker.textContent.trim();
+                            if (url) fetch(url, { method: 'GET', mode: 'no-cors' }).catch(() => { });
                         });
                         impressionsFired = true;
                         profileVastVideo.removeEventListener('timeupdate', fireImpressions);
                     }
                 };
-
                 profileVastVideo.addEventListener('timeupdate', fireImpressions);
 
-                // Extract click tracking URLs
-                const clickTrackers = xmlDoc.querySelectorAll('ClickTracking');
-
-                // Extract Click-Through URL
                 const clickThroughElement = xmlDoc.querySelector('ClickThrough');
                 if (clickThroughElement) {
                     profileClickThroughUrl = clickThroughElement.textContent.trim();
-                    console.log('[VAST Profile] Click-through URL:', profileClickThroughUrl);
-
-                    // Add click handler directly to video element
-                    profileVastVideo.addEventListener('click', () => {
-                        console.log('[VAST Profile] User clicked through to advertiser');
-
-                        // Fire click trackers
-                        clickTrackers.forEach((tracker) => {
-                            const clickUrl = tracker.textContent.trim();
-                            if (clickUrl) {
-                                console.log('[VAST Profile] Firing click tracker:', clickUrl);
-                                fetch(clickUrl, { method: 'GET', mode: 'no-cors' }).catch(() => { });
-                            }
-                        });
-
-                        // Open advertiser page
-                        if (profileClickThroughUrl) {
-                            window.open(profileClickThroughUrl, '_blank');
-                        }
-                    });
+                    const handleAdClick = () => {
+                        if (profileClickThroughUrl) window.open(profileClickThroughUrl, '_blank');
+                    };
+                    profileVastVideo.addEventListener('click', handleAdClick);
+                    if (profileVastProgressClickArea) profileVastProgressClickArea.addEventListener('click', handleAdClick);
                 }
 
-                // Progress bar tracking
                 profileVastVideo.addEventListener('timeupdate', () => {
                     if (profileVastVideo.duration > 0 && profileVastProgress) {
                         const progress = (profileVastVideo.currentTime / profileVastVideo.duration) * 100;
@@ -362,30 +332,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 });
 
-                profileVastVideo.play().catch(err => {
-                    console.warn('[VAST] Autoplay blocked:', err);
-                });
+                profileVastVideo.play().catch(() => { });
             } else {
-                console.warn('[VAST] No MediaFile found');
-                // If primary failed and we haven't tried backup yet, try backup
                 if (!isBackup) {
-                    console.log('[VAST] Trying backup VAST URL...');
                     loadProfileVast(true);
                 } else {
-                    // Both failed, still award credits after 15s
-                    console.warn('[VAST] Backup also failed, awarding credits anyway');
                     setTimeout(finishAd, 15000);
                 }
             }
         } catch (err) {
-            console.error('[VAST] Error loading video:', err);
-            // If primary failed and we haven't tried backup yet, try backup
             if (!isBackup) {
-                console.log('[VAST] Primary failed, trying backup VAST URL...');
                 loadProfileVast(true);
             } else {
-                // Both failed, still award credits after 15s
-                console.warn('[VAST] Both VAST URLs failed, awarding credits anyway');
                 setTimeout(finishAd, 15000);
             }
         }
@@ -400,14 +358,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (vastCountdownInterval) clearInterval(vastCountdownInterval);
     };
 
-    profileVastSkip?.addEventListener('click', () => {
-        console.log('[VAST] User skipped ad');
-        closeProfileVast();
-        finishAd();
-    });
-
     profileVastVideo?.addEventListener('ended', () => {
-        console.log('[VAST] Video completed');
+        console.log('[VAST Profile] Video completed');
         closeProfileVast();
         finishAd();
     });
@@ -417,25 +369,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const adsSession = parseInt(sessionStorage.getItem(`pp_ads_session_${email}`) || '0');
         if (adsToday >= 6 || adsSession >= 3) return;
 
-        // Show VAST modal
         adSimulation.style.display = 'flex';
-        if (profileVastSkip) profileVastSkip.style.display = 'none';
         if (profileVastCountdown) profileVastCountdown.style.display = 'block';
         if (profileVastTimer) profileVastTimer.textContent = '15';
 
-        // Load VAST video
         loadProfileVast();
 
-        // 15-second countdown
         let timeLeft = 15;
         vastCountdownInterval = setInterval(() => {
             timeLeft--;
-            if (profileVastTimer) profileVastTimer.textContent = timeLeft;
+            if (profileVastTimer) profileVastTimer.textContent = (timeLeft > 0) ? timeLeft : 0;
 
             if (timeLeft <= 0) {
                 clearInterval(vastCountdownInterval);
                 if (profileVastCountdown) profileVastCountdown.style.display = 'none';
-                if (profileVastSkip) profileVastSkip.style.display = 'block';
             }
         }, 1000);
     });
