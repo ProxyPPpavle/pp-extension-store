@@ -23,6 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- UI Elements ---
     const userEmailEl = document.getElementById('user-email');
+    const btnLogout = document.getElementById('btn-logout');
     const clientIdEl = document.getElementById('client-id');
     const btnReveal = document.getElementById('btn-reveal');
     const btnCopy = document.getElementById('btn-copy');
@@ -58,6 +59,20 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => {
             toast.classList.remove('show');
         }, 4000);
+    }
+
+    // --- Logout Logic ---
+    if (btnLogout) {
+        btnLogout.addEventListener('click', () => {
+            localStorage.removeItem('pp_user_email');
+            localStorage.removeItem('pp_verified');
+            localStorage.removeItem('pp_client_id');
+            // Optional: clear cached credits to privacy
+            Object.keys(localStorage).forEach(key => {
+                if (key.startsWith('pp_last_credits_')) localStorage.removeItem(key);
+            });
+            window.location.href = '/';
+        });
     }
 
     // --- Initialize Top Global Identity ---
