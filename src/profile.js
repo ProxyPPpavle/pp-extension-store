@@ -290,99 +290,122 @@ document.addEventListener('DOMContentLoaded', () => {
     const loadProfileVast = async (isBackup = false) => {
         const vastUrl = isBackup ? VAST_BACKUP_URL : VAST_URL;
         try {
-            const response = await fetch(vastUrl);
-            const vastXml = await response.text();
-            const parser = new DOMParser();
-            const xmlDoc = parser.parseFromString(vastXml, 'text/xml');
-            const mediaFile = xmlDoc.querySelector('MediaFile');
+            const allImpressions = [];
+            const allTracking = {
+                start: [], firstQuartile: [], midpoint: [], thirdQuartile: [], complete: [], creativeView: [],
+                clickTracking: []
+            };
+            let mediaFile = null;
+            let clickThrough = null;
+            let currentUrl = vastUrl;
+            let depth = 0;
+
+            // --- VAST Follower (Handles Wrappers) ---
+            while (depth < 5) {
+                const response = await fetch(currentUrl);
+                const xmlText = await response.text();
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+
+                xmlDoc.querySelectorAll('Impression').forEach(imp => allImpressions.push(imp.textContent.trim()));
+                xmlDoc.querySelectorAll('Tracking').forEach(t => {
+                    const event = t.getAttribute('event');
+                    if (allTracking[event]) allTracking[event].push(t.textContent.trim());
+                });
+                xmlDoc.querySelectorAll('ClickTracking').forEach(ct => allTracking.clickTracking.push(ct.textContent.trim()));
+
+                const ctElem = xmlDoc.querySelector('ClickThrough');
+                if (ctElem && !clickThrough) clickThrough = ctElem.textContent.trim();
+
+                const mfElem = xmlDoc.querySelector('MediaFile');
+                if (mfElem) {
+                    mediaFile = mfElem.textContent.trim();
+                    break;
+                }
+
+                const wrapperElem = xmlDoc.querySelector('VASTAdTagURI');
+                if (wrapperElem) {
+                    currentUrl = wrapperElem.textContent.trim();
+                    depth++;
+                } else {
+                    break;
+                }
+            }
 
             if (mediaFile && profileVastVideo) {
-                const videoUrl = mediaFile.textContent.trim();
-                profileVastVideo.src = videoUrl;
+                profileVastVideo.src = mediaFile;
+                profileClickThroughUrl = clickThrough;
 
-                // --- VAST Tracking Logic ---
-                const impressionTrackers = xmlDoc.querySelectorAll('Impression');
-                const trackingEvents = xmlDoc.querySelectorAll('Tracking');
-
+                window._vast_beacons = window._vast_beacons || [];
                 const fireTrackingUrl = (url) => {
                     if (!url) return;
-                    console.log('[VAST Profile] Firing beacon:', url);
-                    const img = new Image();
-                    img.src = url.trim();
+                    const cleanUrl = url.trim();
+                    console.log('[VAST Profile Tracking] Firing:', cleanUrl);
+                    if (navigator.sendBeacon) {
+                        navigator.sendBeacon(cleanUrl);
+                    } else {
+                        const img = new Image();
+                        window._vast_beacons.push(img);
+                        img.src = cleanUrl;
+                    }
                 };
 
                 const fireEvent = (eventName) => {
-                    trackingEvents.forEach(t => {
-                        if (t.getAttribute('event') === eventName) fireTrackingUrl(t.textContent);
-                    });
+                    if (allTracking[eventName]) {
+                        allTracking[eventName].forEach(url => fireTrackingUrl(url));
+                    }
                 };
 
-                // 1. Impression tracking (Primary revenue event)
+                profileVastVideo.onloadedmetadata = () => fireEvent('creativeView');
+
                 let impressionsFired = false;
-                const fireImpressions = () => {
-                    if (!impressionsFired && profileVastVideo.currentTime >= 1) {
-                        console.log('[VAST Profile] Firing primary impressions...');
-                        impressionTrackers.forEach(t => fireTrackingUrl(t.textContent));
+                profileVastVideo.ontimeupdate = () => {
+                    if (!impressionsFired && profileVastVideo.currentTime > 0.5) {
+                        allImpressions.forEach(url => fireTrackingUrl(url));
+                        fireEvent('start');
                         impressionsFired = true;
-                        profileVastVideo.removeEventListener('timeupdate', fireImpressions);
+                    }
+
+                    if (profileVastVideo.duration > 0) {
+                        const progress = profileVastVideo.currentTime / profileVastVideo.duration;
+                        if (!qSentProfile.q1 && progress >= 0.25) { fireEvent('firstQuartile'); qSentProfile.q1 = true; }
+                        if (!qSentProfile.q2 && progress >= 0.50) { fireEvent('midpoint'); qSentProfile.q2 = true; }
+                        if (!qSentProfile.q3 && progress >= 0.75) { fireEvent('thirdQuartile'); qSentProfile.q3 = true; }
+                        if (!qSentProfile.comp && progress >= 0.98) { fireEvent('complete'); qSentProfile.comp = true; }
+                        if (profileVastProgress) profileVastProgress.style.width = `${progress * 100}%`;
                     }
                 };
-                profileVastVideo.addEventListener('timeupdate', fireImpressions);
 
-                // 2. Event tracking (Start, Quartiles, Complete)
-                let q1 = false, q2 = false, q3 = false;
-                profileVastVideo.addEventListener('play', () => fireEvent('start'), { once: true });
-
-                profileVastVideo.addEventListener('timeupdate', () => {
-                    const progress = profileVastVideo.currentTime / profileVastVideo.duration;
-                    if (!q1 && progress >= 0.25) { fireEvent('firstQuartile'); q1 = true; }
-                    if (!q2 && progress >= 0.50) { fireEvent('midpoint'); q2 = true; }
-                    if (!q3 && progress >= 0.75) { fireEvent('thirdQuartile'); q3 = true; }
-
-                    if (profileVastProgress) {
-                        profileVastProgress.style.width = `${(profileVastVideo.currentTime / profileVastVideo.duration) * 100}%`;
+                const handleAdClick = (e) => {
+                    console.log('[VAST Profile] Interaction detected');
+                    if (profileClickThroughUrl) {
+                        allTracking.clickTracking.forEach(url => fireTrackingUrl(url));
+                        window.open(profileClickThroughUrl, '_blank');
                     }
-                });
+                };
 
-                profileVastVideo.addEventListener('ended', () => {
-                    fireEvent('complete');
-                    console.log('[VAST Profile] Video completed naturally');
+                profileVastVideo.onclick = handleAdClick;
+                if (profileVastProgressClickArea) profileVastProgressClickArea.onclick = handleAdClick;
+
+                profileVastVideo.onended = () => {
+                    if (!qSentProfile.comp) { fireEvent('complete'); qSentProfile.comp = true; }
                     closeProfileVast();
                     finishAd();
-                });
-
-                // 3. Click Tracking
-                const clickThroughElement = xmlDoc.querySelector('ClickThrough');
-                const clickTrackers = xmlDoc.querySelectorAll('ClickTracking');
-
-                if (clickThroughElement) {
-                    profileClickThroughUrl = clickThroughElement.textContent.trim();
-                    const handleAdClick = () => {
-                        if (profileClickThroughUrl) {
-                            clickTrackers.forEach(t => fireTrackingUrl(t.textContent.trim()));
-                            window.open(profileClickThroughUrl, '_blank');
-                        }
-                    };
-                    profileVastVideo.addEventListener('click', handleAdClick);
-                    if (profileVastProgressClickArea) profileVastProgressClickArea.addEventListener('click', handleAdClick);
-                }
+                };
 
                 profileVastVideo.play().catch(() => { });
+                qSentProfile = { q1: false, q2: false, q3: false, comp: false };
             } else {
-                if (!isBackup) {
-                    loadProfileVast(true);
-                } else {
-                    setTimeout(finishAd, 15000);
-                }
+                if (!isBackup) loadProfileVast(true);
+                else setTimeout(finishAd, 15000);
             }
         } catch (err) {
-            if (!isBackup) {
-                loadProfileVast(true);
-            } else {
-                setTimeout(finishAd, 15000);
-            }
+            if (!isBackup) loadProfileVast(true);
+            else setTimeout(finishAd, 15000);
         }
     };
+
+    let qSentProfile = { q1: false, q2: false, q3: false, comp: false };
 
     const closeProfileVast = () => {
         if (adSimulation) adSimulation.style.display = 'none';

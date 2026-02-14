@@ -406,97 +406,126 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const loadVastVideo = async (vastUrl, isBackup = false) => {
         try {
-            const response = await fetch(vastUrl);
-            const vastXml = await response.text();
+            const allImpressions = [];
+            const allTracking = {
+                start: [], firstQuartile: [], midpoint: [], thirdQuartile: [], complete: [], creativeView: [],
+                clickTracking: []
+            };
+            let mediaFile = null;
+            let clickThrough = null;
+            let currentUrl = vastUrl;
+            let depth = 0;
 
-            const parser = new DOMParser();
-            const xmlDoc = parser.parseFromString(vastXml, 'text/xml');
+            // --- VAST Follower (Handles Wrappers) ---
+            while (depth < 5) {
+                const response = await fetch(currentUrl);
+                const xmlText = await response.text();
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
 
-            const mediaFile = xmlDoc.querySelector('MediaFile');
+                // Accumulate Impressions
+                xmlDoc.querySelectorAll('Impression').forEach(imp => allImpressions.push(imp.textContent.trim()));
+
+                // Accumulate Tracking Events
+                xmlDoc.querySelectorAll('Tracking').forEach(t => {
+                    const event = t.getAttribute('event');
+                    if (allTracking[event]) allTracking[event].push(t.textContent.trim());
+                });
+
+                // Accumulate Click Tracking
+                xmlDoc.querySelectorAll('ClickTracking').forEach(ct => allTracking.clickTracking.push(ct.textContent.trim()));
+
+                // Find ClickThrough (only keep the first valid one found)
+                const ctElem = xmlDoc.querySelector('ClickThrough');
+                if (ctElem && !clickThrough) clickThrough = ctElem.textContent.trim();
+
+                // Find MediaFile (if found, we are at InLine)
+                const mfElem = xmlDoc.querySelector('MediaFile');
+                if (mfElem) {
+                    mediaFile = mfElem.textContent.trim();
+                    break;
+                }
+
+                // Follow Wrapper
+                const wrapperElem = xmlDoc.querySelector('VASTAdTagURI');
+                if (wrapperElem) {
+                    currentUrl = wrapperElem.textContent.trim();
+                    depth++;
+                } else {
+                    break; // No wrapper and no media file
+                }
+            }
+
             if (mediaFile && vastVideo) {
-                const videoUrl = mediaFile.textContent.trim();
-                vastVideo.src = videoUrl;
+                vastVideo.src = mediaFile;
+                clickThroughUrl = clickThrough;
 
-                // --- VAST Tracking Logic ---
-                const impressionTrackers = xmlDoc.querySelectorAll('Impression');
-                const trackingEvents = xmlDoc.querySelectorAll('Tracking');
-
+                window._vast_beacons = window._vast_beacons || [];
                 const fireTrackingUrl = (url) => {
                     if (!url) return;
-                    console.log('[VAST Tracking] Firing beacon:', url);
-                    const img = new Image();
-                    img.src = url.trim();
+                    const cleanUrl = url.trim();
+                    console.log('[VAST Tracking] Firing:', cleanUrl);
+                    if (navigator.sendBeacon) {
+                        navigator.sendBeacon(cleanUrl);
+                    } else {
+                        const img = new Image();
+                        window._vast_beacons.push(img);
+                        img.src = cleanUrl;
+                    }
                 };
 
                 const fireEvent = (eventName) => {
-                    trackingEvents.forEach(t => {
-                        if (t.getAttribute('event') === eventName) fireTrackingUrl(t.textContent);
-                    });
+                    if (allTracking[eventName]) {
+                        allTracking[eventName].forEach(url => fireTrackingUrl(url));
+                    }
                 };
 
-                // 1. Impression tracking (Primary revenue event)
+                vastVideo.onloadedmetadata = () => fireEvent('creativeView');
+
                 let impressionsFired = false;
-                const fireImpressions = () => {
-                    if (!impressionsFired && vastVideo.currentTime >= 1) {
-                        console.log('[VAST] Firing primary impressions...');
-                        impressionTrackers.forEach(t => fireTrackingUrl(t.textContent));
+                vastVideo.ontimeupdate = () => {
+                    if (!impressionsFired && vastVideo.currentTime > 0.5) {
+                        allImpressions.forEach(url => fireTrackingUrl(url));
+                        fireEvent('start');
                         impressionsFired = true;
-                        vastVideo.removeEventListener('timeupdate', fireImpressions);
+                    }
+
+                    if (vastVideo.duration > 0) {
+                        const progress = vastVideo.currentTime / vastVideo.duration;
+                        if (!qSent.q1 && progress >= 0.25) { fireEvent('firstQuartile'); qSent.q1 = true; }
+                        if (!qSent.q2 && progress >= 0.50) { fireEvent('midpoint'); qSent.q2 = true; }
+                        if (!qSent.q3 && progress >= 0.75) { fireEvent('thirdQuartile'); qSent.q3 = true; }
+                        if (!qSent.comp && progress >= 0.98) { fireEvent('complete'); qSent.comp = true; }
+                        if (vastProgressBar) vastProgressBar.style.width = `${progress * 100}%`;
                     }
                 };
-                vastVideo.addEventListener('timeupdate', fireImpressions);
 
-                // 2. Event tracking (Start, Quartiles, Complete)
-                let q1 = false, q2 = false, q3 = false;
-                vastVideo.addEventListener('play', () => fireEvent('start'), { once: true });
-
-                vastVideo.addEventListener('timeupdate', () => {
-                    const progress = vastVideo.currentTime / vastVideo.duration;
-                    if (!q1 && progress >= 0.25) { fireEvent('firstQuartile'); q1 = true; }
-                    if (!q2 && progress >= 0.50) { fireEvent('midpoint'); q2 = true; }
-                    if (!q3 && progress >= 0.75) { fireEvent('thirdQuartile'); q3 = true; }
-
-                    if (vastProgressBar) {
-                        vastProgressBar.style.width = `${(vastVideo.currentTime / vastVideo.duration) * 100}%`;
+                // Unified Click Handler
+                const handleAdClick = (e) => {
+                    console.log('[VAST] Interaction detected');
+                    if (clickThroughUrl) {
+                        allTracking.clickTracking.forEach(url => fireTrackingUrl(url));
+                        window.open(clickThroughUrl, '_blank');
                     }
-                });
+                };
 
-                vastVideo.addEventListener('ended', () => {
-                    fireEvent('complete');
-                    console.log('[VAST] Video completed naturally');
+                vastVideo.onclick = handleAdClick;
+                if (vastProgressClickArea) vastProgressClickArea.onclick = handleAdClick;
+
+                vastVideo.onended = () => {
+                    if (!qSent.comp) { fireEvent('complete'); qSent.comp = true; }
                     closeVastAd();
-                });
-
-                // 3. Click Tracking
-                const clickThroughElement = xmlDoc.querySelector('ClickThrough');
-                const clickTrackers = xmlDoc.querySelectorAll('ClickTracking');
-
-                if (clickThroughElement) {
-                    clickThroughUrl = clickThroughElement.textContent.trim();
-                    const handleAdClick = () => {
-                        if (clickThroughUrl) {
-                            clickTrackers.forEach(t => fireTrackingUrl(t.textContent.trim()));
-                            window.open(clickThroughUrl, '_blank');
-                        }
-                    };
-                    vastVideo.addEventListener('click', handleAdClick);
-                    if (vastProgressClickArea) vastProgressClickArea.addEventListener('click', handleAdClick);
-                }
+                };
 
                 vastVideo.play().catch(() => { });
+                qSent = { q1: false, q2: false, q3: false, comp: false };
             } else {
-                if (!isBackup) {
-                    loadVastVideo(VAST_BACKUP_URL, true);
-                } else {
-                    setTimeout(closeVastAd, 15000);
-                }
+                if (!isBackup) loadVastVideo(VAST_BACKUP_URL, true);
+                else setTimeout(closeVastAd, 15000);
             }
         } catch (err) {
-            if (!isBackup) {
-                loadVastVideo(VAST_BACKUP_URL, true);
-            } else {
-                setTimeout(closeVastAd, 15000);
-            }
+            if (!isBackup) loadVastVideo(VAST_BACKUP_URL, true);
+            else setTimeout(closeVastAd, 15000);
         }
     };
 
