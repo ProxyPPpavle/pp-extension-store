@@ -1342,90 +1342,9 @@ footer {
     }
 }
 
-/* Coming Soon Card */
+/* Coming Soon Card Removal */
 .coming-soon-card {
-    background: var(--bg-slate);
-    border: 1px solid var(--glass-border);
-    padding: 4rem;
-    border-radius: 40px;
-    text-align: center;
-    max-width: 800px;
-    margin: 4rem auto;
-    position: relative;
-    overflow: hidden;
-    transition: all 0.3s ease;
-    animation: float 8s ease-in-out infinite;
-}
-
-.coming-soon-card:hover {
-    border-color: var(--primary-purple);
-    transform: translateY(-5px);
-}
-
-.coming-soon-content i {
-    font-size: 3rem;
-    color: var(--primary-purple);
-    margin-bottom: 2rem;
-    display: block;
-}
-
-@keyframes rotateClock {
-    from {
-        transform: rotate(0deg);
-    }
-
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-.coming-soon-content h3 {
-    font-size: 2.5rem;
-    margin-bottom: 1rem;
-}
-
-.coming-soon-content p {
-    color: var(--text-gray);
-    font-size: 1.1rem;
-    max-width: 500px;
-    margin: 0 auto 2.5rem;
-}
-
-.waitlist-badge {
-    display: inline-block;
-    padding: 0.8rem 2rem;
-    background: rgba(168, 85, 247, 0.1);
-    border: 1px solid rgba(168, 85, 247, 0.2);
-    color: var(--primary-purple);
-    border-radius: 100px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.waitlist-badge:hover {
-    background: var(--primary-purple);
-    color: white;
-}
-
-/* Ad Positioning Tweaks (Targeting common Propeller containers) */
-/* Specific bottom-right pinning for Push and Banners */
-div[class*="pro-push"],
-div[class*="pp-banner"],
-div[id*="pro-"],
-div[class*="notifications"],
-div[class*="banner"],
-iframe[id*="pro-"] {
-    position: fixed !important;
-    bottom: 20px !important;
-    right: 20px !important;
-    top: auto !important;
-    left: auto !important;
-    z-index: 2147483647 !important;
-    /* Force to top */
+    display: none;
 }
 
 /* Modal Styles */
@@ -1837,8 +1756,6 @@ iframe[id*="pro-"] {
 
 .btn-copy-id {
     background: var(--accent-green);
-    color: #000;
-    box-shadow: 0 10px 20px rgba(16, 185, 129, 0.2);
 }
 
 .btn-copy-id:hover {
@@ -1919,29 +1836,109 @@ iframe[id*="pro-"] {
 }
 
 /* Extension Card Fixes - NO MORE WHITE LINES */
-.extension-card {
+/* === PREMIUM CARD ARCHITECTURE (Simplified) === */
+.extension-card,
+.app-card {
     position: relative;
-    background: rgba(15, 23, 42, 0.8);
-    border: 1px solid rgba(255, 255, 255, 0.02);
-    /* Almost invisible border */
-    padding: 3.5rem 2rem 2.5rem;
-    border-radius: 44px;
-    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    overflow: visible;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    background: rgba(15, 23, 42, 0.4);
+    backdrop-filter: blur(15px);
+    border-radius: 20px;
+    padding: 2rem;
+    transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 380px;
+    /* Reduced for better grid fit */
 }
 
-.card-glow {
-    display: none !important;
+.extension-card:hover,
+.app-card:hover {
+    transform: translateY(-5px);
+    background: rgba(15, 23, 42, 0.6);
+    border-color: var(--accent-green);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
 }
 
-.extension-card:hover {
-    transform: translateY(-12px);
-    border-color: rgba(16, 185, 129, 0.2);
-    box-shadow: 0 40px 80px rgba(0, 0, 0, 0.6);
+.card-icon {
+    width: 50px;
+    height: 50px;
+    background: rgba(16, 185, 129, 0.08);
+    color: var(--accent-emerald);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid rgba(16, 185, 129, 0.1);
 }
 
-/* Final adjustments for badges */
+.extension-card h3,
+.app-card h3 {
+    font-size: 1.4rem;
+    font-weight: 800;
+    margin-bottom: 0.8rem;
+    color: #fff;
+    letter-spacing: -0.2px;
+}
+
+.ext-desc {
+    color: var(--text-gray);
+    font-size: 0.85rem;
+    line-height: 1.5;
+    margin-bottom: 1.5rem;
+    flex-grow: 1;
+    /* Pushes shortcuts to bottom */
+}
+
+.app-features {
+    list-style: none;
+    margin-bottom: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0;
+}
+
+.app-features li {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.8rem;
+    color: var(--text-gray);
+}
+
+.app-features li i {
+    color: var(--accent-emerald);
+    font-size: 0.7rem;
+}
+
+/* Coming Soon Overlay */
+.coming-soon-overlay {
+    background: rgba(2, 6, 23, 0.9);
+    backdrop-filter: blur(10px);
+    border-radius: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+}
+
+.overlay-content i {
+    color: var(--primary-purple);
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.overlay-content h3 {
+    font-size: 1rem;
+    color: var(--primary-purple);
+    font-weight: 800;
+    letter-spacing: 2px;
+}
+
 .download-actions {
     display: flex;
     gap: 1.5rem;

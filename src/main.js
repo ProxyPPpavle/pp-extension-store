@@ -345,212 +345,24 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => e.target.textContent = originalText, 2000);
     });
 
-    // --- Downloads with VAST Video Ads ---
-    // --- Downloads with VAST Video Ads ---
-    const VAST_URL = 'https://s.magsrv.com/v1/vast.php?idzone=5851404&ex_av=name';
-    const VAST_BACKUP_URL = 'https://s.magsrv.com/v1/vast.php?idzone=5851416&ex_av=name';
-
-    const vastModal = document.getElementById('vast-modal');
-    const vastVideo = document.getElementById('vast-video-player');
-    const vastCountdown = document.getElementById('vast-countdown');
-    const vastTimer = document.getElementById('vast-timer');
-    const vastProgressBar = document.getElementById('vast-progress-bar');
-    const vastProgressClickArea = document.getElementById('vast-progress-click-area');
-
-    let vastResolveCallback = null;
-    let countdownInterval = null;
-    let clickThroughUrl = '';
-
-    const showVastAd = () => {
-        return new Promise((resolve) => {
-            vastResolveCallback = resolve;
-
-            // Show modal
-            if (vastModal) vastModal.style.display = 'flex';
-
-            // Reset UI
-            if (vastCountdown) vastCountdown.style.display = 'block';
-            if (vastTimer) vastTimer.textContent = '15';
-            if (vastProgressBar) vastProgressBar.style.width = '0%';
-
-            // Parse VAST and load video
-            loadVastVideo(VAST_URL);
-
-            // Start countdown (informative only, no skip)
-            let timeLeft = 15;
-            countdownInterval = setInterval(() => {
-                timeLeft--;
-                if (vastTimer) vastTimer.textContent = (timeLeft > 0) ? timeLeft : 0;
-
-                if (timeLeft <= 0) {
-                    clearInterval(countdownInterval);
-                    if (vastCountdown) vastCountdown.style.display = 'none';
-                }
-            }, 1000);
-        });
-    };
-
-    const closeVastAd = () => {
-        if (vastModal) vastModal.style.display = 'none';
-        if (vastVideo) {
-            vastVideo.pause();
-            vastVideo.src = '';
-        }
-        if (countdownInterval) clearInterval(countdownInterval);
-
-        if (vastResolveCallback) {
-            vastResolveCallback();
-            vastResolveCallback = null;
-        }
-    };
-
-    const loadVastVideo = async (vastUrl, isBackup = false) => {
-        try {
-            const allImpressions = [];
-            const allTracking = {
-                start: [], firstQuartile: [], midpoint: [], thirdQuartile: [], complete: [], creativeView: [],
-                clickTracking: []
-            };
-            let mediaFile = null;
-            let clickThrough = null;
-            let currentUrl = vastUrl;
-            let depth = 0;
-
-            // --- VAST Follower (Handles Wrappers up to 5 levels) ---
-            while (depth < 5) {
-                const response = await fetch(currentUrl);
-                const xmlText = await response.text();
-                const parser = new DOMParser();
-                const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
-
-                // Robust extraction using tag names (works better with namespaces)
-                const getTags = (name) => xmlDoc.getElementsByTagName(name);
-
-                for (let imp of getTags('Impression')) allImpressions.push(imp.textContent.trim());
-
-                for (let track of getTags('Tracking')) {
-                    const event = track.getAttribute('event');
-                    if (allTracking[event]) allTracking[event].push(track.textContent.trim());
-                }
-
-                for (let ct of getTags('ClickTracking')) allTracking.clickTracking.push(ct.textContent.trim());
-
-                const ctElem = getTags('ClickThrough')[0];
-                if (ctElem && !clickThrough) clickThrough = ctElem.textContent.trim();
-
-                const mfElem = getTags('MediaFile')[0];
-                if (mfElem) {
-                    mediaFile = mfElem.textContent.trim();
-                    break;
-                }
-
-                const wrapperElem = getTags('VASTAdTagURI')[0];
-                if (wrapperElem) {
-                    currentUrl = wrapperElem.textContent.trim();
-                    depth++;
-                } else {
-                    break;
-                }
-            }
-
-            if (mediaFile && vastVideo) {
-                vastVideo.src = mediaFile;
-                clickThroughUrl = clickThrough;
-                qSent = { q1: false, q2: false, q3: false, comp: false };
-
-                // Robust GET tracking (Image beacons)
-                window._vast_beacons = window._vast_beacons || [];
-                const fireTrackingUrl = (url) => {
-                    if (!url) return;
-                    const cleanUrl = url.trim();
-                    if (!cleanUrl) return;
-                    console.log('[VAST Tracking] Firing Pixel:', cleanUrl);
-                    const img = new Image();
-                    window._vast_beacons.push(img);
-                    img.onload = img.onerror = () => {
-                        const idx = window._vast_beacons.indexOf(img);
-                        if (idx > -1) window._vast_beacons.splice(idx, 1);
-                    };
-                    img.src = cleanUrl;
-                };
-
-                const fireEvent = (eventName) => {
-                    if (allTracking[eventName]) {
-                        allTracking[eventName].forEach(url => fireTrackingUrl(url));
-                    }
-                };
-
-                vastVideo.onloadedmetadata = () => fireEvent('creativeView');
-
-                let impressionsFired = false;
-                vastVideo.ontimeupdate = () => {
-                    // Start tracking
-                    if (!impressionsFired && vastVideo.currentTime > 0.5) {
-                        allImpressions.forEach(url => fireTrackingUrl(url));
-                        fireEvent('start');
-                        impressionsFired = true;
-                    }
-
-                    // Progress & Quartiles
-                    if (vastVideo.duration > 0) {
-                        const progress = vastVideo.currentTime / vastVideo.duration;
-                        if (!qSent.q1 && progress >= 0.25) { fireEvent('firstQuartile'); qSent.q1 = true; }
-                        if (!qSent.q2 && progress >= 0.50) { fireEvent('midpoint'); qSent.q2 = true; }
-                        if (!qSent.q3 && progress >= 0.75) { fireEvent('thirdQuartile'); qSent.q3 = true; }
-
-                        // Revenue critical: Complete signal
-                        if (!qSent.comp && progress >= 0.96) {
-                            fireEvent('complete');
-                            qSent.comp = true;
-                            console.log('[VAST] Complete event fired at 96%');
-                        }
-
-                        // Update Visual Progress Bar
-                        if (vastProgressBar) {
-                            vastProgressBar.style.width = `${progress * 100}%`;
-                        }
-                    }
-                };
-
-                // Click Implementation
-                const handleAdClick = (e) => {
-                    console.log('[VAST] User clicked ad');
-                    allTracking.clickTracking.forEach(url => fireTrackingUrl(url));
-                    if (clickThroughUrl) window.open(clickThroughUrl, '_blank');
-                };
-
-                vastVideo.onclick = handleAdClick;
-                if (vastProgressClickArea) vastProgressClickArea.onclick = handleAdClick;
-
-                vastVideo.onended = () => {
-                    if (!qSent.comp) { fireEvent('complete'); qSent.comp = true; }
-                    closeVastAd();
-                };
-
-                vastVideo.play().catch(() => { });
-            } else {
-                if (!isBackup) loadVastVideo(VAST_BACKUP_URL, true);
-                else setTimeout(closeVastAd, 15000);
-            }
-        } catch (err) {
-            console.error('[VAST] Load error:', err);
-            if (!isBackup) loadVastVideo(VAST_BACKUP_URL, true);
-            else setTimeout(closeVastAd, 15000);
-        }
-    };
-
-    const simulateDownload = (type) => {
+    // --- Download System (Direct, no video ads) ---
+    const triggerDownload = (type) => {
         console.log(`[DOWNLOAD] Starting download for: ${type}`);
-        // Trigger the actual zip download from the public root
-        // Note: type is usually 'ppbot' (lowercase) but file is 'PPBot.zip'
-        // We will hardcode for now to be safe or map it.
         let fileUrl = './PPBot.zip';
-        if (type.toLowerCase() === 'predictor') fileUrl = './Predictor.zip';
+        let fileName = 'PPBot_Extension.zip';
+
+        if (type === 'ppbot3-app') {
+            fileUrl = './PPBot3.exe';
+            fileName = 'PPBot3.exe';
+        } else if (type.toLowerCase() === 'predictor') {
+            fileUrl = './Predictor.zip';
+            fileName = 'Predictor.zip';
+        }
 
         const link = document.createElement('a');
         link.href = fileUrl;
-        link.download = `PPBot_Extension.zip`; // Renaming for user clarity
-        document.body.appendChild(link); // Required for Firefox
+        link.download = fileName;
+        document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
     };
@@ -558,32 +370,13 @@ document.addEventListener('DOMContentLoaded', () => {
     downloadTriggers.forEach(trigger => {
         trigger.addEventListener('click', async (e) => {
             e.preventDefault();
-            const type = trigger.getAttribute('data-type'); // e.g. 'ppbot' or 'predictor'
+            const type = trigger.getAttribute('data-type');
 
-            // 1. Show VAST ad and wait for skip/completion
-            console.log(`[ADS] Showing VAST ad for ${type} download...`);
-            await showVastAd();
-            console.log(`[ADS] Ad completed/skipped, proceeding with download...`);
+            // Show download modal
+            if (idModal) idModal.style.display = 'flex';
 
-            // 2. If verified, register the asset in the database
-            if (isVerified && currentUserEmail) {
-                const data = await safeFetch(`${apiUrl}/register-client`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ accountType: 'free', email: currentUserEmail, extensionId: type })
-                });
-
-                if (data.status === 'success') {
-                    if (idDisplayModal) idDisplayModal.textContent = data.clientId;
-                    if (idModal) idModal.style.display = 'flex';
-                }
-            } else {
-                // If not verified, just show the login prompt AFTER the download simulation
-                // OR just let them download and prompt login for "Cloud Sync / Credits"
-                console.log("[DOWNLOAD] User not verified, skipping DB registration.");
-            }
-
-            simulateDownload(type);
+            // Trigger actual download
+            triggerDownload(type);
         });
     });
 
@@ -598,73 +391,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- ExoClick Ads Only (Propeller Ads Removed) ---
     // All ad serving is now handled by ExoClick zones embedded in HTML
 
-    // --- Matrix Optimization ---
-    const canvas = document.getElementById('matrix-canvas');
-    if (canvas) {
-        const ctx = canvas.getContext('2d', { alpha: false });
-        let width, height, columns, drops;
-        const initMatrix = () => {
-            width = canvas.width = window.innerWidth;
-            height = canvas.height = window.innerHeight;
-            columns = Math.floor(width / 20);
-            drops = new Array(columns).fill(0).map(() => Math.random() * -100);
-        };
-        const drawMatrix = () => {
-            ctx.fillStyle = 'rgba(5, 5, 5, 0.15)';
-            ctx.fillRect(0, 0, width, height);
-            ctx.fillStyle = '#10b981';
-            ctx.font = '15px monospace';
-            for (let i = 0; i < drops.length; i++) {
-                const text = String.fromCharCode(33 + Math.random() * 94);
-                ctx.fillText(text, i * 20, drops[i] * 20);
-                if (drops[i] * 20 > height && Math.random() > 0.975) drops[i] = 0;
-                drops[i]++;
-            }
-        };
-        initMatrix();
-        setInterval(drawMatrix, 40);
-        window.addEventListener('resize', initMatrix);
-    }
-
     // --- Initial AOS & AOS triggers ---
     if (typeof AOS !== 'undefined') {
         AOS.init({ duration: 1000, once: true, offset: 50 });
     }
 
-    // --- Guide Slider ---
-    const guideSlides = document.querySelectorAll('.slide');
-    const guideDots = document.querySelectorAll('.dot');
-    const prevStepBtn = document.getElementById('prev-step');
-    const nextStepBtn = document.getElementById('next-step');
-    let currentStep = 0;
-
-    const updateGuideUI = () => {
-        guideSlides.forEach((slide, i) => {
-            slide.classList.toggle('active', i === currentStep);
-        });
-        guideDots.forEach((dot, i) => {
-            dot.classList.toggle('active', i === currentStep);
-        });
-    };
-
-    prevStepBtn?.addEventListener('click', () => {
-        currentStep = (currentStep - 1 + guideSlides.length) % guideSlides.length;
-        updateGuideUI();
-    });
-
-    nextStepBtn?.addEventListener('click', () => {
-        currentStep = (currentStep + 1) % guideSlides.length;
-        updateGuideUI();
-    });
-
-    guideDots.forEach((dot, i) => {
-        dot.addEventListener('click', () => {
-            currentStep = i;
-            updateGuideUI();
-        });
-    });
-
-    updateGuideUI();
+    // Guide slider elements removed from HTML. Skipped.
 
     // --- Review System Logic ---
     const stars = document.querySelectorAll('.star');
@@ -826,6 +558,39 @@ document.addEventListener('DOMContentLoaded', () => {
 
     initFloatingReviews();
     startReviewLoop();
+
+    // --- Matrix Optimization ---
+    const canvas = document.getElementById('matrix-canvas');
+    if (canvas) {
+        const ctx = canvas.getContext('2d', { alpha: false });
+        let width, height, columns, drops;
+        const initMatrix = () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            columns = Math.floor(width / 20);
+            drops = new Array(columns).fill(0).map(() => Math.random() * -100);
+        };
+        const drawMatrix = () => {
+            ctx.fillStyle = 'rgba(2, 6, 23, 0.15)';
+            ctx.fillRect(0, 0, width, height);
+            ctx.fillStyle = '#10b981';
+            ctx.font = '15px monospace';
+            for (let i = 0; i < drops.length; i++) {
+                const text = String.fromCharCode(33 + Math.random() * 94);
+                ctx.fillText(text, i * 20, drops[i] * 20);
+                if (drops[i] * 20 > height && Math.random() > 0.975) drops[i] = 0;
+                drops[i]++;
+            }
+        };
+        initMatrix();
+        setInterval(drawMatrix, 40);
+        window.addEventListener('resize', initMatrix);
+    }
+
+    // --- Initial AOS ---
+    if (typeof AOS !== 'undefined') {
+        AOS.init({ duration: 1000, once: true, offset: 50 });
+    }
 
     // Refresh reviews from DB every 10 minutes (for testing)
     setInterval(initFloatingReviews, 10 * 60 * 1000);

@@ -15,19 +15,12 @@
   <!-- ExoClick Client Hints for Better Ad Targeting -->
   <meta http-equiv="Delegate-CH"
     content="Sec-CH-UA https://s.magsrv.com; Sec-CH-UA-Mobile https://s.magsrv.com; Sec-CH-UA-Arch https://s.magsrv.com; Sec-CH-UA-Model https://s.magsrv.com; Sec-CH-UA-Platform https://s.magsrv.com; Sec-CH-UA-Platform-Version https://s.magsrv.com; Sec-CH-UA-Bitness https://s.magsrv.com; Sec-CH-UA-Full-Version-List https://s.magsrv.com; Sec-CH-UA-Full-Version https://s.magsrv.com;">
-  <meta http-equiv="Delegate-CH"
-    content="Sec-CH-UA https://s.pemsrv.com; Sec-CH-UA-Mobile https://s.pemsrv.com; Sec-CH-UA-Arch https://s.pemsrv.com; Sec-CH-UA-Model https://s.pemsrv.com; Sec-CH-UA-Platform https://s.pemsrv.com; Sec-CH-UA-Platform-Version https://s.pemsrv.com; Sec-CH-UA-Bitness https://s.pemsrv.com; Sec-CH-UA-Full-Version-List https://s.pemsrv.com; Sec-CH-UA-Full-Version https://s.pemsrv.com;">
   <link rel="icon" type="image/png"
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/svgs/solid/robot.svg">
 </head>
 
 <body>
-  <!-- Left Side Skyscraper Sticky Ad -->
-  <div class="sticky-left-ad-wrapper">
-    <script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script>
-    <ins class="eas6a97888e17" data-zoneid="5851678"></ins>
-    <script>(AdProvider = window.AdProvider || []).push({ "serve": {} });</script>
-  </div>
+
 
   <div class="glow-bg"></div>
   <div class="bg-lines"></div>
@@ -66,9 +59,10 @@
         </div>
       </div>
       <ul class="nav-links">
+        <li><a href="#applications">Applications</a></li>
         <li><a href="#extensions">Extensions</a></li>
         <li><a href="#reviews">Reviews</a></li>
-        <li><a href="#guide">Installation Guide</a></li>
+
       </ul>
     </div>
   </nav>
@@ -77,12 +71,11 @@
     <canvas id="matrix-canvas"></canvas>
     <div class="container hero-container">
       <div class="hero-text" data-aos="fade-up">
-        <h1>Dominate the Web with <span class="gradient-text">PP Extensions</span></h1>
-        <p>Unlock untapped potential with our high-growth browser tools. Engineered for extreme speed, trusted by power
-          users, and optimized for your <strong>financial growth</strong>.</p>
+        <h1>Make your life <span class="gradient-text">easier</span> with <br>PP Products</h1>
+        <p>Experience the next generation of AI-powered tools. PPBot brings native performance and ultimate stealth to
+          your professional workflow.</p>
         <div class="hero-actions">
-          <a href="#extensions" class="btn-primary">Get Started Now</a>
-          <a href="#guide" class="btn-outline">Watch Setup Guide</a>
+          <a href="#applications" class="btn-primary">Get Started Now</a>
         </div>
         <div class="trust-badges">
           <div class="trust-badge"><i class="fas fa-bolt"></i> Ultra Fast</div>
@@ -99,9 +92,13 @@
           <i class="fas fa-money-bill-trend-up"></i>
           <span>Stonks Only</span>
         </div>
-        <div class="hero-stat-card">
-          <span class="stat-value">99.9%</span>
-          <span class="stat-label">Uptime</span>
+        <div class="hero-stat-card" style="padding: 1.5rem; text-align: left; max-width: 250px;">
+          <div class="card-icon" style="width: 40px; height: 40px; font-size: 1rem; margin-bottom: 1rem;">
+            <i class="fas fa-robot"></i>
+          </div>
+          <h4 style="font-size: 1rem; margin-bottom: 0.5rem;">PPBot Desktop</h4>
+          <p style="font-size: 0.75rem; color: var(--text-gray); margin: 0;">Native Windows AI. Ultra-stealth,
+            ultra-fast.</p>
         </div>
       </div>
     </div>
@@ -109,12 +106,49 @@
 
 
   <main>
-    <section id="extensions" class="extensions-section">
+    <!-- ===== APPLICATIONS SECTION (PRIMARY) ===== -->
+    <section id="applications" class="extensions-section">
       <div class="container">
         <div class="section-header">
-          <h2>Powerful <span class="gradient-text">Extensions</span></h2>
+          <h2>Desktop <span class="gradient-text">Applications</span></h2>
+          <p>Native Windows software. Download free, activate with your Client ID from the dashboard.</p>
+        </div>
+
+        <div class="app-grid" style="display: flex; justify-content: center;">
+          <!-- PPBot App Card -->
+          <div class="app-card" data-aos="zoom-in">
+            <div class="card-icon">
+              <i class="fas fa-robot"></i>
+            </div>
+            <h3>PPBot Desktop</h3>
+            <p class="ext-desc">Invisible AI assistant running natively on your desktop. No browser extension required —
+              call it anytime with a hotkey.</p>
+
+            <div class="shortcuts-info">
+              <div class="shortcut"><span>Ctrl+Shift+K</span> Call AI</div>
+              <div class="shortcut"><span>Ctrl+Shift+X</span> Copy Resp</div>
+              <div class="shortcut"><span>Background</span> Stealth</div>
+            </div>
+
+            <div class="downloads-container" style="margin-top: 2rem;">
+              <a href="#" class="btn-primary download-trigger" data-type="ppbot3-app"
+                style="width: 100%; text-align: center; display: block; padding: 1.2rem;">
+                <i class="fas fa-download"></i> Download Desktop App
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== EXTENSIONS SECTION (SECONDARY) ===== -->
+    <section id="extensions" class="extensions-section" style="padding-top: 50px;">
+      <div class="container">
+        <div class="section-header">
+          <h2>Browser <span class="gradient-text">Extensions</span></h2>
           <p>Supercharge your browser with our specialized automation and growth tools.</p>
         </div>
+
 
         <div class="extension-grid">
           <!-- PPBot Card -->
@@ -133,14 +167,10 @@
               <div class="shortcut"><span>Ctrl+Enter</span> Send</div>
             </div>
 
-            <div class="download-actions">
-              <a href="#" class="btn-free download-trigger" data-type="ppbot">
-                <span class="btn-content"><i class="fas fa-download"></i> Free</span>
-                <span class="btn-subtext">Ads supported</span>
-              </a>
-              <a href="#" class="btn-premium download-trigger" data-type="ppbot">
-                <span class="btn-content"><i class="fas fa-crown"></i> $29.99</span>
-                <span class="btn-subtext">Lifetime Access</span>
+            <div class="downloads-container" style="margin-top: 2rem;">
+              <a href="#" class="btn-primary download-trigger" data-type="ppbot"
+                style="width: 100%; text-align: center; display: block; padding: 1.2rem;">
+                <i class="fas fa-download"></i> Download Extension
               </a>
             </div>
           </div>
@@ -148,7 +178,7 @@
           <!-- PP Screen Card (Coming Soon) -->
           <div class="extension-card locked" data-aos="zoom-in" data-aos-delay="50">
             <div class="card-glow"></div>
-            <div class="card-icon" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
+            <div class="card-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--accent-green);">
               <i class="fas fa-desktop"></i>
             </div>
             <h3>PP Screen</h3>
@@ -174,23 +204,8 @@
       </div>
     </section>
 
-    <section id="applications" class="extensions-section" style="padding-top: 50px;">
-      <div class="container">
-        <div class="section-header">
-          <h2>Desktop <span class="gradient-text">Applications</span></h2>
-          <p>Professional desktop software for extreme performance and deep system integration.</p>
-        </div>
-        <div class="coming-soon-card" data-aos="zoom-in">
-          <div class="card-glow"></div>
-          <div class="coming-soon-content">
-            <i class="fas fa-clock"></i>
-            <h3>Coming Soon</h3>
-            <p>Our desktop suite is currently in private beta. High-performance native applications are on the way.</p>
-            <div class="waitlist-badge">Join the Waitlist</div>
-          </div>
-        </div>
-      </div>
-    </section>
+
+
 
     <!-- Review Submission Form Section -->
     <section id="reviews" class="review-form-section">
@@ -216,110 +231,7 @@
       </div>
     </section>
 
-    <section id="guide" class="guide-section">
-      <div class="container">
-        <div class="section-header">
-          <h2>Streamlined <span class="gradient-text">Installation</span></h2>
-          <p>Get up and running in less than 60 seconds with our simplified setup process.</p>
-        </div>
 
-        <div class="guide-slider-container">
-          <button class="slider-btn prev-btn" id="prev-step"><i class="fas fa-chevron-left"></i></button>
-
-          <div class="slider-wrapper" id="guide-slider">
-            <!-- Step 1 -->
-            <div class="slide active">
-              <div class="step-item">
-                <div class="step-num">1</div>
-                <div class="step-content">
-                  <h3>Download & Deploy</h3>
-                  <p>Grab your preferred version of PPBot. Extract the ZIP archive to your desired location. We
-                    recommend a
-                    dedicated 'Extensions' folder for maximum efficiency.</p>
-                </div>
-                <div class="step-placeholder-img">
-                  <img src="./assets/tutorial1.png" alt="Step 1: Download and Extract"
-                    style="width: 100%; height: auto; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.5);">
-                </div>
-              </div>
-            </div>
-
-            <!-- Step 2 -->
-            <div class="slide">
-              <div class="step-item">
-                <div class="step-num">2</div>
-                <div class="step-content">
-                  <h3>Developer Access</h3>
-                  <p>Navigate to <code>extensions://extensions</code> in your browser. Toggle **Developer Mode** in the
-                    top-right corner to bypass restricted installations.</p>
-                </div>
-                <div class="step-placeholder-img">
-                  <img src="./assets/tutorial2.png" alt="Step 2: Enable Developer Mode"
-                    style="width: 100%; height: auto; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.5);">
-                </div>
-              </div>
-            </div>
-
-            <!-- Step 3 -->
-            <div class="slide">
-              <div class="step-item">
-                <div class="step-num">3</div>
-                <div class="step-content">
-                  <h3>Initialize Extension</h3>
-                  <p>Select **Load Unpacked** and point it to your extracted folder. Ensure the
-                    <code>manifest.json</code>
-                    is present in the root of your selection.
-                  </p>
-                </div>
-                <div class="step-placeholder-img">
-                  <img src="./assets/tutorial3.png" alt="Step 3: Load Unpacked Extension"
-                    style="width: 100%; height: auto; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.5);">
-                </div>
-              </div>
-            </div>
-
-            <!-- Step 4 -->
-            <div class="slide">
-              <div class="step-item">
-                <div class="step-num">4</div>
-                <div class="step-content">
-                  <h3>Dominate the Web</h3>
-                  <p>You're all set! Pin the PPBot icon to your taskbar for instant access. You are now equipped with
-                    the most powerful tools in the market. <strong>Time to conquer!</strong></p>
-                  <div
-                    style="margin-top: 1.5rem; padding: 1rem; background: rgba(16, 185, 129, 0.1); border-radius: 12px; border: 1px solid rgba(16, 185, 129, 0.3);">
-                    <p style="color: var(--accent-green); font-weight: 700; font-size: 0.9rem; margin: 0;">
-                      <i class="fas fa-keyboard"></i> Quick Start: Press <code
-                        style="background: rgba(0,0,0,0.5); padding: 4px 8px; border-radius: 6px; color: var(--accent-green); margin: 0 4px;">Ctrl+Shift+K</code>
-                      to activate
-                    </p>
-                  </div>
-                </div>
-                <div class="step-placeholder-img"
-                  style="display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(59, 130, 246, 0.1)); border-radius: 20px; border: 2px solid rgba(16, 185, 129, 0.3); min-height: 400px;">
-                  <div style="text-align: center; padding: 2rem;">
-                    <i class="fas fa-trophy"
-                      style="font-size: 6rem; color: var(--accent-green); margin-bottom: 1.5rem; display: block;"></i>
-                    <h3 style="font-size: 2rem; color: white; margin-bottom: 1rem;">Ready to Conquer</h3>
-                    <p style="font-size: 1.1rem; color: rgba(255,255,255,0.8); max-width: 400px; margin: 0 auto;">Your
-                      AI-powered extension is active and ready to boost your productivity!</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <button class="slider-btn next-btn" id="next-step"><i class="fas fa-chevron-right"></i></button>
-        </div>
-
-        <div class="slider-dots" id="slider-dots">
-          <div class="dot active"></div>
-          <div class="dot"></div>
-          <div class="dot"></div>
-          <div class="dot"></div>
-        </div>
-      </div>
-    </section>
 
     <!-- Partner Section (Smart Link) -->
     <!-- Partner Section Removed (Adsterra Links) -->
@@ -372,32 +284,7 @@
     </div>
   </div>
 
-  <!-- VAST Video Ad Modal -->
-  <div id="vast-modal" class="modal" style="display: none;">
-    <div class="modal-content" style="max-width: 800px; background: #0a0a0a;">
-      <div
-        style="position: relative; width: 100%; padding-top: 56.25%; background: #000; border-radius: 12px; overflow: hidden;">
-        <video id="vast-video-player"
-          style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: pointer;" playsinline></video>
 
-        <!-- Clickable Progress Bar (Acting as Video Click) -->
-        <div id="vast-progress-click-area"
-          style="position: absolute; bottom: 0; left: 0; width: 100%; height: 8px; background: rgba(255,255,255,0.1); cursor: pointer; z-index: 20;">
-          <div id="vast-progress-bar"
-            style="height: 100%; width: 0%; background: var(--accent-green); transition: width 0.1s;"></div>
-        </div>
-
-        <!-- Countdown Only (No Skip) -->
-        <div id="vast-countdown"
-          style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.8); color: #fff; padding: 8px 16px; border-radius: 4px; font-size: 14px; font-weight: 600; pointer-events: none;">
-          Please wait <span id="vast-timer">15</span>s
-        </div>
-      </div>
-      <p style="text-align: center; margin-top: 20px; color: #888; font-size: 14px;">
-        <i class="fas fa-info-circle"></i> Watch the ad to unlock your download · Click video to visit advertiser
-      </p>
-    </div>
-  </div>
 
   <!-- Client ID Modal -->
   <div id="id-modal" class="modal">
@@ -419,17 +306,13 @@
   <div id="floating-reviews-container"></div>
 
   <!-- ExoClick Instant Message (Bottom Right Corner) -->
-  <script async type="application/javascript" src="https://a.pemsrv.com/ad-provider.js"></script>
-  <ins class="eas6a97888e35" data-zoneid="5851426" data-ex_av="name"></ins>
-  <script>(AdProvider = window.AdProvider || []).push({ "serve": {} });</script>
-  <script type="application/javascript">
-    document.addEventListener('creativeDisplayed-5851426', console.log, false);
-  </script>
-
-  <!-- ExoClick Native Banner (Bottom Corner) -->
   <script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script>
-  <ins class="eas6a97888e6" data-zoneid="5851720" data-ex_av="name"></ins>
+  <ins class="eas6a97888e6" data-zoneid="5851720"></ins>
   <script>(AdProvider = window.AdProvider || []).push({ "serve": {} });</script>
+
+  <!-- ADS Delegate-CH for Targeting -->
+  <meta http-equiv="Delegate-CH"
+    content="Sec-CH-UA https://s.magsrv.com; Sec-CH-UA-Mobile https://s.magsrv.com; Sec-CH-UA-Arch https://s.magsrv.com; Sec-CH-UA-Model https://s.magsrv.com; Sec-CH-UA-Platform https://s.magsrv.com; Sec-CH-UA-Platform-Version https://s.magsrv.com; Sec-CH-UA-Bitness https://s.magsrv.com; Sec-CH-UA-Full-Version-List https://s.magsrv.com; Sec-CH-UA-Full-Version https://s.magsrv.com;">
 
   <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
   <script type="module" src="/src/main.js"></script>

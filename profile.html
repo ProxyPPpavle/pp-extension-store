@@ -455,25 +455,16 @@
             </div>
 
             <div class="nav-section">
-                <label>Active Assets</label>
+                <label>Manage Products</label>
                 <div class="ext-nav-list" id="possessed-extensions-list">
-                    <!-- Assets will be dynamically loaded here -->
-                    <div class="ext-nav-loading">
-                        <i class="fas fa-spinner fa-spin"></i> Loading assets...
-                    </div>
+                    <!-- My Apps will be here -->
                 </div>
             </div>
 
             <div class="nav-section">
-                <label>Store Inventory</label>
-                <div class="ext-nav-list">
-                    <div class="ext-nav-item locked">
-                        <i class="fas fa-server"></i>
-                        <div class="ext-nav-text">
-                            <span class="name">PP Desktop</span>
-                            <span class="sub">Offline</span>
-                        </div>
-                    </div>
+                <label>Marketplace</label>
+                <div class="ext-nav-list" id="marketplace-list">
+                    <!-- Available Apps to buy will be here -->
                 </div>
             </div>
 
@@ -512,16 +503,43 @@
             <section class="module-content">
                 <!-- Module Management Card -->
                 <div class="module-card">
-                    <div class="module-header">
-                        <h2 id="current-ext-name">PPBot Standard</h2>
-                        <p style="color: var(--text-gray); font-size: 0.75rem;">Command Protocol: 2.4.0</p>
+                    <div class="module-header"
+                        style="text-align: left; display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div>
+                            <h2 id="current-ext-name" style="margin: 0;">PPBot Standard</h2>
+                            <p id="plan-badge"
+                                style="display: inline-block; padding: 4px 10px; border-radius: 8px; font-size: 0.65rem; font-weight: 800; margin-top: 10px; background: rgba(255,255,255,0.05); color: #fff;">
+                                FREE VERSION</p>
+                        </div>
+                        <div class="credits-mini-display" style="text-align: right;">
+                            <div class="count" id="credit-count"
+                                style="font-size: 3.5rem; color: var(--accent-green); line-height: 1;">0</div>
+                            <label
+                                style="font-size: 0.6rem; text-transform: uppercase; color: var(--text-gray); letter-spacing: 1px;">Daily
+                                Credits</label>
+                        </div>
                     </div>
 
-                    <div class="credits-display">
-                        <label id="credits-label">Compute Credits (Sync via Client ID)</label>
-                        <div class="count" id="credit-count">0</div>
-                        <p style="font-size: 0.65rem; color: var(--text-gray); margin-top: 10px;">Credits follow the
-                            extension license.</p>
+                    <div id="subscription-status-box"
+                        style="margin-top: 2rem; padding: 1.5rem; border-radius: 20px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05);">
+                        <div id="free-plan-view">
+                            <h4 style="margin-bottom: 0.5rem;"><i class="fas fa-arrow-up"
+                                    style="color: var(--accent-green);"></i> Upgrade to Premium</h4>
+                            <p style="font-size: 0.75rem; color: var(--text-gray); margin-bottom: 1.5rem;">Get 20 daily
+                                credits instead of 3. Unlock all premium features for this tool.</p>
+                            <button class="btn-boost" id="btn-buy-key" style="width: 100%;">Buy Premium Key (300 RSD /
+                                $3 / mo)</button>
+                        </div>
+                        <div id="premium-plan-view" style="display: none;">
+                            <div
+                                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                <span><i class="fas fa-crown" style="color: #fbbf24;"></i> Premium Active</span>
+                                <span style="font-size: 0.7rem; color: var(--accent-green);">Expires in 28 days</span>
+                            </div>
+                            <button id="btn-reset-key"
+                                style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 0.8rem; border-radius: 12px; cursor: pointer; font-weight: 700;">Reset
+                                Key Access</button>
+                        </div>
                     </div>
 
                     <div style="display: flex; gap: 1rem; flex-direction: column;">
@@ -542,53 +560,43 @@
                     </div>
                 </div>
 
-                <!-- Kinetic Booster Section -->
-                <div class="kinetic-booster">
-                    <div class="kinetic-cable"></div>
-                    <div class="booster-well">
-                        <div class="booster-text">
-                            <h4 style="display: flex; align-items: center; gap: 0.5rem;"><i
-                                    class="fas fa-charging-station" style="color: var(--accent-green);"></i> Kinetic
-                                Link</h4>
-                            <p style="font-size: 0.75rem;">Injecting to: <strong id="ad-target-display"
-                                    style="color: var(--accent-green);">PPBot Standard</strong></p>
-                            <div id="ad-limit-status"
-                                style="font-size: 0.65rem; color: rgba(255,255,255,0.6); margin-top: 6px;">Today: 0/6
-                                Rewards Used</div>
-                        </div>
-                        <button id="btn-watch-ad" class="btn-boost">Add Credits (Watch Ad)</button>
-                    </div>
+                <div class="info-footer" style="margin-top: 2rem; text-align: center;">
+                    <p style="font-size: 0.7rem; color: var(--text-gray);"><i class="fas fa-shield-alt"></i> All
+                        transactions are secure. No lemon squizzy for now - testing mode.</p>
                 </div>
             </section>
         </main>
     </div>
 
-    <!-- VAST Video Ad Overlay for Credits -->
-    <div id="ad-simulation" style="display: none;">
-        <div style="max-width: 800px; width: 90%; position: relative;">
+    <!-- Payment Simulation Modal (Mock) -->
+    <div id="payment-modal" class="modal" style="display: none; padding: 2rem;">
+        <div class="modal-content" style="max-width: 400px; padding: 3rem;">
+            <i class="fas fa-credit-card"
+                style="font-size: 3rem; color: var(--accent-green); margin-bottom: 1.5rem;"></i>
+            <h3>Confirm Purchase</h3>
+            <p style="margin-bottom: 2rem;">You are about to buy a Premium Key for <strong
+                    id="purchase-app-name">...</strong></p>
             <div
-                style="position: relative; width: 100%; padding-top: 56.25%; background: #000; border-radius: 20px; overflow: hidden;">
-                <video id="profile-vast-video"
-                    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: pointer;"
-                    playsinline></video>
-
-                <!-- Clickable Progress Bar (Acting as Video Click) -->
-                <div id="profile-vast-progress-click-area"
-                    style="position: absolute; bottom: 0; left: 0; width: 100%; height: 8px; background: rgba(255,255,255,0.1); cursor: pointer; z-index: 20;">
-                    <div id="profile-vast-progress"
-                        style="height: 100%; width: 0%; background: var(--accent-green); transition: width 0.1s;"></div>
+                style="background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 12px; margin-bottom: 2rem; text-align: left;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <span>Price:</span>
+                    <strong style="color: #fff;">$3.00</strong>
                 </div>
-
-                <!-- Countdown Only (No Skip) -->
-                <div id="profile-vast-countdown"
-                    style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.8); color: #fff; padding: 8px 16px; border-radius: 4px; font-size: 14px; font-weight: 600; pointer-events: none;">
-                    Please wait <span id="profile-vast-timer">15</span>s
+                <div style="display: flex; justify-content: space-between;">
+                    <span>Duration:</span>
+                    <strong style="color: #fff;">30 Days</strong>
                 </div>
             </div>
-            <p style="text-align: center; margin-top: 20px; color: #888; font-size: 14px;">
-                <i class="fas fa-coins"></i> Watch the ad to earn credits · Click video to visit advertiser
-            </p>
+            <button id="btn-confirm-purchase" class="btn-boost" style="width: 100%; margin-bottom: 1rem;">Complete
+                Payment</button>
+            <button onclick="document.getElementById('payment-modal').style.display='none'"
+                style="background:none; border:none; color: var(--text-gray); cursor:pointer;">Cancel</button>
         </div>
+    </div>
+    <p style="text-align: center; margin-top: 20px; color: #888; font-size: 14px;">
+        <i class="fas fa-coins"></i> Watch the ad to earn credits · Click video to visit advertiser
+    </p>
+    </div>
     </div>
 
     <!-- Custom Notify -->
