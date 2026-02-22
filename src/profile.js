@@ -136,10 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Product & Marketplace Config ---
     const allProducts = [
-        { id: 'ppbot', name: 'PPBot Extension', icon: 'fa-robot', desc: 'Standard browser agent' },
-        { id: 'ppbot3-app', name: 'PPBot Desktop', icon: 'fa-microchip', desc: 'Stealth native app' },
-        { id: 'pp-screen', name: 'PP Screen', icon: 'fa-desktop', desc: 'Vision analysis tool' },
-        { id: 'predictor', name: 'PP Predictor', icon: 'fa-chart-pie', desc: 'Pattern detector' }
+        { id: 'ppbot', name: 'PPBot (Extension & App)', icon: 'fa-robot', desc: 'Unified AI Assistant' }
     ];
 
     const loadData = async () => {
