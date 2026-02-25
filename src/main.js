@@ -372,10 +372,7 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             const type = trigger.getAttribute('data-type');
 
-            // Show download modal
-            if (idModal) idModal.style.display = 'flex';
-
-            // Trigger actual download
+            // Trigger actual download directly, no modal
             triggerDownload(type);
         });
     });
