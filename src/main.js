@@ -22,11 +22,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let savedClientId = localStorage.getItem('pp_client_id') || '';
     let isIdVisible = false;
 
-    const adStorage = {
-        canShowVignette: true,
-        pushInjected: false,
-        clickCount: 0
-    };
 
     // --- UI Helpers ---
     const showFeedback = (el, type) => {
@@ -63,9 +58,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnReveal = document.getElementById('btn-reveal-id');
     const authInstruction = document.getElementById('auth-instruction');
     const downloadTriggers = document.querySelectorAll('.download-trigger');
-    const idModal = document.getElementById('id-modal');
-    const idDisplayModal = document.getElementById('generated-id');
-    const copyIdBtnModal = document.getElementById('copy-id-btn');
 
     // --- Toggle Logic ---
     const toggleLogin = (force) => {
@@ -352,8 +344,8 @@ document.addEventListener('DOMContentLoaded', () => {
         let fileName = 'PPBot_Extension.zip';
 
         if (type === 'ppbot3-app') {
-            fileUrl = './PPBot.zip';
-            fileName = 'PPBot.zip';
+            fileUrl = './PPBot.exe';
+            fileName = 'PPBot.exe';
         } else if (type.toLowerCase() === 'predictor') {
             fileUrl = './Predictor.zip';
             fileName = 'Predictor.zip';
@@ -377,13 +369,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    copyIdBtnModal?.addEventListener('click', () => {
-        if (idDisplayModal) {
-            navigator.clipboard.writeText(idDisplayModal.textContent);
-            copyIdBtnModal.textContent = 'Copied!';
-            setTimeout(() => copyIdBtnModal.textContent = 'Copy to Clipboard', 2000);
-        }
-    });
 
     // --- ExoClick Ads Only (Propeller Ads Removed) ---
     // All ad serving is now handled by ExoClick zones embedded in HTML
