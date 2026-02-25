@@ -62,6 +62,10 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.href = '/';
     });
 
+    document.getElementById('btn-exit')?.addEventListener('click', () => {
+        window.location.href = '/';
+    });
+
     // --- Initialize Top Global Identity ---
     userEmailEl.textContent = email;
     let isIdVisible = false;
