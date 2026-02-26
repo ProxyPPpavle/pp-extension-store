@@ -204,12 +204,21 @@ document.addEventListener('DOMContentLoaded', () => {
         const subData = userSubscriptions.find(s => s.extension_id === id);
         const isPremium = subData?.account_type === 'premium';
 
-        if (isPremium) {
+        if (isPremium && id !== 'ppsaver') {
             planBadge.textContent = 'PREMIUM PLAN';
             planBadge.style.background = 'rgba(251, 191, 36, 0.2)';
             planBadge.style.color = '#fbbf24';
             freePlanView.style.display = 'none';
             premiumPlanView.style.display = 'block';
+
+            // Update expiration text
+            if (subData.expires_at) {
+                const expiry = new Date(subData.expires_at);
+                const diff = expiry - new Date();
+                const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+                const expirySpan = premiumPlanView.querySelector('span:last-child');
+                if (expirySpan) expirySpan.textContent = `Expires in ${days} days`;
+            }
         } else {
             planBadge.textContent = id === 'ppsaver' ? 'BETA VERSION' : 'FREE VERSION';
             planBadge.style.background = id === 'ppsaver' ? 'rgba(59, 130, 246, 0.2)' : 'rgba(255,255,255,0.05)';
