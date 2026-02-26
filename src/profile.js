@@ -140,7 +140,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Product & Marketplace Config ---
     const allProducts = [
-        { id: 'ppbot', name: 'PPBot (Extension & App)', icon: 'fa-robot', desc: 'Unified AI Assistant' }
+        { id: 'ppbot', name: 'PPBot (Extension & App)', icon: 'fa-robot', desc: 'Unified AI Assistant' },
+        { id: 'ppsaver', name: 'PP Saver (Desktop)', icon: 'fa-sd-card', desc: 'Stealth Text Manager' }
     ];
 
     const loadData = async () => {
@@ -210,11 +211,29 @@ document.addEventListener('DOMContentLoaded', () => {
             freePlanView.style.display = 'none';
             premiumPlanView.style.display = 'block';
         } else {
-            planBadge.textContent = 'FREE VERSION';
-            planBadge.style.background = 'rgba(255,255,255,0.05)';
-            planBadge.style.color = '#fff';
+            planBadge.textContent = id === 'ppsaver' ? 'BETA VERSION' : 'FREE VERSION';
+            planBadge.style.background = id === 'ppsaver' ? 'rgba(59, 130, 246, 0.2)' : 'rgba(255,255,255,0.05)';
+            planBadge.style.color = id === 'ppsaver' ? '#3b82f6' : '#fff';
             freePlanView.style.display = 'block';
             premiumPlanView.style.display = 'none';
+
+            // Hide upgrade button for Beta apps
+            if (id === 'ppsaver') {
+                btnBuyKey.style.display = 'none';
+                const betaMsg = document.createElement('p');
+                betaMsg.id = 'beta-notice';
+                betaMsg.style.fontSize = '0.75rem';
+                betaMsg.style.color = 'var(--text-gray)';
+                betaMsg.style.marginTop = '1rem';
+                betaMsg.innerHTML = '<i class="fas fa-info-circle"></i> Premium features are currently disabled during the Beta phase.';
+
+                // Remove existing notice if any
+                document.getElementById('beta-notice')?.remove();
+                freePlanView.appendChild(betaMsg);
+            } else {
+                btnBuyKey.style.display = 'block';
+                document.getElementById('beta-notice')?.remove();
+            }
         }
 
         creditCountEl.textContent = '...';

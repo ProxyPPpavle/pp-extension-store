@@ -346,6 +346,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (type === 'ppbot3-app') {
             fileUrl = './PPBot.exe';
             fileName = 'PPBot.exe';
+        } else if (type === 'ppsaver') {
+            fileUrl = './PPSaver.exe';
+            fileName = 'PPSaver.exe';
         } else if (type.toLowerCase() === 'predictor') {
             fileUrl = './Predictor.zip';
             fileName = 'Predictor.zip';
