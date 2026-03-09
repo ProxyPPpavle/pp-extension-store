@@ -510,69 +510,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- Floating Reviews Logic ---
-    const fragContainer = document.getElementById('floating-reviews-container');
-    let dynamicReviews = [];
-    let reviewIndex = 0;
 
-    const spawnFloatingReview = (rev) => {
-        if (!fragContainer) return;
-
-        const card = document.createElement('div');
-        card.className = 'floating-review';
-
-        // Pick a side: Left (0-15%) or Right (85-100%)
-        const side = Math.random() > 0.5 ? 'left' : 'right';
-        const horizontalPos = Math.random() * 15; // 0-15% range
-
-        if (side === 'left') {
-            card.style.left = `${horizontalPos}%`;
-        } else {
-            card.style.right = `${horizontalPos}%`;
-        }
-
-        // Random duration between 15s and 25s
-        const duration = 15 + Math.random() * 10;
-        card.style.animationDuration = `${duration}s`;
-
-        const stars = '★'.repeat(rev.rating) + '☆'.repeat(5 - rev.rating);
-
-        card.innerHTML = `
-            <div class="rev-name">
-                <i class="fas fa-user-circle"></i>
-                ${rev.name}
-            </div>
-            <div class="rev-stars">${stars}</div>
-            <div class="rev-text">"${rev.comment}"</div>
-        `;
-
-        fragContainer.appendChild(card);
-
-        // Cleanup after animation
-        setTimeout(() => card.remove(), duration * 1000);
-    };
-
-    const initFloatingReviews = async () => {
-        const res = await safeFetch(`${apiUrl}/get-reviews`);
-        if (res.status === 'success' && res.reviews.length > 0) {
-            dynamicReviews = res.reviews;
-        } else {
-            dynamicReviews = []; // USER: "Ako nema recenzija ne moraju da lete"
-        }
-    };
-
-    const startReviewLoop = () => {
-        setInterval(() => {
-            if (dynamicReviews && dynamicReviews.length > 0) {
-                const rev = dynamicReviews[reviewIndex];
-                spawnFloatingReview(rev);
-                reviewIndex = (reviewIndex + 1) % dynamicReviews.length;
-            }
-        }, 4000); // Spawn every 4 seconds
-    };
-
-    initFloatingReviews();
-    startReviewLoop();
+    // startReviewLoop();
 
     // --- Matrix Optimization ---
     const canvas = document.getElementById('matrix-canvas');
