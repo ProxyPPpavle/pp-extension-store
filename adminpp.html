@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PP Admin | Broadcast</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-black: #020617;
+            --bg-slate: #0f172a;
+            --accent-green: #22c55e;
+            --text-white: #f8fafc;
+            --text-gray: #94a3b8;
+            --glass-border: rgba(255, 255, 255, 0.12);
+        }
+
+        body {
+            background-color: var(--bg-black);
+            color: var(--text-white);
+            font-family: 'Outfit', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .admin-card {
+            background: var(--bg-slate);
+            border: 1px solid var(--glass-border);
+            padding: 3rem;
+            border-radius: 24px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.5);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .header i {
+            font-size: 3rem;
+            color: var(--accent-green);
+            margin-bottom: 1rem;
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-gray);
+            font-size: 0.9rem;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            color: white;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        input:focus,
+        textarea:focus {
+            border-color: var(--accent-green);
+        }
+
+        button {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #3b82f6, #10b981);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s, opacity 0.2s;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        #broadcast-form {
+            display: none;
+        }
+
+        .status {
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="admin-card">
+        <div class="header">
+            <i class="fas fa-broadcast-tower"></i>
+            <h2>PP Broadcast Admin</h2>
+        </div>
+
+        <!-- Password Step -->
+        <div id="auth-section">
+            <div class="input-group">
+                <input type="password" id="admin-pass" placeholder="Enter Admin Password...">
+            </div>
+            <button id="btn-auth">Verify Access</button>
+        </div>
+
+        <!-- Broadcast Form -->
+        <div id="broadcast-form">
+            <div class="input-group">
+                <label>Subject</label>
+                <input type="text" id="subject" placeholder="Email Subject">
+            </div>
+            <div class="input-group">
+                <label>Message (Plain Text / Simple HTML)</label>
+                <textarea id="message" rows="8" placeholder="Type your message here..."></textarea>
+            </div>
+            <button id="btn-send">Send Update to All Users</button>
+        </div>
+
+        <div id="status" class="status"></div>
+    </div>
+
+    <script>
+        const apiUrl = 'https://pp-server-eight.vercel.app';
+        let verifiedPass = '';
+
+        const authSection = document.getElementById('auth-section');
+        const broadcastForm = document.getElementById('broadcast-form');
+        const status = document.getElementById('status');
+
+        document.getElementById('btn-auth').addEventListener('click', () => {
+            verifiedPass = document.getElementById('admin-pass').value;
+            if (verifiedPass) {
+                authSection.style.display = 'none';
+                broadcastForm.style.display = 'block';
+                status.textContent = 'Access granted. Ready to broadcast.';
+                status.style.color = '#22c55e';
+            }
+        });
+
+        document.getElementById('btn-send').addEventListener('click', async () => {
+            const subject = document.getElementById('subject').value;
+            const message = document.getElementById('message').value;
+            const btn = document.getElementById('btn-send');
+
+            if (!subject || !message) {
+                alert('Both subject and message are required.');
+                return;
+            }
+
+            if (!confirm('Are you sure you want to send this email to EVERYONE in the database?')) {
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Sending...';
+            status.textContent = 'Broadcasting messages, please wait...';
+            status.style.color = '#3b82f6';
+
+            try {
+                const res = await fetch(`${apiUrl}/admin-broadcast`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        pass: verifiedPass,
+                        subject,
+                        message
+                    })
+                });
+
+                const data = await res.json();
+                if (data.status === 'success') {
+                    status.textContent = `Successfully sent to ${data.count} users!`;
+                    status.style.color = '#22c55e';
+                    document.getElementById('subject').value = '';
+                    document.getElementById('message').value = '';
+                } else {
+                    status.textContent = 'Error: ' + data.message;
+                    status.style.color = '#ef4444';
+                }
+            } catch (err) {
+                status.textContent = 'Failed to connect to server.';
+                status.style.color = '#ef4444';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Send Update to All Users';
+            }
+        });
+    </script>
+</body>
+
+</html>
