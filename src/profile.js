@@ -177,16 +177,32 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span class="sub">${isPremium ? 'PREMIUM KEY' : 'FREE USER'}</span>
                 </div>
                 ${isPremium ? '<div class="dot"></div>' : ''}
+                ${!hasUsed ? '<i class="fas fa-plus-circle" style="margin-left: auto; color: var(--accent-green); opacity: 0.6;"></i>' : ''}
             `;
 
-            item.addEventListener('click', () => {
+            item.addEventListener('click', async () => {
+                if (!hasUsed) {
+                    if (confirm(`Do you want to activate a free license for ${product.name}?`)) {
+                        const res = await safeFetch(`${apiUrl}/activate-free-product`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ email, extension_id: product.id })
+                        });
+                        if (res.status === 'success') {
+                            notify(`${product.name} added to your products!`);
+                            activeExtensionId = product.id;
+                            await loadData();
+                        }
+                    }
+                    return;
+                }
                 activeExtensionId = product.id;
                 document.querySelectorAll('.ext-nav-item').forEach(el => el.classList.remove('active'));
                 item.classList.add('active');
                 switchAsset(product.id, product.name);
             });
 
-            if (hasUsed || isPremium) {
+            if (hasUsed) {
                 possessedList.appendChild(item);
             } else {
                 marketplaceList.appendChild(item);
@@ -203,6 +219,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const subData = userSubscriptions.find(s => s.extension_id === id);
         const isPremium = subData?.account_type === 'premium';
+
+        // Hide credit display for PPSaver
+        const creditsMini = document.querySelector('.credits-mini-display');
+        if (id === 'ppsaver') {
+            if (creditsMini) creditsMini.style.display = 'none';
+        } else {
+            if (creditsMini) creditsMini.style.display = 'block';
+        }
 
         if (isPremium && id !== 'ppsaver') {
             planBadge.textContent = 'PREMIUM PLAN';
@@ -234,7 +258,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 betaMsg.style.fontSize = '0.75rem';
                 betaMsg.style.color = 'var(--text-gray)';
                 betaMsg.style.marginTop = '1rem';
-                betaMsg.innerHTML = '<i class="fas fa-info-circle"></i> Premium features are currently disabled during the Beta phase.';
+                betaMsg.innerHTML = '<i class="fas fa-info-circle"></i> PPSaver is free for all members. Credits and premium features do not apply here.';
 
                 // Remove existing notice if any
                 document.getElementById('beta-notice')?.remove();

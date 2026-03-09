@@ -362,13 +362,43 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.removeChild(link);
     };
 
+    const safetyModal = document.getElementById('safety-modal');
+    const safetyYes = document.getElementById('safety-yes');
+    const safetyNo = document.getElementById('safety-no');
+    let pendingDownloadType = null;
+
+    const showSafetyModal = (type) => {
+        pendingDownloadType = type;
+        if (safetyModal) {
+            safetyModal.style.display = 'flex';
+            setTimeout(() => safetyModal.classList.add('active'), 10);
+        }
+    };
+
+    const hideSafetyModal = () => {
+        if (safetyModal) {
+            safetyModal.classList.remove('active');
+            setTimeout(() => safetyModal.style.display = 'none', 300);
+        }
+        pendingDownloadType = null;
+    };
+
+    safetyYes?.addEventListener('click', () => {
+        if (pendingDownloadType) {
+            triggerDownload(pendingDownloadType);
+        }
+        hideSafetyModal();
+    });
+
+    safetyNo?.addEventListener('click', () => {
+        hideSafetyModal();
+    });
+
     downloadTriggers.forEach(trigger => {
         trigger.addEventListener('click', async (e) => {
             e.preventDefault();
             const type = trigger.getAttribute('data-type');
-
-            // Trigger actual download directly, no modal
-            triggerDownload(type);
+            showSafetyModal(type);
         });
     });
 
