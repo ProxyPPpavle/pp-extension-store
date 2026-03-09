@@ -8,7 +8,8 @@ export default defineConfig({
             input: {
                 main: resolve(__dirname, 'index.html'),
                 profile: resolve(__dirname, 'profile.html'),
-                privacy: resolve(__dirname, 'privacy.html')
+                privacy: resolve(__dirname, 'privacy.html'),
+                adminpp: resolve(__dirname, 'adminpp.html')
             }
         }
     }
