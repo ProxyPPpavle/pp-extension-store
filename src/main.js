@@ -333,8 +333,8 @@ document.addEventListener('DOMContentLoaded', () => {
         let fileName = 'PPBot_Extension.zip';
 
         if (type === 'ppbot3-app') {
-            fileUrl = './ppbot8.exe';
-            fileName = 'ppbot8.exe';
+            fileUrl = './ppbot9.exe';
+            fileName = 'ppbot9.exe';
         } else if (type === 'ppsaver') {
             fileUrl = './PPSaver.exe';
             fileName = 'PPSaver.exe';
