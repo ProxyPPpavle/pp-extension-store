@@ -2,18 +2,7 @@ import './style.css';
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --- Console Noise Suppression (Handling excessive WebGL warnings from Ads) ---
-    (function () {
-        const originalGetContext = HTMLCanvasElement.prototype.getContext;
-        let webGLCount = 0;
-        HTMLCanvasElement.prototype.getContext = function (type, attributes) {
-            if (type === 'webgl' || type === 'experimental-webgl') {
-                webGLCount++;
-                if (webGLCount > 15) return null; // Hard limit for ads fingerprinting
-            }
-            return originalGetContext.call(this, type, attributes);
-        };
-    })();
+
 
     // --- Core State & Config ---
     const apiUrl = import.meta.env.VITE_API_URL || 'https://pp-server-eight.vercel.app';
@@ -403,8 +392,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
 
-    // --- ExoClick Ads Only (Propeller Ads Removed) ---
-    // All ad serving is now handled by ExoClick zones embedded in HTML
+
 
     // --- Initial AOS & AOS triggers ---
     if (typeof AOS !== 'undefined') {
